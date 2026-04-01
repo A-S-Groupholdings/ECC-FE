@@ -60,19 +60,51 @@
           </li>
         </router-link>
         <router-link
-          to="/dashboard/resources"
+          to="/dashboard/resource"
           class="block"
         >
           <li
             :class="[
               'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-              isActive('/dashboard/resources')
+              isActive('/dashboard/resource')
                 ? 'bg-secondary text-black'
                 : 'bg-primary hover:bg-gradient-to-r hover:bg-secondary text-white ',
             ]"
           >
-            <i class="pi pi-bullseye"></i>
-            <span class="md:hidden lg:block">Resources</span>
+            <i class="pi pi-palette"></i>
+            <span class="md:hidden lg:block">Resource</span>
+          </li>
+        </router-link>
+        <router-link
+          to="/dashboard/category"
+          class="block"
+        >
+          <li
+            :class="[
+              'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
+              isActive('/dashboard/category')
+                ? 'bg-secondary text-black'
+                : 'bg-primary hover:bg-gradient-to-r hover:bg-secondary text-white ',
+            ]"
+          >
+            <i class="pi pi-sitemap"></i>
+            <span class="md:hidden lg:block">Category</span>
+          </li>
+        </router-link>
+        <router-link
+          to="/dashboard/service"
+          class="block"
+        >
+          <li
+            :class="[
+              'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
+              isActive('/dashboard/service')
+                ? 'bg-secondary text-black'
+                : 'bg-primary hover:bg-gradient-to-r hover:bg-secondary text-white ',
+            ]"
+          >
+            <i class="pi pi-briefcase"></i>
+            <span class="md:hidden lg:block">Services</span>
           </li>
         </router-link>
         <router-link
@@ -123,6 +155,89 @@
             <span class="md:hidden lg:block">Payment</span>
           </li>
         </router-link>
+        <!-- Membership with Sub-menu -->
+        <div class="block">
+          <li
+            @click="membershipExpanded = !membershipExpanded"
+            :class="[
+              'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
+              isActive('/dashboard/membership') ||
+              isActive('/dashboard/subscription') ||
+              isActive('/dashboard/memberview')
+                ? 'bg-secondary text-black'
+                : 'bg-primary hover:bg-gradient-to-r hover:bg-secondary text-white ',
+            ]"
+          >
+            <i class="pi pi-user-plus"></i>
+            <span class="md:hidden lg:block">Membership</span>
+            <i
+              class="pi ml-auto mr-2 text-xs transition-transform duration-200"
+              :class="[
+                membershipExpanded ? 'pi-chevron-up' : 'pi-chevron-down',
+                'md:hidden lg:block',
+              ]"
+            ></i>
+          </li>
+          <!-- Sub-menu -->
+          <div
+            v-show="
+              membershipExpanded ||
+              isActive('/dashboard/membership') ||
+              isActive('/dashboard/subscription') ||
+              isActive('/member/payment')
+            "
+            class="space-y-1 mt-1"
+          >
+            <router-link
+              to="/dashboard/membership"
+              class="block"
+            >
+              <li
+                :class="[
+                  'w-full h-8 rounded-l-md lg:ml-[70px] md:ml-[30px] flex items-center gap-2 pl-2 cursor-pointer text-sm',
+                  isActive('/dashboard/membership')
+                    ? 'bg-secondary/70 text-black'
+                    : 'bg-primary/80 hover:bg-secondary/50 text-white/90',
+                ]"
+              >
+                <i class="pi pi-cog text-xs"></i>
+                <span class="md:hidden lg:block">Settings</span>
+              </li>
+            </router-link>
+            <router-link
+              to="/dashboard/subscription"
+              class="block"
+            >
+              <li
+                :class="[
+                  'w-full h-8 rounded-l-md lg:ml-[70px] md:ml-[30px] flex items-center gap-2 pl-2 cursor-pointer text-sm',
+                  isActive('/dashboard/subscription')
+                    ? 'bg-secondary/70 text-black'
+                    : 'bg-primary/80 hover:bg-secondary/50 text-white/90',
+                ]"
+              >
+                <i class="pi pi-sync text-xs"></i>
+                <span class="md:hidden lg:block">Subscription</span>
+              </li>
+            </router-link>
+            <router-link
+              to="/member/payment"
+              class="block"
+            >
+              <li
+                :class="[
+                  'w-full h-8 rounded-l-md lg:ml-[70px] md:ml-[30px] flex items-center gap-2 pl-2 cursor-pointer text-sm',
+                  isActive('/member/payment')
+                    ? 'bg-secondary/70 text-black'
+                    : 'bg-primary/80 hover:bg-secondary/50 text-white/90',
+                ]"
+              >
+                <i class="pi pi-dollar text-xs"></i>
+                <span class="md:hidden lg:block">Payments</span>
+              </li>
+            </router-link>
+          </div>
+        </div>
       </ul>
     </div>
 
@@ -146,6 +261,7 @@
   const appVersion = ref(packageJson.version);
   const analyticsExpanded = ref(false);
   const notificationExpanded = ref(false);
+  const membershipExpanded = ref(false);
 
   const isActive = (path) => {
     return route.path === path || route.path.startsWith(path);

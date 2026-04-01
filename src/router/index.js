@@ -9,7 +9,15 @@ import ServiceView from "../views/Dashboard/ServiceView.vue";
 import CustomerView from "../views/Dashboard/CustomerView.vue";
 import CalenderView from "../views/Dashboard/CalenderView.vue";
 import PaymentView from "../views/Dashboard/PaymentView.vue";
-
+import ResourceView from "../views/Dashboard/ResourceView.vue";
+import CategoryView from "../views/Dashboard/CategoryView.vue";
+import MembershipView from "../views/Dashboard/MembershipView.vue";
+import MembershipCreateView from "../views/Dashboard/MembershipCreateView.vue";
+import SubscriptionView from "../views/Dashboard/SubscriptionView.vue";
+import MembershipRegister from "../views/Landing/MembershipRegister.vue";
+import MemberPayment from "../views/Dashboard/MemberPaymentView.vue";
+import BookingCancel from "../views/Landing/BookingCancelView.vue";
+import MemberProfileView from "../views/Member/MemberProfileView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,8 +61,8 @@ const router = createRouter({
         title: "ECC"}
     },
      {
-      path: "/dashboard/resources",
-      name: "resources",
+      path: "/dashboard/service",
+      name: "service",
       component: ServiceView,
       meta: {
         title: "ECC"}
@@ -80,7 +88,69 @@ const router = createRouter({
       meta: {
         title: "ECC"}
     },
-
+    {
+      path: "/dashboard/resource",
+      name: "resource",
+      component: ResourceView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/dashboard/category",
+      name: "category",
+      component: CategoryView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/dashboard/membership",
+      name: "membership",
+      component: MembershipView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/dashboard/membership/create",
+      name: "membershipcreate",
+      component: MembershipCreateView,
+      meta: {
+        title: "ECC"}
+    },  
+    {
+      path: "/dashboard/subscription",
+      name: "subscription",
+      component: SubscriptionView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/membership/register",
+      name: "membershipregister",
+      component: MembershipRegister,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/booking/cancel",
+      name: "bookingcancel",
+      component: BookingCancel,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/member/payment",
+      name: "memberpayment",
+      component: MemberPayment,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/ecc/profile",
+      name: "memberprofile",
+      component: MemberProfileView,
+      meta: {
+        title: "ECC"}
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
