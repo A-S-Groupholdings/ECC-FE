@@ -30,14 +30,14 @@ const router = createRouter({
         title: "ECC"}
 
     },
-     {
-      path: "/dashboard",
-      name: "login",
-      component: LoginView,
-      meta: {
-        title: "ECC"}
+    //  {
+    //   path: "/dashboard",
+    //   name: "login",
+    //   component: LoginView,
+    //   meta: {
+    //     title: "ECC"}
 
-    },
+    // },
     {
       path: "/dashboard/home",
       name: "dashhome",
