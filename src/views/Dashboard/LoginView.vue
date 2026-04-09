@@ -1,5 +1,5 @@
 <script setup>
-  import Login from "@/components/Dashboard/Login.vue";
+  import Login from "@/components/Dashboard/login.vue";
 </script>
 <template>
   <main class="min-h-screen">
