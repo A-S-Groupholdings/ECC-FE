@@ -17,7 +17,10 @@
       <MobNav />
     </div>
     <Hero />
-    <MemberPortal />
+    <router-link to="/ecc/profile">
+      <MemberPortal />
+    </router-link>
+
     <Booking />
     <Footer />
   </main>

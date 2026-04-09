@@ -53,13 +53,15 @@
       </div>
 
       <!-- account -->
-      <div class="account">
-        <img
-          src="@/assets/account.png"
-          alt=""
-          class="w-[35px] h-[35px]"
-        />
-      </div>
+      <router-link to="/dashboard/home">
+        <div class="account">
+          <img
+            src="@/assets/account.png"
+            alt=""
+            class="w-[35px] h-[35px]"
+          />
+        </div>
+      </router-link>
     </div>
   </nav>
 </template>
