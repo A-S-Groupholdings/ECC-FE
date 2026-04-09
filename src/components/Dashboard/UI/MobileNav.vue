@@ -21,7 +21,7 @@
     <!-- Mobile menu overlay -->
     <div
       v-if="isMenuOpen"
-      class="fixed inset-0 bg-black z-50 pt-20"
+      class="fixed inset-0 bg-primary z-50 pt-20"
     >
       <div class="absolute top-4 right-4">
         <button
@@ -31,297 +31,246 @@
           <i class="pi pi-times text-2xl"></i>
         </button>
       </div>
-      <div class="sub-nav">
-        <ul class="px-4">
+      <div class="sub-nav overflow-y-auto h-[calc(100vh-8rem)]">
+        <ul class="px-4 space-y-2">
           <router-link
-            to="/adminhome"
+            to="/dashboard/home"
             @click="toggleMenu"
+            class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-md flex items-center gap-2 pl-2 mb-2',
-                isActive('/adminhome')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/home')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-home text-white"></i>
-              <span class="text-white">Dashboard</span>
+              <i class="pi pi-home"></i>
+              <span>Dashboard</span>
             </li>
           </router-link>
-          <!-- <router-link
-            to="/users"
+          <router-link
+            to="/dashboard/livesession"
             @click="toggleMenu"
-          >
-            <li
-              :class="[
-                'w-full h-10 rounded-md flex items-center gap-2 pl-2 mb-2',
-                isActive('/users')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
-              ]"
-            >
-              <span class="pi pi-user text-white"></span>
-              <span class="text-white">Users</span>
-            </li>
-          </router-link> -->
-          <router-link
-            to="/supplier"
             class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-                isActive('/supplier')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/livesession')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-truck text-white"></i>
-              <span class="text-white md:hidden lg:block">Supplier</span>
+              <i class="pi pi-chart-line"></i>
+              <span>Live Session</span>
             </li>
           </router-link>
           <router-link
-            to="/category/create"
+            to="/dashboard/appoinment"
+            @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-                isActive('/category/create')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/appoinment')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-objects-column text-white"></i>
-              <span class="text-white md:hidden lg:block">Category</span>
+              <i class="pi pi-calendar-plus"></i>
+              <span>Appointments</span>
             </li>
           </router-link>
           <router-link
-            to="/inventory"
+            to="/dashboard/resource"
+            @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-md flex items-center gap-2 pl-2 mb-2',
-                isActive('/inventory')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/resource')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-sitemap text-white"></i>
-              <span class="text-white">Stock</span>
+              <i class="pi pi-palette"></i>
+              <span>Resource</span>
             </li>
           </router-link>
           <router-link
-            to="/order"
+            to="/dashboard/category"
+            @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-                isActive('/order')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/category')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-shopping-cart text-white"></i>
-              <span class="text-white md:hidden lg:block">Order</span>
+              <i class="pi pi-sitemap"></i>
+              <span>Category</span>
             </li>
           </router-link>
           <router-link
-            to="/productinsights"
+            to="/dashboard/service"
+            @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-                isActive('/productinsights')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/service')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-slack text-white"></i>
-              <span class="text-white md:hidden lg:block"
-                >Product Insights</span
-              >
+              <i class="pi pi-briefcase"></i>
+              <span>Services</span>
             </li>
           </router-link>
-          <!-- Notification Alert Expandable Menu -->
-          <div>
+          <router-link
+            to="/dashboard/customer"
+            @click="toggleMenu"
+            class="block"
+          >
             <li
-              @click="notificationExpanded = !notificationExpanded"
               :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer mt-2',
-                isActive('/notification/alert')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/customer')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
             >
-              <i class="pi pi-bell text-white"></i>
-              <span class="text-white md:hidden lg:block"
-                >Notification Alert</span
-              >
+              <i class="pi pi-users"></i>
+              <span>Customer</span>
+            </li>
+          </router-link>
+          <router-link
+            to="/dashboard/calender"
+            @click="toggleMenu"
+            class="block"
+          >
+            <li
+              :class="[
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/calender')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
+              ]"
+            >
+              <i class="pi pi-calendar"></i>
+              <span>Calender</span>
+            </li>
+          </router-link>
+          <router-link
+            to="/dashboard/payment"
+            @click="toggleMenu"
+            class="block"
+          >
+            <li
+              :class="[
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/payment')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
+              ]"
+            >
+              <i class="pi pi-dollar"></i>
+              <span>Payment</span>
+            </li>
+          </router-link>
+          
+          <!-- Membership with Sub-menu -->
+          <div class="block">
+            <li
+              @click="membershipExpanded = !membershipExpanded"
+              :class="[
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4 cursor-pointer',
+                isActive('/dashboard/membership') || isActive('/dashboard/subscription') || isActive('/member/payment')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
+              ]"
+            >
+              <i class="pi pi-user-plus"></i>
+              <span>Membership</span>
               <i
-                :class="[
-                  'pi text-white ml-auto mr-4 transition-transform duration-200',
-                  notificationExpanded ? 'pi-chevron-up' : 'pi-chevron-down',
-                ]"
+                class="pi ml-auto mr-4 transition-transform duration-200"
+                :class="membershipExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
               ></i>
             </li>
-            <!-- Sub Menu -->
+            <!-- Sub-menu -->
             <div
-              v-show="notificationExpanded"
-              class="bg-black/50"
+              v-show="membershipExpanded"
+              class="space-y-1 mt-1 pl-4"
             >
               <router-link
-                to="/notification/alert"
+                to="/dashboard/membership"
+                @click="toggleMenu"
                 class="block"
               >
                 <li
                   :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/notification/alert')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                    'w-full h-10 rounded-md flex items-center gap-3 pl-4 text-sm',
+                    isActive('/dashboard/membership')
+                      ? 'bg-secondary/70 text-black'
+                      : 'bg-primary/50 hover:bg-secondary/30 text-white/90',
                   ]"
                 >
-                  <i class="pi pi-list text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >View Alert</span
-                  >
+                  <i class="pi pi-cog text-xs"></i>
+                  <span>Settings</span>
                 </li>
               </router-link>
               <router-link
-                to="/notification/create"
+                to="/dashboard/subscription"
+                @click="toggleMenu"
                 class="block"
               >
                 <li
                   :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/notification/create')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                    'w-full h-10 rounded-md flex items-center gap-3 pl-4 text-sm',
+                    isActive('/dashboard/subscription')
+                      ? 'bg-secondary/70 text-black'
+                      : 'bg-primary/50 hover:bg-secondary/30 text-white/90',
                   ]"
                 >
-                  <i class="pi pi-plus text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >Create Alert</span
-                  >
-                </li>
-              </router-link>
-            </div>
-          </div>
-          <!-- Analytics Expandable Menu -->
-          <div>
-            <li
-              @click="analyticsExpanded = !analyticsExpanded"
-              :class="[
-                'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer mt-2',
-                isActive('/report')
-                  ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                  : 'bg-black hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
-              ]"
-            >
-              <i class="pi pi-chart-bar text-white"></i>
-              <span class="text-white md:hidden lg:block">Analytics</span>
-              <i
-                :class="[
-                  'pi text-white ml-auto mr-4 transition-transform duration-200',
-                  analyticsExpanded ? 'pi-chevron-up' : 'pi-chevron-down',
-                ]"
-              ></i>
-            </li>
-            <!-- Sub Menu -->
-            <div
-              v-show="analyticsExpanded"
-              class="bg-black/50"
-            >
-              <router-link
-                to="/report/view"
-                class="block"
-              >
-                <li
-                  :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/report/view')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
-                  ]"
-                >
-                  <i class="pi pi-list text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >Summary</span
-                  >
+                  <i class="pi pi-sync text-xs"></i>
+                  <span>Subscription</span>
                 </li>
               </router-link>
               <router-link
-                to="/report/profit"
+                to="/member/payment"
+                @click="toggleMenu"
                 class="block"
               >
                 <li
                   :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/report/profit')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
+                    'w-full h-10 rounded-md flex items-center gap-3 pl-4 text-sm',
+                    isActive('/member/payment')
+                      ? 'bg-secondary/70 text-black'
+                      : 'bg-primary/50 hover:bg-secondary/30 text-white/90',
                   ]"
                 >
-                  <i class="pi pi-dollar text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >Profit</span
-                  >
-                </li>
-              </router-link>
-              <router-link
-                to="/report/sales"
-                class="block"
-              >
-                <li
-                  :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/report/sales')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
-                  ]"
-                >
-                  <i class="pi pi-file text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >Hamper Report</span
-                  >
-                </li>
-              </router-link>
-              <router-link
-                to="/report/extras"
-                class="block"
-              >
-                <li
-                  :class="[
-                    'w-full h-10 rounded-l-md lg:ml-[70px] md:ml-[40px] flex items-center gap-2 pl-4 cursor-pointer mt-2',
-                    isActive('/report/extras')
-                      ? 'bg-gradient-to-r from-[#f53854] to-[#810a43]'
-                      : 'hover:bg-gradient-to-r hover:from-[#f53854] hover:to-[#810a43]',
-                  ]"
-                >
-                  <i class="pi pi-file text-white text-sm"></i>
-                  <span class="text-white md:hidden lg:block text-sm"
-                    >Indivual Report</span
-                  >
+                  <i class="pi pi-dollar text-xs"></i>
+                  <span>Payments</span>
                 </li>
               </router-link>
             </div>
           </div>
         </ul>
       </div>
+      
       <!-- Version Display at Bottom -->
-      <div
-        class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700"
-      >
-        <div
-          class="flex items-center justify-center gap-2 text-gray-400 text-sm"
-        >
+      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+        <div class="flex items-center justify-center gap-2 text-gray-400 text-sm">
           <i class="pi pi-info-circle"></i>
-          <span class="md:hidden lg:block">Version {{ appVersion }}</span>
+          <span>Version {{ appVersion }}</span>
         </div>
       </div>
     </div>
@@ -329,22 +278,21 @@
 </template>
 
 <script setup>
-  import { ref } from "vue";
-  import "primeicons/primeicons.css";
-  import { useRoute } from "vue-router";
-  import packageJson from "../../../../package.json";
+import { ref } from "vue";
+import "primeicons/primeicons.css";
+import { useRoute } from "vue-router";
+import packageJson from "../../../../package.json";
 
-  const isMenuOpen = ref(false);
-  const route = useRoute();
-  const appVersion = ref(packageJson.version);
-  const analyticsExpanded = ref(false);
-  const notificationExpanded = ref(false);
+const isMenuOpen = ref(false);
+const membershipExpanded = ref(false);
+const route = useRoute();
+const appVersion = ref(packageJson.version);
 
-  function toggleMenu() {
-    isMenuOpen.value = !isMenuOpen.value;
-  }
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
 
-  const isActive = (path) => {
-    return route.path === path || route.path.startsWith(path);
-  };
+const isActive = (path) => {
+  return route.path === path || route.path.startsWith(path);
+};
 </script>
