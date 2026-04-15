@@ -18,6 +18,7 @@ import MembershipRegister from "../views/Landing/MembershipRegister.vue";
 import MemberPayment from "../views/Dashboard/MemberPaymentView.vue";
 import BookingCancel from "../views/Landing/BookingCancelView.vue";
 import MemberProfileView from "../views/Member/MemberProfileView.vue";
+import AdminOtp from "../views/Dashboard/AdminOtp.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -148,6 +149,13 @@ const router = createRouter({
       path: "/ecc/profile",
       name: "memberprofile",
       component: MemberProfileView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/admin/otp",
+      name: "adminotp",
+      component: AdminOtp,
       meta: {
         title: "ECC"}
     },
