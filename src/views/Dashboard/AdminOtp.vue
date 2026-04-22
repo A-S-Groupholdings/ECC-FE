@@ -122,9 +122,11 @@
   import { ref, computed, onMounted } from "vue";
   import { useRouter, useRoute } from "vue-router";
   import { AdminLogin, AdminLoginOtp } from "@/services/apiService.js";
+  import { useAuthStore } from "@/stores/auth.js";
 
   const router = useRouter();
   const route = useRoute();
+  const authStore = useAuthStore();
   const otpDigits = ref(["", "", "", "", "", ""]);
   const otpInputs = ref([]);
   const errorMessage = ref("");
@@ -201,28 +203,22 @@
       const response = await AdminLogin(email.value, otp);
 
       if (response.isSuccess) {
-        // Store tokens securely
-        if (response.user) {
-          // Store non-sensitive user info (NOT tokens)
-          const userInfo = {
-            id: response.user.id,
-            name: response.user.name,
-            email: response.user.email,
-            role: response.user.role,
-          };
-          localStorage.setItem("user", JSON.stringify(userInfo));
+        const data = response.value;
 
-          // Store tokens in memory (lost on refresh but secure)
-          // For persistent sessions, use httpOnly cookies from backend
-          if (response.user.accessToken) {
-            sessionStorage.setItem("accessToken", response.user.accessToken);
-          }
-          if (response.user.refreshToken) {
-            sessionStorage.setItem("refreshToken", response.user.refreshToken);
-          }
+        if (data && data.user) {
+          // Store user in Pinia + localStorage
+          authStore.setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+          });
+
+          // Store tokens in Pinia (accessToken in sessionStorage, refreshToken in cookie)
+          authStore.setTokens(data.accessToken, data.refreshToken);
 
           // Redirect based on role
-          if (response.user.role === "admin") {
+          if (data.user.role === "admin") {
             router.push("/dashboard/home");
           } else {
             router.push("/dashboard");
