@@ -95,6 +95,33 @@
             Please select the <span class="text-red-600">Type</span> First:
           </p>
 
+          <!-- Loading -->
+          <div
+            v-if="isLoadingServices"
+            class="text-gray-500 text-sm mb-4"
+          >
+            <svg
+              class="w-4 h-4 animate-spin inline mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Loading services...
+          </div>
+
           <!-- Form Fields -->
           <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
@@ -106,13 +133,20 @@
               >
               <select
                 v-model="booking.type"
+                @change="
+                  booking.service = '';
+                  booking.lane = '';
+                "
                 class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
               >
                 <option value="">I am a...</option>
-                <option value="individual">Individual</option>
-                <option value="club">Cricket Club</option>
-                <option value="coach">Coach</option>
-                <option value="member">Member</option>
+                <option
+                  v-for="cat in categories"
+                  :key="cat._id"
+                  :value="cat._id"
+                >
+                  {{ cat.categoryName }}
+                </option>
               </select>
             </div>
             <!-- Service -->
@@ -122,14 +156,17 @@
               >
               <select
                 v-model="booking.service"
+                @change="booking.lane = ''"
                 class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
               >
                 <option value="">Select service</option>
-                <option value="lane">Lane Only Booking ($40)</option>
-                <option value="lane-machine">
-                  Lane + Bowling Machine ($60)
+                <option
+                  v-for="svc in filteredServices"
+                  :key="svc._id"
+                  :value="svc._id"
+                >
+                  {{ svc.title }} (A${{ svc.price }})
                 </option>
-                <option value="coaching">Coaching Session ($80)</option>
               </select>
             </div>
             <!-- Lane -->
@@ -143,18 +180,18 @@
               >
                 <option value="">Please select a Lane</option>
                 <option
-                  v-for="n in 8"
-                  :key="n"
-                  :value="n"
+                  v-for="res in serviceResources"
+                  :key="res._id"
+                  :value="res._id"
                 >
-                  Lane {{ n }}
+                  {{ res.title }}
                 </option>
               </select>
             </div>
             <!-- Duration -->
             <div>
               <label class="block text-[#1a3a35] font-semibold mb-2"
-                >Duration (Hours)</label
+                >Duration</label
               >
               <div
                 class="flex items-center border border-gray-300 rounded bg-white"
@@ -162,7 +199,10 @@
                 <button
                   type="button"
                   @click="decreaseDuration"
-                  :disabled="duration <= minDuration"
+                  :disabled="
+                    durationMultiplier <= minDurationMultiplier ||
+                    !selectedService
+                  "
                   class="px-4 py-3 text-[#1a3a35] font-bold hover:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                   -
@@ -174,12 +214,21 @@
                 <button
                   type="button"
                   @click="increaseDuration"
-                  :disabled="duration >= maxDuration"
+                  :disabled="
+                    durationMultiplier >= maxDurationMultiplier ||
+                    !selectedService
+                  "
                   class="px-4 py-3 text-[#1a3a35] font-bold hover:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                   +
                 </button>
               </div>
+              <p
+                v-if="selectedService"
+                class="text-xs text-gray-500 mt-1 text-center"
+              >
+                A${{ totalPrice }} total
+              </p>
             </div>
           </div>
 
@@ -191,6 +240,7 @@
             <input
               v-model="booking.date"
               type="date"
+              :min="todayStr"
               class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
             />
           </div>
@@ -217,12 +267,8 @@
         >
           <p class="text-gray-700 mb-6">
             Below you can find a list of available time slots for
-            <span class="font-semibold">{{
-              booking.service === "lane"
-                ? "Lane Only Booking ($40)"
-                : booking.service
-            }}</span>
-            by <span class="font-semibold">Lane {{ booking.lane }}</span
+            <span class="font-semibold">{{ selectedServiceTitle }}</span>
+            by <span class="font-semibold">{{ selectedResourceTitle }}</span
             >.<br />
             Click on a time slot to proceed with booking.
           </p>
@@ -317,27 +363,67 @@
                 <span class="font-semibold">{{ selectedDateFormatted }}</span>
               </div>
 
+              <!-- Loading -->
+              <div
+                v-if="isLoadingSlots"
+                class="border border-gray-200 rounded-b-lg p-6 text-center text-gray-500 text-sm"
+              >
+                <svg
+                  class="w-5 h-5 animate-spin inline mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading slots...
+              </div>
+
               <!-- Time Slots List -->
               <div
+                v-else
                 class="border border-gray-200 rounded-b-lg max-h-[400px] overflow-y-auto"
               >
+                <div
+                  v-if="timeSlots.length === 0"
+                  class="p-6 text-center text-gray-500 text-sm"
+                >
+                  No available slots for this date.
+                </div>
                 <button
                   v-for="slot in timeSlots"
                   :key="slot.time"
-                  @click="selectTimeSlot(slot)"
-                  class="w-full flex items-center justify-center gap-3 p-4 border-b border-gray-100 hover:bg-green-50 transition-colors"
-                  :class="
+                  @click="slot.available ? selectTimeSlot(slot) : null"
+                  :disabled="!slot.available"
+                  class="w-full flex items-center justify-center gap-3 p-4 border-b border-gray-100 transition-colors"
+                  :class="[
                     booking.selectedTime === slot.time
                       ? 'bg-green-100 border-[#1a3a35]'
-                      : ''
-                  "
+                      : '',
+                    slot.available
+                      ? 'hover:bg-green-50 cursor-pointer'
+                      : 'bg-gray-50 cursor-not-allowed opacity-60',
+                  ]"
                 >
                   <div
                     class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
                     :class="
                       booking.selectedTime === slot.time
                         ? 'border-[#1a3a35] bg-[#1a3a35]'
-                        : 'border-gray-300'
+                        : slot.available
+                          ? 'border-gray-300'
+                          : 'border-gray-200 bg-gray-100'
                     "
                   >
                     <div
@@ -345,7 +431,17 @@
                       class="w-2 h-2 bg-white rounded-full"
                     ></div>
                   </div>
-                  <span class="text-gray-700 font-medium">{{ slot.time }}</span>
+                  <span
+                    class="font-medium"
+                    :class="slot.available ? 'text-gray-700' : 'text-gray-400'"
+                  >
+                    {{ slot.time }}
+                    <span
+                      v-if="!slot.available"
+                      class="text-xs ml-1"
+                      >(Unavailable)</span
+                    >
+                  </span>
                 </button>
               </div>
             </div>
@@ -376,16 +472,13 @@
         >
           <p class="text-gray-700 mb-6">
             You selected a booking for
-            <span class="font-semibold">{{
-              booking.service === "lane"
-                ? "Lane Only Booking ($40)"
-                : booking.service
-            }}</span>
-            by <span class="font-semibold">Lane {{ booking.lane }}</span> at
+            <span class="font-semibold">{{ selectedServiceTitle }}</span>
+            by <span class="font-semibold">{{ selectedResourceTitle }}</span> at
             <span class="font-semibold">{{ booking.selectedTime }}</span> on
             <span class="font-semibold">{{ selectedDateFormatted }}</span
             >. The price for the service is
-            <span class="font-semibold">A$40.00</span>.<br />
+            <span class="font-semibold">A${{ totalPrice.toFixed(2) }}</span
+            >.<br />
             Please provide your details in the form below to proceed with
             booking.
           </p>
@@ -453,6 +546,14 @@
           <!-- Divider -->
           <div class="border-t border-gray-300 mb-6"></div>
 
+          <!-- Registration Error -->
+          <div
+            v-if="registrationError"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6"
+          >
+            {{ registrationError }}
+          </div>
+
           <!-- Navigation Buttons -->
           <div class="flex justify-between">
             <button
@@ -462,11 +563,12 @@
               BACK
             </button>
             <button
-              @click="nextStep"
-              :disabled="!isStep3Valid"
+              @click="registerUser"
+              :disabled="!isStep3Valid || isRegisteringUser"
               class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              NEXT
+              <span v-if="isRegisteringUser">Registering...</span>
+              <span v-else>NEXT</span>
             </button>
           </div>
         </div>
@@ -483,15 +585,11 @@
             <div class="bg-gray-50 rounded-lg p-6 mb-6">
               <h4 class="font-semibold text-gray-700 mb-4">Order Summary</h4>
               <div class="flex justify-between mb-2">
-                <span class="text-gray-600">{{
-                  booking.service === "lane"
-                    ? "Lane Only Booking"
-                    : booking.service
-                }}</span>
-                <span class="font-medium">A$40.00</span>
+                <span class="text-gray-600">{{ selectedServiceTitle }}</span>
+                <span class="font-medium">A${{ totalPrice.toFixed(2) }}</span>
               </div>
               <div class="flex justify-between mb-2">
-                <span class="text-gray-600">Lane {{ booking.lane }}</span>
+                <span class="text-gray-600">{{ selectedResourceTitle }}</span>
                 <span class="font-medium">{{ booking.selectedTime }}</span>
               </div>
               <div class="flex justify-between mb-2">
@@ -501,7 +599,9 @@
               <div class="border-t border-gray-300 my-3"></div>
               <div class="flex justify-between">
                 <span class="font-semibold">Total</span>
-                <span class="font-bold text-[#1a3a35]">A$40.00</span>
+                <span class="font-bold text-[#1a3a35]"
+                  >A${{ totalPrice.toFixed(2) }}</span
+                >
               </div>
             </div>
 
@@ -568,20 +668,39 @@
               </div>
             </div>
 
+            <!-- Booking Error -->
+            <div
+              v-if="bookingError"
+              class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6"
+            >
+              {{ bookingError }}
+            </div>
+
             <!-- Navigation Buttons -->
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center">
               <button
                 @click="prevStep"
                 class="bg-gray-200 text-gray-700 px-8 py-3 rounded font-semibold hover:bg-gray-300 transition-colors"
               >
                 BACK
               </button>
-              <button
-                @click="nextStep"
-                class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors"
-              >
-                PAY A$40.00
-              </button>
+              <div class="flex gap-3">
+                <button
+                  @click="completeBooking"
+                  :disabled="isCreatingBooking"
+                  class="bg-white border-2 border-[#1a3a35] text-[#1a3a35] px-6 py-3 rounded font-semibold hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  Pay Later
+                </button>
+                <button
+                  @click="completeBooking"
+                  :disabled="isCreatingBooking"
+                  class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  <span v-if="isCreatingBooking">Processing...</span>
+                  <span v-else>PAY A${{ totalPrice.toFixed(2) }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -635,7 +754,7 @@
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Lane:</span>
-              <span class="font-semibold">Lane {{ booking.lane }}</span>
+              <span class="font-semibold">{{ selectedResourceTitle }}</span>
             </div>
           </div>
 
@@ -652,23 +771,32 @@
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted, watch } from "vue";
+  import {
+    GetVisibleServices,
+    GetBookingSlots,
+    RegisterBookingUser,
+    CreateBooking,
+  } from "@/services/apiService.js";
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
   const currentStep = ref(0);
 
-  const duration = ref(1);
-  const minDuration = 1;
-  const maxDuration = 9;
+  const durationMultiplier = ref(1);
+  const maxTotalHours = 12.5; // max 12 hours 30 minutes
 
   const currentDate = ref(new Date());
   const selectedDate = ref(new Date());
+
+  // Visible services from API
+  const visibleServices = ref([]);
+  const isLoadingServices = ref(false);
 
   const booking = ref({
     type: "",
     service: "",
     lane: "",
-    date: "",
+    date: formatDateInput(new Date()),
     selectedTime: null,
     fullName: "",
     phone: "",
@@ -676,13 +804,122 @@
     notes: "",
   });
 
-  const formattedDuration = computed(() => {
-    const hours = Math.floor(duration.value);
-    const minutes = (duration.value % 1) * 60;
-    if (minutes === 0) {
-      return `${hours}h`;
+  function formatDateInput(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  const todayStr = formatDateInput(new Date());
+
+  async function fetchVisibleServices() {
+    isLoadingServices.value = true;
+    try {
+      const response = await GetVisibleServices();
+      if (response.isSuccess) {
+        visibleServices.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching visible services:", error);
+    } finally {
+      isLoadingServices.value = false;
     }
+  }
+
+  onMounted(() => {
+    fetchVisibleServices();
+  });
+
+  // Unique categories from visible services
+  const categories = computed(() => {
+    const map = new Map();
+    visibleServices.value.forEach((s) => {
+      const cat = s.categoryID;
+      if (cat && !map.has(cat._id)) {
+        map.set(cat._id, cat);
+      }
+    });
+    return Array.from(map.values());
+  });
+
+  // Services filtered by selected category
+  const filteredServices = computed(() => {
+    if (!booking.value.type) return visibleServices.value;
+    return visibleServices.value.filter(
+      (s) => s.categoryID?._id === booking.value.type,
+    );
+  });
+
+  // Selected service object
+  const selectedService = computed(() => {
+    if (!booking.value.service) return null;
+    return (
+      visibleServices.value.find((s) => s._id === booking.value.service) || null
+    );
+  });
+
+  // Resources (lanes) from selected service
+  const serviceResources = computed(() => {
+    return selectedService.value?.resourceIDs || [];
+  });
+
+  // Parse duration string like "30m" or "1h" into minutes
+  const baseDurationMinutes = computed(() => {
+    const dur = selectedService.value?.duration || "30m";
+    if (dur.includes("h")) {
+      const hours = parseFloat(dur);
+      return Math.round(hours * 60);
+    }
+    const mins = parseInt(dur);
+    return isNaN(mins) ? 30 : mins;
+  });
+
+  // Total duration in minutes
+  const totalDurationMinutes = computed(() => {
+    return durationMultiplier.value * baseDurationMinutes.value;
+  });
+
+  const minDurationMultiplier = computed(() => {
+    if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
+    return Math.ceil(60 / baseDurationMinutes.value); // minimum 1 hour
+  });
+
+  const maxDurationMultiplier = computed(() => {
+    if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
+    return Math.floor((maxTotalHours * 60) / baseDurationMinutes.value);
+  });
+
+  // Reset duration to minimum (1 hour) whenever service changes
+  watch(selectedService, () => {
+    durationMultiplier.value = minDurationMultiplier.value || 1;
+  });
+
+  const selectedServiceTitle = computed(() => {
+    return selectedService.value?.title || booking.value.service;
+  });
+
+  const selectedResourceTitle = computed(() => {
+    const res = serviceResources.value.find(
+      (r) => r._id === booking.value.lane,
+    );
+    return res?.title || booking.value.lane;
+  });
+
+  // Format total duration
+  const formattedDuration = computed(() => {
+    const total = totalDurationMinutes.value;
+    const hours = Math.floor(total / 60);
+    const minutes = total % 60;
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
     return `${hours}h ${minutes}m`;
+  });
+
+  // Total price scales with duration multiplier
+  const totalPrice = computed(() => {
+    const basePrice = selectedService.value?.price || 0;
+    return basePrice * durationMultiplier.value;
   });
 
   const isStep1Valid = computed(() => {
@@ -740,34 +977,123 @@
     return days;
   });
 
-  const timeSlots = [
-    { time: "9:30 am", available: true },
-    { time: "10:00 am", available: true },
-    { time: "10:30 am", available: true },
-    { time: "11:00 am", available: true },
-    { time: "11:30 am", available: true },
-    { time: "12:00 pm", available: true },
-    { time: "12:30 pm", available: true },
-    { time: "1:00 pm", available: true },
-    { time: "1:30 pm", available: true },
-    { time: "2:00 pm", available: true },
-    { time: "2:30 pm", available: true },
-    { time: "3:00 pm", available: true },
-    { time: "3:30 pm", available: true },
-    { time: "4:00 pm", available: true },
-    { time: "4:30 pm", available: true },
-    { time: "5:00 pm", available: true },
-  ];
+  const timeSlots = ref([]);
+  const isLoadingSlots = ref(false);
+
+  async function fetchBookingSlots() {
+    if (!booking.value.date || !booking.value.lane) return;
+    isLoadingSlots.value = true;
+    try {
+      const response = await GetBookingSlots(
+        booking.value.date,
+        booking.value.lane,
+      );
+      if (response.isSuccess) {
+        timeSlots.value = response.value || [];
+      } else {
+        timeSlots.value = [];
+      }
+    } catch (error) {
+      console.error("Error fetching booking slots:", error);
+      timeSlots.value = [];
+    } finally {
+      isLoadingSlots.value = false;
+    }
+  }
+
+  // Fetch slots whenever user enters Step 2
+  watch(currentStep, (step) => {
+    if (step === 1) {
+      fetchBookingSlots();
+    }
+  });
+
+  const registeredUserId = ref("");
+  const registrationError = ref("");
+  const isRegisteringUser = ref(false);
+  const isCreatingBooking = ref(false);
+  const bookingError = ref("");
+
+  async function registerUser() {
+    registrationError.value = "";
+    isRegisteringUser.value = true;
+    try {
+      const response = await RegisterBookingUser({
+        name: booking.value.fullName,
+        email: booking.value.email,
+        categoryId: booking.value.type,
+        phoneNumber: booking.value.phone,
+      });
+      if (response.isSuccess && response.value?.userId) {
+        registeredUserId.value = response.value.userId;
+        currentStep.value++;
+      } else {
+        registrationError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Registration failed.";
+      }
+    } catch (error) {
+      registrationError.value = "Network error. Please try again.";
+    } finally {
+      isRegisteringUser.value = false;
+    }
+  }
+
+  function parseTimeToMinutes(timeStr) {
+    const [time, period] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (period === "pm" && hours !== 12) hours += 12;
+    if (period === "am" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  function formatMinutesToTime(totalMinutes) {
+    const hours = Math.floor(totalMinutes / 60) % 24;
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  }
+
+  async function completeBooking() {
+    bookingError.value = "";
+    isCreatingBooking.value = true;
+    try {
+      const startMins = parseTimeToMinutes(
+        booking.value.selectedTime.toLowerCase(),
+      );
+      const endMins = startMins + totalDurationMinutes.value;
+      const response = await CreateBooking({
+        userId: registeredUserId.value,
+        categoryId: booking.value.type,
+        resourceId: booking.value.lane,
+        duration: totalDurationMinutes.value,
+        date: booking.value.date,
+        startTime: formatMinutesToTime(startMins),
+        endTime: formatMinutesToTime(endMins),
+        note: booking.value.notes || "",
+      });
+      if (response.isSuccess) {
+        currentStep.value++;
+      } else {
+        bookingError.value =
+          response.errorMessage || response.userMessage || "Booking failed.";
+      }
+    } catch (error) {
+      bookingError.value = "Network error. Please try again.";
+    } finally {
+      isCreatingBooking.value = false;
+    }
+  }
 
   function increaseDuration() {
-    if (duration.value < maxDuration) {
-      duration.value += 0.5;
+    if (durationMultiplier.value < maxDurationMultiplier.value) {
+      durationMultiplier.value += 1;
     }
   }
 
   function decreaseDuration() {
-    if (duration.value > minDuration) {
-      duration.value -= 0.5;
+    if (durationMultiplier.value > minDurationMultiplier.value) {
+      durationMultiplier.value -= 1;
     }
   }
 
@@ -834,14 +1160,18 @@
       type: "",
       service: "",
       lane: "",
-      date: "",
+      date: formatDateInput(new Date()),
       selectedTime: null,
       fullName: "",
       phone: "",
       email: "",
       notes: "",
     };
-    duration.value = 1;
+    durationMultiplier.value = 1;
+    registeredUserId.value = "";
+    registrationError.value = "";
+    bookingError.value = "";
+    timeSlots.value = [];
   }
 </script>
 

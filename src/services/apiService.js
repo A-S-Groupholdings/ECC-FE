@@ -158,4 +158,122 @@ export const AdminLogin = async (email, otp) => {
 
 
 
+  export const GetCategories = async () => {
+    try {
+      const response = await apiService.get('/categories');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+  };
+
+  export const GetServices = async () => {
+    try {
+      const response = await apiService.get('/services');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      throw error;
+    }
+  };
+
+  export const GetVisibleServices = async () => {
+    try {
+      const response = await apiService.get('/services/visible');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching visible services:', error);
+      throw error;
+    }
+  };
+
+  export const GetServiceById = async (id) => {
+    try {
+      const response = await apiService.get(`/services/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching service:', error);
+      throw error;
+    }
+  };
+
+  export const CreateService = async (payload) => {
+    try {
+      const response = await apiService.post('/services', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating service:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const UpdateService = async (id, payload) => {
+    try {
+      const response = await apiService.put(`/services/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating service:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const DeleteService = async (id) => {
+    try {
+      const response = await apiService.delete(`/services/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetBookingSlots = async (date, resourceId) => {
+    try {
+      const response = await apiService.post('/bookings/bookingSlot', {
+        date,
+        resourceId,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching booking slots:', error);
+      throw error;
+    }
+  };
+
+  export const RegisterBookingUser = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/bookingUser', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error registering booking user:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const CreateBooking = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 export default apiService;

@@ -13,7 +13,8 @@
           Categories
         </h1>
         <button
-          class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+          @click="showCreateModal = true"
+          class="flex items-center gap-2 bg-[#1a3a35] text-white px-4 py-2 rounded-lg hover:bg-[#2a4a45] transition-colors text-sm font-medium"
         >
           <svg
             class="w-4 h-4"
@@ -61,6 +62,27 @@
         </div>
       </div>
 
+      <!-- Error Message -->
+      <div
+        v-if="errorMessage"
+        class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"
+      >
+        <svg
+          class="w-5 h-5 text-red-500 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+        <p class="text-sm text-red-700">{{ errorMessage }}</p>
+      </div>
+
       <!-- Categories Table -->
       <div
         class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
@@ -77,6 +99,24 @@
                     class="rounded border-gray-300"
                   />
                 </th>
+                <!-- <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  <div class="flex items-center gap-1">
+                    Category ID
+                    <svg
+                      class="w-3 h-3 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5 10l5-5 5 5H5z"></path>
+                      <path
+                        d="M5 10l5 5 5-5H5z"
+                        opacity="0.4"
+                      ></path>
+                    </svg>
+                  </div>
+                </th> -->
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
@@ -114,6 +154,24 @@
                   </div>
                 </th>
                 <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  <div class="flex items-center gap-1">
+                    Updated Date
+                    <svg
+                      class="w-3 h-3 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5 10l5-5 5 5H5z"></path>
+                      <path
+                        d="M5 10l5 5 5-5H5z"
+                        opacity="0.4"
+                      ></path>
+                    </svg>
+                  </div>
+                </th>
+                <th
                   class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
                   Status
@@ -126,9 +184,40 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
+              <tr v-if="isLoading">
+                <td
+                  colspan="7"
+                  class="px-6 py-12 text-center"
+                >
+                  <div class="flex items-center justify-center gap-2">
+                    <svg
+                      class="w-5 h-5 text-[#1a3a35] animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span class="text-gray-500 text-sm"
+                      >Loading categories...</span
+                    >
+                  </div>
+                </td>
+              </tr>
               <tr
                 v-for="category in filteredCategories"
-                :key="category.id"
+                :key="category._id"
                 class="hover:bg-gray-50 transition-colors"
               >
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -137,6 +226,11 @@
                     class="rounded border-gray-300"
                   />
                 </td>
+                <!-- <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono text-gray-600">{{
+                    category.categoryID
+                  }}</span>
+                </td> -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center gap-3">
                     <div
@@ -156,13 +250,17 @@
                         ></path>
                       </svg>
                     </div>
-                    <span class="text-sm font-semibold text-gray-900">{{
-                      category.name
-                    }}</span>
+                    <span
+                      class="text-sm font-semibold text-gray-900 capitalize"
+                      >{{ category.categoryName }}</span
+                    >
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {{ category.createdDate }}
+                  {{ formatDate(category.createDate) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {{ formatDate(category.updateDate) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center justify-center">
@@ -170,7 +268,7 @@
                       @click="toggleCategory(category)"
                       class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
                       :class="
-                        category.active
+                        category.isActive
                           ? 'bg-green-500 focus:ring-green-500'
                           : 'bg-gray-300 focus:ring-gray-300'
                       "
@@ -178,23 +276,24 @@
                       <span
                         class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
                         :class="
-                          category.active ? 'translate-x-6' : 'translate-x-1'
+                          category.isActive ? 'translate-x-6' : 'translate-x-1'
                         "
                       ></span>
                     </button>
                     <span
                       class="ml-2 text-xs font-semibold w-12"
                       :class="
-                        category.active ? 'text-green-600' : 'text-gray-500'
+                        category.isActive ? 'text-green-600' : 'text-gray-500'
                       "
                     >
-                      {{ category.active ? "ON" : "OFF" }}
+                      {{ category.isActive ? "ON" : "OFF" }}
                     </span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                   <div class="flex items-center justify-center gap-2">
                     <button
+                      @click="openEditModal(category._id)"
                       class="flex items-center gap-1 bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
                     >
                       <svg
@@ -213,9 +312,12 @@
                       Edit
                     </button>
                     <button
-                      class="flex items-center gap-1 bg-red-50 border border-red-200 text-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-100 transition-colors"
+                      @click="deleteCategory(category._id)"
+                      :disabled="isDeleting === category._id"
+                      class="flex items-center gap-1 bg-red-50 border border-red-200 text-red-600 px-3 py-1.5 rounded-lg text-sm hover:bg-red-100 transition-colors disabled:opacity-50"
                     >
                       <svg
+                        v-if="isDeleting !== category._id"
                         class="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
@@ -226,6 +328,26 @@
                           stroke-linejoin="round"
                           stroke-width="2"
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                      </svg>
+                      <svg
+                        v-else
+                        class="w-4 h-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        ></circle>
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
                       Delete
@@ -259,55 +381,343 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Category Modal -->
+    <div
+      v-if="showCreateModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="showCreateModal = false"
+    >
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-gray-900">Create Category</h2>
+          <button
+            @click="showCreateModal = false"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-5 space-y-5">
+          <!-- Category Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Category Name</label>
+            <input
+              v-model="newCategory.categoryName"
+              type="text"
+              placeholder="e.g. Coach"
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
+            />
+          </div>
+
+          <!-- Active Toggle -->
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium text-gray-700">Active Status</label>
+            <button
+              @click="newCategory.isActive = !newCategory.isActive"
+              class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none"
+              :class="newCategory.isActive ? 'bg-[#1a3a35]' : 'bg-gray-300'"
+            >
+              <span
+                class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
+                :class="newCategory.isActive ? 'translate-x-6' : 'translate-x-1'"
+              ></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            @click="showCreateModal = false"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="createCategory"
+            :disabled="isCreating || !newCategory.categoryName.trim()"
+            class="px-5 py-2 bg-[#1a3a35] text-white rounded-lg text-sm font-medium hover:bg-[#2a4a45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg v-if="isCreating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isCreating ? 'Creating...' : 'Create Category' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="showEditModal = false"
+    >
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 class="text-lg font-bold text-gray-900">Edit Category</h2>
+          <button
+            @click="showEditModal = false"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-5 space-y-5">
+          <!-- Loading State -->
+          <div v-if="isLoadingEdit" class="py-8 text-center">
+            <svg class="w-6 h-6 text-[#1a3a35] animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm text-gray-500">Loading category...</span>
+          </div>
+
+          <template v-else>
+            <!-- Category Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Category Name</label>
+              <input
+                v-model="editingCategory.categoryName"
+                type="text"
+                placeholder="e.g. Coach"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
+              />
+            </div>
+
+            <!-- Active Toggle -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-gray-700">Active Status</label>
+              <button
+                @click="editingCategory.isActive = !editingCategory.isActive"
+                class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none"
+                :class="editingCategory.isActive ? 'bg-[#1a3a35]' : 'bg-gray-300'"
+              >
+                <span
+                  class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
+                  :class="editingCategory.isActive ? 'translate-x-6' : 'translate-x-1'"
+                ></span>
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            @click="showEditModal = false"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="updateCategory"
+            :disabled="isUpdating || !editingCategory.categoryName?.trim()"
+            class="px-5 py-2 bg-[#1a3a35] text-white rounded-lg text-sm font-medium hover:bg-[#2a4a45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg v-if="isUpdating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
+  import apiService from "@/services/apiService.js";
 
   const searchQuery = ref("");
+  const categories = ref([]);
+  const isLoading = ref(false);
+  const errorMessage = ref("");
 
-  const categories = ref([
-    {
-      id: 1,
-      name: "Individuals Less than 6 Players",
-      createdDate: "January 10, 2024",
-      active: true,
-    },
-    {
-      id: 2,
-      name: "Individuals 6+ Players",
-      createdDate: "January 10, 2024",
-      active: true,
-    },
-    {
-      id: 3,
-      name: "Cricket Club",
-      createdDate: "January 15, 2024",
-      active: true,
-    },
-    {
-      id: 4,
-      name: "Coach",
-      createdDate: "January 20, 2024",
-      active: true,
-    },
-    {
-      id: 5,
-      name: "Member",
-      createdDate: "February 1, 2024",
-      active: false,
-    },
-  ]);
+  // Fetch categories from API
+  async function fetchCategories() {
+    isLoading.value = true;
+    errorMessage.value = "";
+
+    try {
+      const response = await apiService.get("/categories");
+
+      if (response.data.isSuccess) {
+        categories.value = response.data.value || [];
+      } else {
+        errorMessage.value =
+          response.data.userMessage || "Failed to load categories.";
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      errorMessage.value =
+        "An error occurred while loading categories. Please try again.";
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   const filteredCategories = computed(() => {
     if (!searchQuery.value) return categories.value;
     const query = searchQuery.value.toLowerCase();
-    return categories.value.filter((c) => c.name.toLowerCase().includes(query));
+    return categories.value.filter(
+      (c) =>
+        c.categoryName?.toLowerCase().includes(query) ||
+        c.categoryID?.toLowerCase().includes(query),
+    );
   });
 
   function toggleCategory(category) {
-    category.active = !category.active;
+    category.isActive = !category.isActive;
   }
+
+  function formatDate(dateString) {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  // Create Category Modal State
+  const showCreateModal = ref(false);
+  const isCreating = ref(false);
+  const newCategory = ref({
+    categoryName: "",
+    isActive: true,
+  });
+
+  async function createCategory() {
+    if (!newCategory.value.categoryName.trim()) return;
+
+    isCreating.value = true;
+    try {
+      const response = await apiService.post("/categories", newCategory.value);
+
+      if (response.data.isSuccess) {
+        showCreateModal.value = false;
+        await fetchCategories();
+
+        // Reset form
+        newCategory.value = {
+          categoryName: "",
+          isActive: true,
+        };
+      } else {
+        alert(response.data.userMessage || "Failed to create category.");
+      }
+    } catch (error) {
+      console.error("Error creating category:", error);
+      alert("An error occurred while creating the category.");
+    } finally {
+      isCreating.value = false;
+    }
+  }
+
+  // Edit Category
+  const showEditModal = ref(false);
+  const isLoadingEdit = ref(false);
+  const isUpdating = ref(false);
+  const editingCategoryId = ref("");
+  const editingCategory = ref({
+    categoryName: "",
+    isActive: true,
+  });
+
+  async function openEditModal(id) {
+    editingCategoryId.value = id;
+    showEditModal.value = true;
+    isLoadingEdit.value = true;
+
+    try {
+      const response = await apiService.get(`/categories/${id}`);
+
+      if (response.data.isSuccess) {
+        const data = response.data.value;
+        editingCategory.value = {
+          categoryName: data.categoryName || "",
+          isActive: data.isActive ?? true,
+        };
+      } else {
+        alert(response.data.userMessage || "Failed to load category.");
+        showEditModal.value = false;
+      }
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      alert("An error occurred while loading the category.");
+      showEditModal.value = false;
+    } finally {
+      isLoadingEdit.value = false;
+    }
+  }
+
+  async function updateCategory() {
+    if (!editingCategory.value.categoryName.trim()) return;
+
+    isUpdating.value = true;
+    try {
+      const response = await apiService.put(
+        `/categories/${editingCategoryId.value}`,
+        editingCategory.value,
+      );
+
+      if (response.data.isSuccess) {
+        showEditModal.value = false;
+        await fetchCategories();
+      } else {
+        alert(response.data.userMessage || "Failed to update category.");
+      }
+    } catch (error) {
+      console.error("Error updating category:", error);
+      alert("An error occurred while updating the category.");
+    } finally {
+      isUpdating.value = false;
+    }
+  }
+
+  // Delete Category
+  const isDeleting = ref("");
+
+  async function deleteCategory(id) {
+    if (!confirm("Are you sure you want to delete this category?")) return;
+
+    isDeleting.value = id;
+    try {
+      const response = await apiService.delete(`/categories/${id}`);
+
+      if (response.data.isSuccess) {
+        await fetchCategories();
+      } else {
+        alert(response.data.userMessage || "Failed to delete category.");
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      alert("An error occurred while deleting the category.");
+    } finally {
+      isDeleting.value = "";
+    }
+  }
+
+  onMounted(() => {
+    fetchCategories();
+  });
 </script>
