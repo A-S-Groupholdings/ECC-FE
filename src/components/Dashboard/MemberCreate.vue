@@ -292,24 +292,84 @@
             </div>
           </div>
 
-          <!-- Billing Period (show if subscription) -->
-          <div
-            v-if="form.type === 'subscription'"
-            class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
-          >
+          <!-- Service Dropdown -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
             <label class="text-sm font-semibold text-gray-700 md:text-right">
-              Billing Period :
+              Service :
+            </label>
+            <div class="md:col-span-3 relative">
+              <div class="relative">
+                <input
+                  v-model="serviceSearchQuery"
+                  @focus="showServiceDropdown = true"
+                  @input="showServiceDropdown = true"
+                  @blur="setTimeout(() => (showServiceDropdown = false), 150)"
+                  type="text"
+                  placeholder="Search and select a service..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+                <button
+                  v-if="form.serviceId"
+                  @click="clearService"
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              <!-- Dropdown -->
+              <div
+                v-if="showServiceDropdown"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto"
+              >
+                <div
+                  v-if="filteredServices.length === 0"
+                  class="px-4 py-3 text-sm text-gray-500"
+                >
+                  No services found
+                </div>
+                <div
+                  v-for="service in filteredServices"
+                  :key="service._id"
+                  @click="selectService(service)"
+                  class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                >
+                  <div class="text-sm font-medium text-gray-800">
+                    {{ service.title }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ service.categoryID?.categoryName || "No Category" }} —
+                    A${{ service.price }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Duration Days -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Duration (Days) <span class="text-red-500">*</span> :
             </label>
             <div class="md:col-span-3">
-              <select
-                v-model="form.billingPeriod"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] transition-all"
-              >
-                <option value="yearly">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
+              <input
+                v-model="form.durationDays"
+                type="number"
+                placeholder="Enter duration in days"
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
             </div>
           </div>
 
@@ -348,20 +408,30 @@
 
         <!-- Footer -->
         <div
-          class="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3"
+          class="px-8 py-6 bg-gray-50 border-t border-gray-100 flex flex-col gap-4"
         >
-          <button
-            @click="$router.back()"
-            class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+          <div
+            v-if="submitError"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
           >
-            Cancel
-          </button>
-          <button
-            @click="createMembership"
-            class="px-6 py-3 bg-gradient-to-r from-[#1a3a35] to-green-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg"
-          >
-            Create Membership
-          </button>
+            {{ submitError }}
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="$router.back()"
+              class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="createMembership"
+              :disabled="isSubmitting"
+              class="px-6 py-3 bg-gradient-to-r from-[#1a3a35] to-green-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <span v-if="isSubmitting">Creating...</span>
+              <span v-else>Create Membership</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -369,8 +439,9 @@
 </template>
 
 <script setup>
-  import { ref } from "vue";
+  import { ref, computed, onMounted } from "vue";
   import { useRouter } from "vue-router";
+  import { CreateMembership, GetServices } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
   const router = useRouter();
@@ -380,14 +451,90 @@
     description: "",
     type: "free",
     price: "",
-    billingPeriod: "monthly",
+    serviceId: "",
+    durationDays: 30,
     active: true,
   });
 
-  function createMembership() {
-    // Handle form submission
-    console.log("Creating membership:", form.value);
-    // Navigate back or show success
-    router.back();
+  const isSubmitting = ref(false);
+  const submitError = ref("");
+
+  // Service dropdown
+  const services = ref([]);
+  const serviceSearchQuery = ref("");
+  const showServiceDropdown = ref(false);
+  const selectedServiceTitle = ref("");
+
+  async function fetchServices() {
+    try {
+      const response = await GetServices();
+      if (response.isSuccess) {
+        services.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  }
+
+  onMounted(() => {
+    fetchServices();
+  });
+
+  const filteredServices = computed(() => {
+    if (!serviceSearchQuery.value) return services.value;
+    const query = serviceSearchQuery.value.toLowerCase();
+    return services.value.filter((s) =>
+      s.title?.toLowerCase().includes(query),
+    );
+  });
+
+  function selectService(service) {
+    form.value.serviceId = service._id;
+    selectedServiceTitle.value = service.title;
+    serviceSearchQuery.value = service.title;
+    showServiceDropdown.value = false;
+  }
+
+  function clearService() {
+    form.value.serviceId = "";
+    selectedServiceTitle.value = "";
+    serviceSearchQuery.value = "";
+  }
+
+  async function createMembership() {
+    submitError.value = "";
+    isSubmitting.value = true;
+
+    const typeMap = {
+      free: "FREE",
+      onetime: "ONE_TIME",
+      subscription: "SUBSCRIPTION",
+    };
+
+    const payload = {
+      name: form.value.name,
+      description: form.value.description,
+      type: typeMap[form.value.type] || "FREE",
+      price: form.value.type === "free" ? 0 : Number(form.value.price) || 0,
+      durationDays: Number(form.value.durationDays) || 30,
+      isActive: form.value.active,
+      serviceId: form.value.serviceId || null,
+    };
+
+    try {
+      const response = await CreateMembership(payload);
+      if (response.isSuccess) {
+        router.push("/dashboard/membership");
+      } else {
+        submitError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Failed to create membership.";
+        isSubmitting.value = false;
+      }
+    } catch (error) {
+      submitError.value = "Network error. Please try again.";
+      isSubmitting.value = false;
+    }
   }
 </script>

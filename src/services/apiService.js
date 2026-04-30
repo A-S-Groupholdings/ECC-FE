@@ -276,4 +276,73 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const CreateMembership = async (payload) => {
+    try {
+      const response = await apiService.post('/memberships', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetMemberships = async () => {
+    try {
+      const response = await apiService.get('/memberships');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching memberships:', error);
+      throw error;
+    }
+  };
+
+  export const GetMembershipById = async (id) => {
+    try {
+      const response = await apiService.get(`/memberships/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching membership:', error);
+      throw error;
+    }
+  };
+
+  export const UpdateMembership = async (id, payload) => {
+    try {
+      const response = await apiService.put(`/memberships/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetUsersAll = async () => {
+    try {
+      const response = await apiService.get('/auth/usersAll');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
+  };
+
+  export const CreateUser = async (payload) => {
+    try {
+      const response = await apiService.post('/auth/user-create', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 export default apiService;

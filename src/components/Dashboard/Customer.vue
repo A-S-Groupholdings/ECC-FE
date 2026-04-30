@@ -49,6 +49,7 @@
             Import...
           </button> -->
           <button
+            @click="openCreateModal"
             class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
           >
             <svg
@@ -117,8 +118,36 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div
+        v-if="isLoading"
+        class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center text-gray-500 text-sm"
+      >
+        <svg
+          class="w-6 h-6 animate-spin inline mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        Loading customers...
+      </div>
+
       <!-- Customers Table -->
       <div
+        v-else
         class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="overflow-x-auto">
@@ -126,226 +155,124 @@
             <thead>
               <tr class="border-b border-gray-200 bg-gray-50">
                 <th
-                  class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-10"
-                ></th>
-                <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Full name
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Name
                 </th>
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    User
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Email
                 </th>
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Phone
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Phone
                 </th>
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Email
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Role
                 </th>
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Notes
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Category
                 </th>
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Last appointment
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Service
                 </th>
-                <th
-                  class="px-4 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider"
+                <!-- <th
+                  class="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <div class="flex items-center justify-end gap-1">
-                    Total appointments
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
-                </th>
+                  Status
+                </th> -->
                 <th
                   class="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  <input
-                    type="checkbox"
-                    class="rounded border-gray-300"
-                  />
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr
                 v-for="customer in filteredCustomers"
-                :key="customer.id"
+                :key="customer._id"
                 class="hover:bg-gray-50 transition-colors"
               >
-                <!-- Expand Button -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button
-                    class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold hover:bg-blue-600 transition-colors"
-                  >
-                    +
-                  </button>
-                </td>
-                <!-- Full Name -->
+                <!-- Name -->
                 <td
                   class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                 >
-                  {{ customer.fullName }}
-                </td>
-                <!-- User -->
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {{ customer.user }}
-                </td>
-                <!-- Phone -->
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {{ customer.phone }}
+                  {{ customer.name }}
                 </td>
                 <!-- Email -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ customer.email }}
                 </td>
-                <!-- Notes -->
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ customer.notes }}
+                <!-- Phone -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {{ customer.phoneNumber || "-" }}
                 </td>
-                <!-- Last Appointment -->
+                <!-- Role -->
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <div
-                    v-if="customer.lastAppointment"
-                    class="text-sm text-gray-700"
-                  >
-                    {{ customer.lastAppointment }}
-                  </div>
                   <span
-                    v-else
-                    class="text-sm text-gray-400"
-                    >—</span
+                    class="text-xs font-semibold px-2.5 py-1 rounded-full capitalize"
+                    :class="
+                      customer.role === 'admin'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
+                    "
                   >
+                    {{ customer.role }}
+                  </span>
                 </td>
-                <!-- Total Appointments -->
-                <td
-                  class="px-4 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900"
-                >
-                  {{ customer.totalAppointments }}
+                <!-- Category -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {{ customer.categoryID?.categoryName || "-" }}
                 </td>
+                <!-- Service -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                  {{ customer.serviceId?.title || "-" }}
+                </td>
+                <!-- Status -->
+                <!-- <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex items-center justify-center">
+                    <button
+                      @click="customer.isActive = !customer.isActive"
+                      class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
+                      :class="
+                        customer.isActive
+                          ? 'bg-green-500 focus:ring-green-500'
+                          : 'bg-gray-300 focus:ring-gray-300'
+                      "
+                    >
+                      <span
+                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
+                        :class="
+                          customer.isActive ? 'translate-x-6' : 'translate-x-1'
+                        "
+                      ></span>
+                    </button>
+                    <span
+                      class="ml-2 text-xs font-semibold w-12"
+                      :class="
+                        customer.isActive ? 'text-green-600' : 'text-gray-500'
+                      "
+                    >
+                      {{ customer.isActive ? "ON" : "OFF" }}
+                    </span>
+                  </div>
+                </td> -->
                 <!-- Actions -->
                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <button
-                      class="flex items-center gap-1 bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-                    >
-                      <svg
-                        class="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        ></path>
-                      </svg>
-                      Edit...
-                    </button>
-                    <input
-                      type="checkbox"
-                      class="rounded border-gray-300"
-                    />
-                  </div>
+                  <button
+                    class="text-[#1a3a35] hover:text-green-600 font-medium text-sm transition-colors"
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -374,107 +301,406 @@
         </div>
       </div>
     </div>
+
+    <!-- Create Customer Modal -->
+    <div
+      v-if="showCreateModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click="closeCreateModal"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <!-- Modal Header -->
+        <div
+          class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+        >
+          <h2 class="text-lg font-bold text-gray-800">Create Customer</h2>
+          <button
+            @click="closeCreateModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="px-6 pt-4">
+          <div class="flex border-b border-gray-200">
+            <button
+              @click="createTab = 'member'"
+              class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+              :class="
+                createTab === 'member'
+                  ? 'border-[#1a3a35] text-[#1a3a35]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              "
+            >
+              Member
+            </button>
+            <button
+              @click="createTab = 'coach'"
+              class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+              :class="
+                createTab === 'coach'
+                  ? 'border-[#1a3a35] text-[#1a3a35]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              "
+            >
+              Coach
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-5">
+          <!-- Member Tab -->
+          <div
+            v-if="createTab === 'member'"
+            class="space-y-5"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Name <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="memberForm.name"
+                  type="text"
+                  placeholder="Enter name..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Email <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="memberForm.email"
+                  type="email"
+                  placeholder="Enter email..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Phone <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="memberForm.phoneNumber"
+                  type="text"
+                  placeholder="Enter phone number..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Coach Tab -->
+          <div
+            v-else
+            class="space-y-5"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Name <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="coachForm.name"
+                  type="text"
+                  placeholder="Enter name..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Email <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="coachForm.email"
+                  type="email"
+                  placeholder="Enter email..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Phone <span class="text-red-500">*</span> :
+              </label>
+              <div class="md:col-span-3">
+                <input
+                  v-model="coachForm.phoneNumber"
+                  type="text"
+                  placeholder="Enter phone number..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+            <!-- Service Dropdown -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <label class="text-sm font-semibold text-gray-700 md:text-right">
+                Service :
+              </label>
+              <div class="md:col-span-3 relative">
+                <div class="relative">
+                  <input
+                    v-model="serviceSearchQuery"
+                    @focus="showServiceDropdown = true"
+                    @input="showServiceDropdown = true"
+                    @blur="setTimeout(() => (showServiceDropdown = false), 150)"
+                    type="text"
+                    placeholder="Search and select a service..."
+                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                  />
+                  <button
+                    v-if="coachForm.serviceId"
+                    @click="clearService"
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+                <!-- Dropdown -->
+                <div
+                  v-if="showServiceDropdown"
+                  class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto"
+                >
+                  <div
+                    v-if="filteredServices.length === 0"
+                    class="px-4 py-3 text-sm text-gray-500"
+                  >
+                    No services found
+                  </div>
+                  <div
+                    v-for="service in filteredServices"
+                    :key="service._id"
+                    @click="selectService(service)"
+                    class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <div class="text-sm font-medium text-gray-800">
+                      {{ service.title }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ service.categoryID?.categoryName || "No Category" }}
+                      — A${{ service.price }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3"
+        >
+          <div
+            v-if="createError"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"
+          >
+            {{ createError }}
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="closeCreateModal"
+              class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="createUser"
+              :disabled="isCreating"
+              class="px-6 py-3 bg-gradient-to-r from-[#1a3a35] to-green-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <span v-if="isCreating">Creating...</span>
+              <span v-else>Create Customer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted } from "vue";
+  import {
+    GetUsersAll,
+    GetServices,
+    CreateUser,
+  } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
   const searchQuery = ref("");
+  const customers = ref([]);
+  const isLoading = ref(false);
 
-  const customers = ref([
-    {
-      id: 1,
-      fullName: "sid",
-      user: "Sid",
-      phone: "+94 71 740 7115",
-      email: "sem@tastebuds.com.au",
-      notes: "",
-      lastAppointment: "March 21, 2026 1:30 pm",
-      totalAppointments: 1,
-    },
-    {
-      id: 2,
-      fullName: "Chanaka11",
-      user: "",
-      phone: "+94 70 468 0379",
-      email: "dev@11tastebuds.com.au",
-      notes: "",
-      lastAppointment: "",
-      totalAppointments: 0,
-    },
-    {
-      id: 3,
-      fullName: "coach1",
-      user: "coach1",
-      phone: "+94 406 499 499",
-      email: "coach1@gmail.com",
-      notes: "",
-      lastAppointment: "",
-      totalAppointments: 0,
-    },
-    {
-      id: 4,
-      fullName: "Chanaka",
-      user: "Chanaka Lahiru",
-      phone: "+94 70 468 0379",
-      email: "dev@tastebuds.com.au",
-      notes: "",
-      lastAppointment: "November 11, 2025 9:00 pm",
-      totalAppointments: 1,
-    },
-    {
-      id: 5,
-      fullName: "Aaron",
-      user: "Aaron",
-      phone: "+61 4999999999",
-      email: "A@b.com",
-      notes: "",
-      lastAppointment: "November 10, 2025 5:00 pm",
-      totalAppointments: 1,
-    },
-    {
-      id: 6,
-      fullName: "xchann",
-      user: "xchann",
-      phone: "+61 404 494 948",
-      email: "CHANNA@GMAIL.COM",
-      notes: "",
-      lastAppointment: "",
-      totalAppointments: 0,
-    },
-    {
-      id: 7,
-      fullName: "Rumeth Alwis",
-      user: "Rumeth Alwis",
-      phone: "+61 430 558 978",
-      email: "rumethalwis2002@gmail.com",
-      notes: "",
-      lastAppointment: "November 10, 2025 5:00 pm",
-      totalAppointments: 1,
-    },
-    {
-      id: 8,
-      fullName: "Vardeep",
-      user: "",
-      phone: "+61 468 342 720",
-      email: "sandarujv@gmail.com",
-      notes: "",
-      lastAppointment: "November 10, 2025",
-      totalAppointments: 1,
-    },
-  ]);
+  async function fetchCustomers() {
+    isLoading.value = true;
+    try {
+      const response = await GetUsersAll();
+      if (response.isSuccess) {
+        customers.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  onMounted(() => {
+    fetchCustomers();
+  });
 
   const filteredCustomers = computed(() => {
     if (!searchQuery.value) return customers.value;
     const query = searchQuery.value.toLowerCase();
     return customers.value.filter(
       (c) =>
-        c.fullName.toLowerCase().includes(query) ||
-        c.user.toLowerCase().includes(query) ||
-        c.email.toLowerCase().includes(query) ||
-        c.phone.includes(query),
+        c.name?.toLowerCase().includes(query) ||
+        c.email?.toLowerCase().includes(query) ||
+        c.phoneNumber?.includes(query) ||
+        c.role?.toLowerCase().includes(query),
     );
   });
+
+  // Create modal
+  const showCreateModal = ref(false);
+  const createTab = ref("member");
+  const isCreating = ref(false);
+  const createError = ref("");
+
+  const memberForm = ref({
+    name: "",
+    email: "",
+    phoneNumber: "",
+  });
+
+  const coachForm = ref({
+    name: "",
+    email: "",
+    phoneNumber: "",
+    serviceId: "",
+  });
+
+  // Service dropdown for coach tab
+  const services = ref([]);
+  const serviceSearchQuery = ref("");
+  const showServiceDropdown = ref(false);
+
+  async function fetchServices() {
+    try {
+      const response = await GetServices();
+      if (response.isSuccess) {
+        services.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  }
+
+  const filteredServices = computed(() => {
+    if (!serviceSearchQuery.value) return services.value;
+    const query = serviceSearchQuery.value.toLowerCase();
+    return services.value.filter((s) => s.title?.toLowerCase().includes(query));
+  });
+
+  function selectService(service) {
+    coachForm.value.serviceId = service._id;
+    serviceSearchQuery.value = service.title;
+    showServiceDropdown.value = false;
+  }
+
+  function clearService() {
+    coachForm.value.serviceId = "";
+    serviceSearchQuery.value = "";
+  }
+
+  function openCreateModal() {
+    createError.value = "";
+    createTab.value = "member";
+    memberForm.value = { name: "", email: "", phoneNumber: "" };
+    coachForm.value = { name: "", email: "", phoneNumber: "", serviceId: "" };
+    serviceSearchQuery.value = "";
+    if (services.value.length === 0) fetchServices();
+    showCreateModal.value = true;
+  }
+
+  function closeCreateModal() {
+    showCreateModal.value = false;
+    createError.value = "";
+  }
+
+  async function createUser() {
+    createError.value = "";
+    isCreating.value = true;
+
+    const isMember = createTab.value === "member";
+    const form = isMember ? memberForm.value : coachForm.value;
+
+    const payload = {
+      name: form.name,
+      email: form.email,
+      role: "user",
+      phoneNumber: form.phoneNumber,
+      categoryID: isMember
+        ? "69cde98e5e186e2469e9b4b8"
+        : "69cdfb2dd0319919ab30f83c",
+      membershipId: null,
+      serviceId: isMember ? null : form.serviceId || null,
+    };
+
+    try {
+      const response = await CreateUser(payload);
+      if (response.isSuccess) {
+        closeCreateModal();
+        await fetchCustomers();
+      } else {
+        createError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Failed to create user.";
+      }
+    } catch (error) {
+      createError.value = "Network error. Please try again.";
+    } finally {
+      isCreating.value = false;
+    }
+  }
 </script>

@@ -12,24 +12,29 @@
         <h1 class="md:text-2xl sm:text-lg font-bold text-primary">
           Memberships
         </h1>
-        <button
-          class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+        <router-link
+          to="/dashboard/membership/create"
+          target="none"
         >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <button
+            class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
-          Create Membership
-        </button>
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            Create Membership
+          </button>
+        </router-link>
       </div>
 
       <!-- Quick Search -->
@@ -61,8 +66,36 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div
+        v-if="isLoading"
+        class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center text-gray-500 text-sm"
+      >
+        <svg
+          class="w-6 h-6 animate-spin inline mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        Loading memberships...
+      </div>
+
       <!-- Memberships Table -->
       <div
+        v-else
         class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="overflow-x-auto">
@@ -72,56 +105,27 @@
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Name
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Name
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Price
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Service
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Plan
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Type
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  Price
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  Duration
                 </th>
                 <th
                   class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
@@ -131,27 +135,14 @@
                 <th
                   class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center justify-center gap-1">
-                    Members
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr
                 v-for="membership in filteredMemberships"
-                :key="membership.id"
+                :key="membership._id"
                 class="hover:bg-gray-50 transition-colors"
               >
                 <td class="px-6 py-4">
@@ -161,13 +152,23 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
-                    membership.price
+                    membership.serviceId?.title || "-"
                   }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
-                    membership.plan
+                    membership.type
                   }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700"
+                    >A${{ membership.price }}</span
+                  >
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700"
+                    >{{ membership.durationDays }} days</span
+                  >
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center justify-center">
@@ -175,7 +176,7 @@
                       @click="toggleMembership(membership)"
                       class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
                       :class="
-                        membership.active
+                        membership.isActive
                           ? 'bg-green-500 focus:ring-green-500'
                           : 'bg-gray-300 focus:ring-gray-300'
                       "
@@ -183,24 +184,29 @@
                       <span
                         class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
                         :class="
-                          membership.active ? 'translate-x-6' : 'translate-x-1'
+                          membership.isActive
+                            ? 'translate-x-6'
+                            : 'translate-x-1'
                         "
                       ></span>
                     </button>
                     <span
                       class="ml-2 text-xs font-semibold w-12"
                       :class="
-                        membership.active ? 'text-green-600' : 'text-gray-500'
+                        membership.isActive ? 'text-green-600' : 'text-gray-500'
                       "
                     >
-                      {{ membership.active ? "ON" : "OFF" }}
+                      {{ membership.isActive ? "ON" : "OFF" }}
                     </span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span class="text-sm font-semibold text-gray-900">{{
-                    membership.members
-                  }}</span>
+                  <button
+                    @click="openEditModal(membership)"
+                    class="text-[#1a3a35] hover:text-green-600 font-medium text-sm transition-colors"
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -229,57 +235,386 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Modal -->
+    <div
+      v-if="isEditModalOpen"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click="closeEditModal"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <!-- Modal Header -->
+        <div
+          class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+        >
+          <h2 class="text-lg font-bold text-gray-800">Edit Membership</h2>
+          <button
+            @click="closeEditModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-6">
+          <!-- Name -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Name <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <input
+                v-model="editForm.name"
+                type="text"
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+            <label
+              class="text-sm font-semibold text-gray-700 md:text-right pt-3"
+            >
+              Description :
+            </label>
+            <div class="md:col-span-3">
+              <textarea
+                v-model="editForm.description"
+                rows="4"
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all resize-none"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Type -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Type :
+            </label>
+            <div class="md:col-span-3">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <label
+                  class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all"
+                  :class="
+                    editForm.type === 'FREE'
+                      ? 'border-[#1a3a35] bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  "
+                >
+                  <input
+                    v-model="editForm.type"
+                    type="radio"
+                    value="FREE"
+                    class="w-4 h-4 text-[#1a3a35] focus:ring-[#1a3a35]"
+                  />
+                  <span class="text-sm font-medium text-gray-700">Free</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all"
+                  :class="
+                    editForm.type === 'ONE_TIME'
+                      ? 'border-[#1a3a35] bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  "
+                >
+                  <input
+                    v-model="editForm.type"
+                    type="radio"
+                    value="ONE_TIME"
+                    class="w-4 h-4 text-[#1a3a35] focus:ring-[#1a3a35]"
+                  />
+                  <span class="text-sm font-medium text-gray-700"
+                    >One-Time</span
+                  >
+                </label>
+                <label
+                  class="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all"
+                  :class="
+                    editForm.type === 'SUBSCRIPTION'
+                      ? 'border-[#1a3a35] bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  "
+                >
+                  <input
+                    v-model="editForm.type"
+                    type="radio"
+                    value="SUBSCRIPTION"
+                    class="w-4 h-4 text-[#1a3a35] focus:ring-[#1a3a35]"
+                  />
+                  <span class="text-sm font-medium text-gray-700"
+                    >Subscription</span
+                  >
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Dropdown -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Service :
+            </label>
+            <div class="md:col-span-3 relative">
+              <div class="relative">
+                <input
+                  v-model="serviceSearchQuery"
+                  @focus="showServiceDropdown = true"
+                  @input="showServiceDropdown = true"
+                  @blur="setTimeout(() => (showServiceDropdown = false), 150)"
+                  type="text"
+                  placeholder="Search and select a service..."
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+                <button
+                  v-if="editForm.serviceId"
+                  @click="clearService"
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              <!-- Dropdown -->
+              <div
+                v-if="showServiceDropdown"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto"
+              >
+                <div
+                  v-if="filteredServices.length === 0"
+                  class="px-4 py-3 text-sm text-gray-500"
+                >
+                  No services found
+                </div>
+                <div
+                  v-for="service in filteredServices"
+                  :key="service._id"
+                  @click="selectService(service)"
+                  class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                >
+                  <div class="text-sm font-medium text-gray-800">
+                    {{ service.title }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ service.categoryID?.categoryName || "No Category" }} —
+                    A${{ service.price }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Price <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <div class="relative">
+                <span
+                  class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold"
+                  >A$</span
+                >
+                <input
+                  v-model="editForm.price"
+                  type="number"
+                  class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Duration Days -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Duration (Days) <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <input
+                v-model="editForm.durationDays"
+                type="number"
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Status :
+            </label>
+            <div class="md:col-span-3">
+              <div class="flex items-center">
+                <button
+                  @click="editForm.isActive = !editForm.isActive"
+                  type="button"
+                  class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  :class="
+                    editForm.isActive
+                      ? 'bg-green-500 focus:ring-green-500'
+                      : 'bg-gray-300 focus:ring-gray-300'
+                  "
+                >
+                  <span
+                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
+                    :class="
+                      editForm.isActive ? 'translate-x-6' : 'translate-x-1'
+                    "
+                  ></span>
+                </button>
+                <span
+                  class="ml-3 text-sm font-semibold"
+                  :class="
+                    editForm.isActive ? 'text-green-600' : 'text-gray-500'
+                  "
+                >
+                  {{ editForm.isActive ? "ON" : "OFF" }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3"
+        >
+          <div
+            v-if="updateError"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"
+          >
+            {{ updateError }}
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="closeEditModal"
+              class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="updateMembership"
+              :disabled="isUpdating"
+              class="px-6 py-3 bg-gradient-to-r from-[#1a3a35] to-green-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <span v-if="isUpdating">Updating...</span>
+              <span v-else>Update Membership</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted } from "vue";
+  import {
+    GetMemberships,
+    GetMembershipById,
+    UpdateMembership,
+    GetServices,
+  } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
   const searchQuery = ref("");
+  const memberships = ref([]);
+  const isLoading = ref(false);
 
-  const memberships = ref([
-    {
-      id: 1,
-      name: "Default Membership",
-      price: "Free",
-      plan: "Free",
-      active: false,
-      members: 3,
-    },
-    {
-      id: 2,
-      name: "ECC Membership Weekly Subscription (Cricket Only)",
-      price: "$85.00 every Week",
-      plan: "Subscription",
-      active: true,
-      members: 3,
-    },
-    {
-      id: 3,
-      name: "ECC Membership Weekly Subscription (Cricket + Gym)",
-      price: "$100.00 every Week",
-      plan: "Subscription",
-      active: true,
-      members: 0,
-    },
-    {
-      id: 4,
-      name: "ECC Membership Monthly Subscription (Cricket Only)",
-      price: "$340.00 every Month",
-      plan: "Subscription",
-      active: true,
-      members: 1,
-    },
-    {
-      id: 5,
-      name: "ECC Membership Monthly Subscription (Cricket + Gym)",
-      price: "$390.00 every Month",
-      plan: "Subscription",
-      active: true,
-      members: 0,
-    },
-  ]);
+  const isEditModalOpen = ref(false);
+  const selectedMembership = ref(null);
+  const editForm = ref({
+    name: "",
+    description: "",
+    type: "FREE",
+    price: 0,
+    serviceId: "",
+    durationDays: 30,
+    isActive: true,
+  });
+  const isUpdating = ref(false);
+  const updateError = ref("");
+
+  // Service dropdown state
+  const services = ref([]);
+  const serviceSearchQuery = ref("");
+  const showServiceDropdown = ref(false);
+
+  async function fetchServices() {
+    try {
+      const response = await GetServices();
+      if (response.isSuccess) {
+        services.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  }
+
+  const filteredServices = computed(() => {
+    if (!serviceSearchQuery.value) return services.value;
+    const query = serviceSearchQuery.value.toLowerCase();
+    return services.value.filter((s) =>
+      s.title?.toLowerCase().includes(query),
+    );
+  });
+
+  function selectService(service) {
+    editForm.value.serviceId = service._id;
+    serviceSearchQuery.value = service.title;
+    showServiceDropdown.value = false;
+  }
+
+  function clearService() {
+    editForm.value.serviceId = "";
+    serviceSearchQuery.value = "";
+  }
+
+  async function fetchMemberships() {
+    isLoading.value = true;
+    try {
+      const response = await GetMemberships();
+      if (response.isSuccess) {
+        memberships.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching memberships:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  onMounted(() => {
+    fetchMemberships();
+  });
 
   const filteredMemberships = computed(() => {
     if (!searchQuery.value) return memberships.value;
@@ -290,6 +625,69 @@
   });
 
   function toggleMembership(membership) {
-    membership.active = !membership.active;
+    membership.isActive = !membership.isActive;
+  }
+
+  async function openEditModal(membership) {
+    updateError.value = "";
+    if (services.value.length === 0) await fetchServices();
+    try {
+      const response = await GetMembershipById(membership._id);
+      if (response.isSuccess && response.value) {
+        const data = response.value;
+        selectedMembership.value = data;
+        const svc =
+          typeof data.serviceId === "object" && data.serviceId
+            ? data.serviceId
+            : null;
+        editForm.value = {
+          name: data.name || "",
+          description: data.description || "",
+          type: data.type || "FREE",
+          price: data.price || 0,
+          serviceId: svc?._id || data.serviceId || "",
+          durationDays: data.durationDays || 30,
+          isActive: data.isActive ?? true,
+        };
+        serviceSearchQuery.value = svc?.title || "";
+        isEditModalOpen.value = true;
+      }
+    } catch (error) {
+      console.error("Error fetching membership details:", error);
+    }
+  }
+
+  function closeEditModal() {
+    isEditModalOpen.value = false;
+    selectedMembership.value = null;
+    updateError.value = "";
+  }
+
+  async function updateMembership() {
+    if (!selectedMembership.value) return;
+    updateError.value = "";
+    isUpdating.value = true;
+    try {
+      const response = await UpdateMembership(selectedMembership.value._id, {
+        name: editForm.value.name,
+        description: editForm.value.description,
+        type: editForm.value.type,
+        price: Number(editForm.value.price) || 0,
+        serviceId: editForm.value.serviceId || null,
+        durationDays: Number(editForm.value.durationDays) || 30,
+        isActive: editForm.value.isActive,
+      });
+      if (response.isSuccess) {
+        closeEditModal();
+        await fetchMemberships();
+      } else {
+        updateError.value =
+          response.errorMessage || response.userMessage || "Update failed.";
+      }
+    } catch (error) {
+      updateError.value = "Network error. Please try again.";
+    } finally {
+      isUpdating.value = false;
+    }
   }
 </script>
