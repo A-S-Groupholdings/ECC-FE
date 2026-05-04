@@ -396,13 +396,13 @@
                 class="border border-gray-200 rounded-b-lg max-h-[400px] overflow-y-auto"
               >
                 <div
-                  v-if="timeSlots.length === 0"
+                  v-if="displayTimeSlots.length === 0"
                   class="p-6 text-center text-gray-500 text-sm"
                 >
                   No available slots for this date.
                 </div>
                 <button
-                  v-for="slot in timeSlots"
+                  v-for="slot in displayTimeSlots"
                   :key="slot.time"
                   @click="slot.available ? selectTimeSlot(slot) : null"
                   :disabled="!slot.available"
@@ -506,8 +506,8 @@
                 <select
                   class="border border-r-0 border-gray-300 rounded-l px-3 py-3 bg-gray-50 text-gray-600"
                 >
-                  <option>🇱🇰 +94</option>
                   <option>🇦🇺 +61</option>
+                  <option>🇱🇰 +94</option>
                   <option>🇬🇧 +44</option>
                 </select>
                 <input
@@ -837,7 +837,10 @@
     visibleServices.value.forEach((s) => {
       const cat = s.categoryID;
       if (cat && !map.has(cat._id)) {
-        map.set(cat._id, cat);
+        const name = cat.categoryName?.toLowerCase() || "";
+        if (name !== "member" && name !== "coach") {
+          map.set(cat._id, cat);
+        }
       }
     });
     return Array.from(map.values());
@@ -845,10 +848,14 @@
 
   // Services filtered by selected category
   const filteredServices = computed(() => {
-    if (!booking.value.type) return visibleServices.value;
-    return visibleServices.value.filter(
-      (s) => s.categoryID?._id === booking.value.type,
-    );
+    let list = visibleServices.value;
+    // Exclude member and coach category services
+    list = list.filter((s) => {
+      const catName = s.categoryID?.categoryName?.toLowerCase() || "";
+      return catName !== "member" && catName !== "coach";
+    });
+    if (!booking.value.type) return list;
+    return list.filter((s) => s.categoryID?._id === booking.value.type);
   });
 
   // Selected service object
@@ -979,6 +986,31 @@
 
   const timeSlots = ref([]);
   const isLoadingSlots = ref(false);
+
+  function getAustraliaDateString() {
+    return new Date().toLocaleDateString("en-CA", {
+      timeZone: "Australia/Sydney",
+    });
+  }
+
+  function getAustraliaTimeMinutes() {
+    const now = new Date();
+    const ausStr = now.toLocaleString("en-US", {
+      timeZone: "Australia/Sydney",
+    });
+    const ausDate = new Date(ausStr);
+    return ausDate.getHours() * 60 + ausDate.getMinutes();
+  }
+
+  const displayTimeSlots = computed(() => {
+    if (!timeSlots.value.length) return [];
+    const ausToday = getAustraliaDateString();
+    if (booking.value.date !== ausToday) return timeSlots.value;
+    const currentMins = getAustraliaTimeMinutes();
+    return timeSlots.value.filter(
+      (slot) => parseTimeToMinutes(slot.time) >= currentMins,
+    );
+  });
 
   async function fetchBookingSlots() {
     if (!booking.value.date || !booking.value.lane) return;

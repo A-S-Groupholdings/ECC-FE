@@ -345,4 +345,14 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const GetBookings = async (params = {}) => {
+    try {
+      const response = await apiService.get('/bookings', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      throw error;
+    }
+  };
+
 export default apiService;
