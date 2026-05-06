@@ -19,6 +19,15 @@ import MemberPayment from "../views/Dashboard/MemberPaymentView.vue";
 import BookingCancel from "../views/Landing/BookingCancelView.vue";
 import MemberProfileView from "../views/Member/MemberProfileView.vue";
 import AdminOtp from "../views/Dashboard/AdminOtp.vue";
+import MemberOtp from "../views/Member/MemberOTP.vue";
+import MemberRegisterView from "../views/Member/MemberRegisterView.vue";
+import MembershipsView from "../views/Member/Memberships.vue";
+import MemberBookingView from "../views/Member/MemberBookingView.vue";
+import MemberLoginView from "../views/Member/MemberLogin.vue";
+import CoachLoginView from "../views/Coach/CoachLoginView.vue";
+import CoachProfileView from "../views/Coach/CoachProfileView.vue";
+import CoachOtp from "../views/Coach/CoachOTP.vue";
+import MemberPaymentView from "../views/Member/PaymentView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -159,6 +168,70 @@ const router = createRouter({
       meta: {
         title: "ECC"}
     },
+    {
+      path: "/member/otp",
+      name: "memberotp",
+      component: MemberOtp,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/coach/otp",
+      name: "coachotp",
+      component: CoachOtp,
+      meta: {
+        title: "ECC"}
+    },
+     {
+      path: "/member/register",
+      name: "memberregister",
+      component: MemberRegisterView,
+      meta: {
+        title: "ECC"}
+    },
+     {
+      path: "/member/membership",
+      name: "memberships",
+      component: MembershipsView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/member/booking",
+      name: "memberbooking",
+      component: MemberBookingView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/member/login",
+      name: "memberlogin",
+      component: MemberLoginView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/coach/login",
+      name: "coachlogin",
+      component: CoachLoginView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/coach/profile",
+      name: "coachprofile",
+      component: CoachProfileView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/member/payment",
+      name: "memberpayment",
+      component: MemberPaymentView,
+      meta: {
+        title: "ECC"}
+    },
+    
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',

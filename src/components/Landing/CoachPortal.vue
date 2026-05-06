@@ -6,11 +6,11 @@
       <h2
         class="text-[#1a3a35] font-bold text-2xl tracking-wider uppercase mb-2"
       >
-        Already an ECC Member?
+        COACH LOGIN & BOOKING
       </h2>
       <p class="text-[#1a3a35] text-sm mb-6 font-semibold">
-        Book your lane sessions quickly and easily<br />
-        through the exclusive member-only booking portal.
+        Book your lane today and take your training to the next level. Coaches
+        can access exclusive priority booking below.
       </p>
       <button
         class="bg-gradient-to-r from-[#1a3a35] to-[#3d6b5f] text-white px-12 py-4 rounded-lg flex items-center gap-3 mx-auto hover:opacity-90 transition-opacity"
@@ -30,7 +30,7 @@
           />
         </svg>
         <span class="font-semibold tracking-wide sm:text-lg text-sm"
-          >ACCESS MEMBER BOOKING PORTAL</span
+          >ACCESS Coach BOOKING PORTAL</span
         >
       </button>
     </div>

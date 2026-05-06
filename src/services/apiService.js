@@ -126,6 +126,53 @@ export const AdminLoginOtp = async (email) => {
     }
   };
 
+export const SendOtp = async (payload) => {
+    try {
+      const response = await apiService.post('/auth/send-otp', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+export const UserSendOtp = async (email) => {
+    try {
+      const response = await apiService.post('/auth/user-send-otp', {
+        email,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+export const UserLogin = async (email, otp) => {
+    try {
+      const response = await apiService.post('/auth/user-login', {
+        email,
+        otp,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 export const AdminLogin = async (email, otp) => {
     try {
       const response = await apiService.post('/auth/admin-login', {
@@ -250,6 +297,19 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const GetMembershipBookingSlots = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/bookingMembershipSlot', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching membership booking slots:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const RegisterBookingUser = async (payload) => {
     try {
       const response = await apiService.post('/bookings/bookingUser', payload);
@@ -292,6 +352,16 @@ export const AdminLogin = async (email, otp) => {
   export const GetMemberships = async () => {
     try {
       const response = await apiService.get('/memberships');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching memberships:', error);
+      throw error;
+    }
+  };
+
+    export const GetMembershipsPublic = async () => {
+    try {
+      const response = await apiService.get('memberships/active');
       return response.data;
     } catch (error) {
       console.error('Error fetching memberships:', error);
@@ -351,6 +421,73 @@ export const AdminLogin = async (email, otp) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      throw error;
+    }
+  };
+
+  export const GetUserBookingData = async (userId) => {
+    try {
+      const response = await apiService.post('/bookings/userBookingData', {
+        userId,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user booking data:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetUserById = async (id) => {
+    try {
+      const response = await apiService.post(`/auth/user/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const UpdateUser = async (id, payload) => {
+    try {
+      const response = await apiService.put(`/auth/user/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const DeleteUser = async (id) => {
+    try {
+      const response = await apiService.delete(`/auth/user/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const BuyMembership = async (payload) => {
+    try {
+      const response = await apiService.post('/memberships/buy', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error buying membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
       throw error;
     }
   };

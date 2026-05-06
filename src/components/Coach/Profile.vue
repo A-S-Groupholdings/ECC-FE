@@ -39,28 +39,6 @@
                 </svg>
                 Logout
               </button>
-
-              <!-- Buy Membership Link -->
-              <router-link
-                v-if="!hasMembership"
-                to="/member/membership"
-                class="bg-white text-[#1a3a35] hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 shadow-lg animate-pulse"
-              >
-                <svg
-                  class="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4"
-                  ></path>
-                </svg>
-                Buy a Membership
-              </router-link>
             </div>
             <!-- <button
             class="absolute border border-secondary top-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -119,10 +97,10 @@
               >
                 <h1 class="text-2xl font-bold text-white">{{ user.name }}</h1>
                 <span
-                  class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                  class="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
                 >
-                  <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                  {{ user.subscriptionStatus }}
+                  <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                  Coach
                 </span>
               </div>
               <p class="text-white/70 text-sm">{{ user.email }}</p>
@@ -132,72 +110,49 @@
             <div class="grid grid-cols-2 gap-4 mt-6 sm:flex sm:gap-8 sm:ml-32">
               <div class="text-center sm:text-left">
                 <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Member Since
+                  Joined
                 </p>
                 <p class="text-white font-semibold">{{ user.memberSince }}</p>
               </div>
               <div class="text-center sm:text-left">
                 <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Last Booking
+                  Category
+                </p>
+                <p class="text-white font-semibold">
+                  {{ user.categoryName || "-" }}
+                </p>
+              </div>
+              <div class="text-center sm:text-left">
+                <p class="text-white/60 text-xs uppercase tracking-wider">
+                  Last Session
                 </p>
                 <p class="text-white font-semibold">{{ user.lastBooking }}</p>
               </div>
               <div class="text-center sm:text-left">
                 <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Total Bookings
+                  Total Sessions
                 </p>
                 <p class="text-white font-semibold">{{ user.totalBookings }}</p>
-              </div>
-              <div class="text-center sm:text-left">
-                <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Membership
-                </p>
-                <p class="text-white font-semibold">
-                  <span v-if="user.membership">{{ user.membership }}</span>
-                  <router-link
-                    v-else
-                    to="/member/membership"
-                    class="inline-flex items-center gap-1 bg-white text-[#1a3a35] px-3 py-1 rounded-md text-xs font-bold hover:bg-green-50 transition-colors"
-                  >
-                    <svg
-                      class="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                      ></path>
-                    </svg>
-                    Buy
-                  </router-link>
-                </p>
               </div>
             </div>
           </div>
         </div>
         <!-- Quick Action Buttons -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <!-- Book a Lane Button -->
-          <div
-            @click="goToBooking"
+          <!-- Coach Schedule Button -->
+          <router-link
+            to="/dashboard/calender"
             class="block"
           >
             <div
-              class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-all group cursor-pointer"
-              :class="hasMembership ? 'border-secondary hover:border-[#1a3a35]/30' : 'border-gray-200 opacity-60 cursor-not-allowed'"
+              class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#1a3a35]/30 transition-all group cursor-pointer"
             >
               <div class="flex items-center gap-4">
                 <div
-                  class="w-14 h-14 rounded-xl flex items-center justify-center transition-colors"
-                  :class="hasMembership ? 'bg-[#1a3a35]/10 group-hover:bg-[#1a3a35]' : 'bg-gray-100'"
+                  class="w-14 h-14 rounded-xl bg-[#1a3a35]/10 flex items-center justify-center group-hover:bg-[#1a3a35] transition-colors"
                 >
                   <svg
-                    class="w-7 h-7 transition-colors"
-                    :class="hasMembership ? 'text-[#1a3a35] group-hover:text-white' : 'text-gray-400'"
+                    class="w-7 h-7 text-[#1a3a35] group-hover:text-white transition-colors"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -212,18 +167,16 @@
                 </div>
                 <div>
                   <h3
-                    class="font-semibold transition-colors"
-                    :class="hasMembership ? 'text-gray-900 group-hover:text-[#1a3a35]' : 'text-gray-400'"
+                    class="font-semibold text-gray-900 group-hover:text-[#1a3a35] transition-colors"
                   >
-                    Book a Lane
+                    My Schedule
                   </h3>
                   <p class="text-sm text-gray-500">
-                    {{ hasMembership ? 'Reserve your training session' : 'Membership required' }}
+                    View your coaching sessions
                   </p>
                 </div>
                 <svg
-                  class="w-5 h-5 ml-auto transition-all"
-                  :class="hasMembership ? 'text-gray-400 group-hover:text-[#1a3a35] group-hover:translate-x-1' : 'text-gray-300'"
+                  class="w-5 h-5 text-gray-400 ml-auto group-hover:text-[#1a3a35] group-hover:translate-x-1 transition-all"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -237,7 +190,7 @@
                 </svg>
               </div>
             </div>
-          </div>
+          </router-link>
 
           <!-- Booking Calendar Button -->
           <router-link
@@ -839,9 +792,7 @@
     memberSince: "",
     lastBooking: "-",
     totalBookings: "0",
-    membership: "",
     verifiedDate: "",
-    membershipId: null,
     _id: "",
     categoryName: "",
   });
@@ -851,10 +802,6 @@
     const parts = user.value.name.trim().split(" ");
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
-  });
-
-  const hasMembership = computed(() => {
-    return !!user.value.membershipId;
   });
 
   async function fetchProfile() {
@@ -882,8 +829,6 @@
                 day: "numeric",
               })
             : "",
-          membership: data.membershipId?.name || "",
-          membershipId: data.membershipId || null,
           categoryName: data.categoryID?.categoryName || "",
         };
       }
@@ -923,12 +868,6 @@
     authStore.setUser(null);
     authStore.setAccessToken(null);
     router.push("/member/login");
-  }
-
-  function goToBooking() {
-    if (!hasMembership.value) return;
-    const userId = authStore.user?.id || user.value._id;
-    router.push(`/member/booking?userId=${userId}`);
   }
 
   function openDeleteModal() {

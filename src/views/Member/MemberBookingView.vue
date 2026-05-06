@@ -3,10 +3,7 @@
   import TopNav from "../../components/UI/TopNav.vue";
   import Nav from "../../components/UI/Nav.vue";
   import MobNav from "../../components/UI/MobNav.vue";
-  import Hero from "../../components/Landing/Hero.vue";
-  import MemberPortal from "../../components/Landing/MemberPortal.vue";
-  import CoachPortal from "../../components/Landing/CoachPortal.vue";
-  import Booking from "../../components/Landing/Booking.vue";
+  import MemberBooking from "../../components/Member/MemberBooking.vue";
   import Footer from "../../components/Landing/Footer.vue";
 </script>
 
@@ -17,15 +14,7 @@
       <Nav />
       <MobNav />
     </div>
-    <Hero />
-    <router-link to="/member/login">
-      <MemberPortal />
-    </router-link>
-    <Booking />
-    <router-link to="/coach/login">
-      <CoachPortal />
-    </router-link>
-
+    <MemberBooking />
     <Footer />
   </main>
 </template>
