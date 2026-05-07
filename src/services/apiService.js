@@ -440,6 +440,21 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+   export const GetCoachBookingData = async (userId) => {
+    try {
+      const response = await apiService.post('/bookings/coachBookingData', {
+        userId,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user booking data:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const GetUserById = async (id) => {
     try {
       const response = await apiService.post(`/auth/user/${id}`);
@@ -485,6 +500,19 @@ export const AdminLogin = async (email, otp) => {
       return response.data;
     } catch (error) {
       console.error('Error buying membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetSessionDashboard = async () => {
+    try {
+      const response = await apiService.get('/bookings/sessionDashboard');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching session dashboard:', error);
       if (error.response && error.response.data) {
         return error.response.data;
       }

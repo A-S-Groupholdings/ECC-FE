@@ -188,16 +188,28 @@
           >
             <div
               class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-all group cursor-pointer"
-              :class="hasMembership ? 'border-secondary hover:border-[#1a3a35]/30' : 'border-gray-200 opacity-60 cursor-not-allowed'"
+              :class="
+                hasMembership
+                  ? 'border-secondary hover:border-[#1a3a35]/30'
+                  : 'border-gray-200 opacity-60 cursor-not-allowed'
+              "
             >
               <div class="flex items-center gap-4">
                 <div
                   class="w-14 h-14 rounded-xl flex items-center justify-center transition-colors"
-                  :class="hasMembership ? 'bg-[#1a3a35]/10 group-hover:bg-[#1a3a35]' : 'bg-gray-100'"
+                  :class="
+                    hasMembership
+                      ? 'bg-[#1a3a35]/10 group-hover:bg-[#1a3a35]'
+                      : 'bg-gray-100'
+                  "
                 >
                   <svg
                     class="w-7 h-7 transition-colors"
-                    :class="hasMembership ? 'text-[#1a3a35] group-hover:text-white' : 'text-gray-400'"
+                    :class="
+                      hasMembership
+                        ? 'text-[#1a3a35] group-hover:text-white'
+                        : 'text-gray-400'
+                    "
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -213,17 +225,29 @@
                 <div>
                   <h3
                     class="font-semibold transition-colors"
-                    :class="hasMembership ? 'text-gray-900 group-hover:text-[#1a3a35]' : 'text-gray-400'"
+                    :class="
+                      hasMembership
+                        ? 'text-gray-900 group-hover:text-[#1a3a35]'
+                        : 'text-gray-400'
+                    "
                   >
                     Book a Lane
                   </h3>
                   <p class="text-sm text-gray-500">
-                    {{ hasMembership ? 'Reserve your training session' : 'Membership required' }}
+                    {{
+                      hasMembership
+                        ? "Reserve your training session"
+                        : "Membership required"
+                    }}
                   </p>
                 </div>
                 <svg
                   class="w-5 h-5 ml-auto transition-all"
-                  :class="hasMembership ? 'text-gray-400 group-hover:text-[#1a3a35] group-hover:translate-x-1' : 'text-gray-300'"
+                  :class="
+                    hasMembership
+                      ? 'text-gray-400 group-hover:text-[#1a3a35] group-hover:translate-x-1'
+                      : 'text-gray-300'
+                  "
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

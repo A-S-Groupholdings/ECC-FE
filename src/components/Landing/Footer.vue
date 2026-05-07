@@ -6,9 +6,9 @@
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-center items-center"
       >
         <!-- Logo & Contact Info -->
-        <div>
+        <div class="text-center md:text-left">
           <!-- Logo -->
-          <div class="mb-4">
+          <div class="mb-4 flex justify-center md:justify-start">
             <img
               src="../../assets/logo.webp"
               alt=""

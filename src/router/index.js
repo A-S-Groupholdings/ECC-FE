@@ -28,6 +28,9 @@ import CoachLoginView from "../views/Coach/CoachLoginView.vue";
 import CoachProfileView from "../views/Coach/CoachProfileView.vue";
 import CoachOtp from "../views/Coach/CoachOTP.vue";
 import MemberPaymentView from "../views/Member/PaymentView.vue";
+import CoachBookingView from "../views/Coach/CoachBookingView.vue";
+import PublicLiveSessionView from "../views/LiveSession.vue";
+import PublicMembershipView from "../views/Landing/MembershipView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -228,6 +231,27 @@ const router = createRouter({
       path: "/member/payment",
       name: "memberpayment",
       component: MemberPaymentView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/coach/booking",
+      name: "coachbooking",
+      component: CoachBookingView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/live-on-ecc",
+      name: "livesession",
+      component: PublicLiveSessionView,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/ecc/membership",
+      name: "publicmembership",
+      component: PublicMembershipView,
       meta: {
         title: "ECC"}
     },

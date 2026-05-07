@@ -21,12 +21,12 @@
       <!-- main-menu -->
       <div class="main-menu space-x-4 font-montserrat text-[19px] font-light">
         <a
-          href=""
+          href="/"
           class="text-white"
           >Land Booking</a
         >
         <a
-          href=""
+          href="/ecc/membership"
           class="text-white"
           >Membership</a
         >

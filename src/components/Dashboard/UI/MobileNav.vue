@@ -51,14 +51,14 @@
             </li>
           </router-link>
           <router-link
-            to="/dashboard/livesession"
+            to="/live-on-ecc"
             @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
                 'w-full h-12 rounded-md flex items-center gap-3 pl-4',
-                isActive('/dashboard/livesession')
+                isActive('/live-on-ecc')
                   ? 'bg-secondary text-black'
                   : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
@@ -186,14 +186,16 @@
               <span>Payment</span>
             </li>
           </router-link>
-          
+
           <!-- Membership with Sub-menu -->
           <div class="block">
             <li
               @click="membershipExpanded = !membershipExpanded"
               :class="[
                 'w-full h-12 rounded-md flex items-center gap-3 pl-4 cursor-pointer',
-                isActive('/dashboard/membership') || isActive('/dashboard/subscription') || isActive('/member/payment')
+                isActive('/dashboard/membership') ||
+                isActive('/dashboard/subscription') ||
+                isActive('/member/payment')
                   ? 'bg-secondary text-black'
                   : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
@@ -202,7 +204,9 @@
               <span>Membership</span>
               <i
                 class="pi ml-auto mr-4 transition-transform duration-200"
-                :class="membershipExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
+                :class="
+                  membershipExpanded ? 'pi-chevron-up' : 'pi-chevron-down'
+                "
               ></i>
             </li>
             <!-- Sub-menu -->
@@ -265,10 +269,14 @@
           </div>
         </ul>
       </div>
-      
+
       <!-- Version Display at Bottom -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-        <div class="flex items-center justify-center gap-2 text-gray-400 text-sm">
+      <div
+        class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700"
+      >
+        <div
+          class="flex items-center justify-center gap-2 text-gray-400 text-sm"
+        >
           <i class="pi pi-info-circle"></i>
           <span>Version {{ appVersion }}</span>
         </div>
@@ -278,21 +286,21 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import "primeicons/primeicons.css";
-import { useRoute } from "vue-router";
-import packageJson from "../../../../package.json";
+  import { ref } from "vue";
+  import "primeicons/primeicons.css";
+  import { useRoute } from "vue-router";
+  import packageJson from "../../../../package.json";
 
-const isMenuOpen = ref(false);
-const membershipExpanded = ref(false);
-const route = useRoute();
-const appVersion = ref(packageJson.version);
+  const isMenuOpen = ref(false);
+  const membershipExpanded = ref(false);
+  const route = useRoute();
+  const appVersion = ref(packageJson.version);
 
-function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value;
-}
+  function toggleMenu() {
+    isMenuOpen.value = !isMenuOpen.value;
+  }
 
-const isActive = (path) => {
-  return route.path === path || route.path.startsWith(path);
-};
+  const isActive = (path) => {
+    return route.path === path || route.path.startsWith(path);
+  };
 </script>

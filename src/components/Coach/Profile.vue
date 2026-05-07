@@ -140,43 +140,16 @@
         <!-- Quick Action Buttons -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <!-- Coach Schedule Button -->
-          <router-link
-            to="/dashboard/calender"
-            class="block"
+          <div
+            @click="goToBooking"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#1a3a35]/30 transition-all group cursor-pointer"
           >
-            <div
-              class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#1a3a35]/30 transition-all group cursor-pointer"
-            >
-              <div class="flex items-center gap-4">
-                <div
-                  class="w-14 h-14 rounded-xl bg-[#1a3a35]/10 flex items-center justify-center group-hover:bg-[#1a3a35] transition-colors"
-                >
-                  <svg
-                    class="w-7 h-7 text-[#1a3a35] group-hover:text-white transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    ></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3
-                    class="font-semibold text-gray-900 group-hover:text-[#1a3a35] transition-colors"
-                  >
-                    My Schedule
-                  </h3>
-                  <p class="text-sm text-gray-500">
-                    View your coaching sessions
-                  </p>
-                </div>
+            <div class="flex items-center gap-4">
+              <div
+                class="w-14 h-14 rounded-xl bg-[#1a3a35]/10 flex items-center justify-center group-hover:bg-[#1a3a35] transition-colors"
+              >
                 <svg
-                  class="w-5 h-5 text-gray-400 ml-auto group-hover:text-[#1a3a35] group-hover:translate-x-1 transition-all"
+                  class="w-7 h-7 text-[#1a3a35] group-hover:text-white transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -185,16 +158,37 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M9 5l7 7-7 7"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   ></path>
                 </svg>
               </div>
+              <div>
+                <h3
+                  class="font-semibold text-gray-900 group-hover:text-[#1a3a35] transition-colors"
+                >
+                  My Schedule
+                </h3>
+                <p class="text-sm text-gray-500">View your coaching sessions</p>
+              </div>
+              <svg
+                class="w-5 h-5 text-gray-400 ml-auto group-hover:text-[#1a3a35] group-hover:translate-x-1 transition-all"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
             </div>
-          </router-link>
+          </div>
 
           <!-- Booking Calendar Button -->
           <router-link
-            to="/dashboard/calender"
+            to="#"
             class="block"
           >
             <div
@@ -867,7 +861,12 @@
   function handleLogout() {
     authStore.setUser(null);
     authStore.setAccessToken(null);
-    router.push("/member/login");
+    router.push("/coach/login");
+  }
+
+  function goToBooking() {
+    const userId = authStore.user?.id || user.value._id;
+    router.push(`/coach/booking?userId=${userId}`);
   }
 
   function openDeleteModal() {
