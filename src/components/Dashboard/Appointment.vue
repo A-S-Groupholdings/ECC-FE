@@ -53,24 +53,53 @@
           </div>
         </div>
 
-        <button
-          class="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-[#2a4a45] transition-all shadow-lg hover:shadow-xl text-sm font-semibold"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div class="flex items-center gap-3">
+          <button
+            @click="toggleAutoSync"
+            :class="[
+              'flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm border',
+              autoSyncEnabled
+                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50',
+            ]"
+            :title="autoSyncEnabled ? 'Auto-sync ON (30s)' : 'Auto-sync OFF'"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
-          </svg>
-          New Appointment
-        </button>
+            <svg
+              :class="['w-4 h-4', autoSyncEnabled ? 'animate-spin' : '']"
+              style="animation-duration: 3s;"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              ></path>
+            </svg>
+            <span v-if="autoSyncEnabled && formattedLastSync">{{ formattedLastSync }}</span>
+            <span v-else>Auto Sync</span>
+          </button>
+          <button
+            class="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-[#2a4a45] transition-all shadow-lg hover:shadow-xl text-sm font-semibold"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            New Appointment
+          </button>
+        </div>
       </div>
 
       <!-- Quick Search Bar -->
@@ -280,22 +309,69 @@
                   >
                 </td>
                 <!-- Status -->
-                <td class="px-4 py-4 whitespace-nowrap text-center">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize',
-                      appointment.status === 'CONFIRMED' ||
-                      appointment.status === 'COMPLETED'
-                        ? 'bg-green-100 text-green-700'
-                        : appointment.status === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : appointment.status === 'CANCELLED'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-gray-700',
-                    ]"
-                  >
-                    {{ appointment.status?.toLowerCase() }}
-                  </span>
+                <td class="px-4 py-4 whitespace-nowrap text-center relative">
+                  <div class="relative inline-block">
+                    <button
+                      @click="
+                        activeActionRow =
+                          activeActionRow === appointment._id
+                            ? null
+                            : appointment._id
+                      "
+                      :class="[
+                        'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium capitalize cursor-pointer',
+                        appointment.status === 'CONFIRMED' ||
+                        appointment.status === 'COMPLETED'
+                          ? 'bg-green-100 text-green-700'
+                          : appointment.status === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : appointment.status === 'CANCELLED'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-700',
+                      ]"
+                    >
+                      {{ appointment.status?.toLowerCase() }}
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </button>
+                    <div
+                      v-if="activeActionRow === appointment._id"
+                      class="absolute z-20 mt-1 right-0 w-32 bg-white rounded-lg shadow-lg border border-gray-100 py-1"
+                    >
+                      <button
+                        v-if="appointment.status !== 'CONFIRMED'"
+                        @click="updateStatus(appointment, 'CONFIRMED')"
+                        class="w-full text-left px-3 py-2 text-xs text-green-700 hover:bg-green-50"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        v-if="appointment.status !== 'CANCELLED'"
+                        @click="updateStatus(appointment, 'CANCELLED')"
+                        class="w-full text-left px-3 py-2 text-xs text-red-700 hover:bg-red-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        v-if="appointment.status !== 'PENDING'"
+                        @click="updateStatus(appointment, 'PENDING')"
+                        class="w-full text-left px-3 py-2 text-xs text-yellow-700 hover:bg-yellow-50"
+                      >
+                        Set Pending
+                      </button>
+                    </div>
+                  </div>
                 </td>
                 <!-- Payment -->
                 <td class="px-4 py-4 whitespace-nowrap text-center">
@@ -356,8 +432,12 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from "vue";
-  import { GetBookings } from "@/services/apiService.js";
+  import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+  import {
+    GetBookings,
+    SearchBookings,
+    ConfirmBooking,
+  } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
   const selectedDate = ref(new Date().toISOString().split("T")[0]);
@@ -379,6 +459,34 @@
   const currentPage = ref(1);
   const itemsPerPage = ref(10);
   const totalItems = ref(0);
+  const autoSyncEnabled = ref(true);
+  const lastSyncTime = ref(null);
+  let searchDebounceTimer = null;
+  let syncIntervalId = null;
+
+  function mapSearchBooking(booking) {
+    const rawDate = booking.date || "";
+    const dateOnly = rawDate.includes("T") ? rawDate.split("T")[0] : rawDate;
+    return {
+      _id: booking._id,
+      bookingId: booking.bookingId,
+      date: dateOnly,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      duration: booking.duration,
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      userId: {
+        name: booking.userName || booking.user?.name || "-",
+        phoneNumber: booking.phoneNumber || booking.user?.phoneNumber || "-",
+        email: booking.email || booking.user?.email || "-",
+      },
+      categoryId: {
+        categoryName: booking.category || booking.serviceName || "-",
+      },
+      resourceId: booking.resourceName ? { title: booking.resourceName } : null,
+    };
+  }
 
   async function fetchAppointments() {
     isLoading.value = true;
@@ -399,6 +507,7 @@
         appointments.value = data.items || [];
         totalItems.value = data.totalCount || appointments.value.length;
       }
+      lastSyncTime.value = new Date();
     } catch (error) {
       console.error("Error fetching appointments:", error);
     } finally {
@@ -406,8 +515,81 @@
     }
   }
 
+  function startAutoSync() {
+    if (syncIntervalId) clearInterval(syncIntervalId);
+    syncIntervalId = setInterval(() => {
+      if (searchQuery.value.trim()) {
+        searchAppointments();
+      } else {
+        fetchAppointments();
+      }
+    }, 30000);
+  }
+
+  function stopAutoSync() {
+    if (syncIntervalId) {
+      clearInterval(syncIntervalId);
+      syncIntervalId = null;
+    }
+  }
+
+  function toggleAutoSync() {
+    autoSyncEnabled.value = !autoSyncEnabled.value;
+    if (autoSyncEnabled.value) {
+      startAutoSync();
+    } else {
+      stopAutoSync();
+    }
+  }
+
+  const formattedLastSync = computed(() => {
+    if (!lastSyncTime.value) return "";
+    const now = new Date();
+    const diff = Math.floor((now - lastSyncTime.value) / 1000);
+    if (diff < 5) return "just now";
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return lastSyncTime.value.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  });
+
+  async function searchAppointments() {
+    if (!searchQuery.value.trim()) {
+      currentPage.value = 1;
+      fetchAppointments();
+      return;
+    }
+    isLoading.value = true;
+    try {
+      const response = await SearchBookings({
+        q: searchQuery.value.trim(),
+      });
+      if (response.isSuccess) {
+        const data = response.value || {};
+        const bookings = data.bookings || [];
+        appointments.value = bookings.map(mapSearchBooking);
+        totalItems.value = data.pagination?.total || appointments.value.length;
+        currentPage.value = data.pagination?.page || 1;
+      } else {
+        appointments.value = [];
+        totalItems.value = 0;
+      }
+    } catch (error) {
+      console.error("Error searching appointments:", error);
+      appointments.value = [];
+      totalItems.value = 0;
+    } finally {
+      isLoading.value = false;
+      lastSyncTime.value = new Date();
+    }
+  }
+
   onMounted(() => {
     fetchAppointments();
+    if (autoSyncEnabled.value) startAutoSync();
+  });
+
+  onUnmounted(() => {
+    stopAutoSync();
   });
 
   watch([selectedDate, selectedStatus], () => {
@@ -415,28 +597,44 @@
     fetchAppointments();
   });
 
+  watch(searchQuery, () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      searchAppointments();
+    }, 400);
+  });
+
   const totalPages = computed(
     () => Math.ceil(totalItems.value / itemsPerPage.value) || 1,
   );
 
+  const activeActionRow = ref(null);
+
+  async function updateStatus(appointment, newStatus) {
+    const response = await ConfirmBooking(appointment._id, {
+      status: newStatus,
+    });
+    if (response.isSuccess) {
+      appointment.status = newStatus;
+      activeActionRow.value = null;
+    } else {
+      alert(response.userMessage || "Failed to update status.");
+    }
+  }
+
   function goToPage(page) {
     if (page < 1 || page > totalPages.value) return;
     currentPage.value = page;
-    fetchAppointments();
+    if (searchQuery.value.trim()) {
+      searchAppointments();
+    } else {
+      fetchAppointments();
+    }
   }
 
   const filteredAppointments = computed(() => {
     if (!searchQuery.value) return appointments.value;
-    const query = searchQuery.value.toLowerCase();
-    return appointments.value.filter((apt) => {
-      const user = apt.userId || {};
-      return (
-        user.name?.toLowerCase().includes(query) ||
-        apt.bookingId?.toLowerCase().includes(query) ||
-        apt.status?.toLowerCase().includes(query) ||
-        apt.paymentStatus?.toLowerCase().includes(query)
-      );
-    });
+    return appointments.value;
   });
 
   function formatDuration(minutes) {

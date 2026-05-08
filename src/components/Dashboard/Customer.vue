@@ -184,11 +184,11 @@
                 >
                   Service
                 </th>
-                <!-- <th
+                <th
                   class="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
-                  Status
-                </th> -->
+                  Appointments
+                </th>
                 <th
                   class="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
@@ -237,35 +237,71 @@
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
                   {{ customer.serviceId?.title || "-" }}
                 </td>
-                <!-- Status -->
-                <!-- <td class="px-4 py-4 whitespace-nowrap">
-                  <div class="flex items-center justify-center">
+                <!-- Appointments -->
+                <td class="px-4 py-4 whitespace-nowrap text-center relative">
+                  <div class="relative inline-block">
                     <button
-                      @click="customer.isActive = !customer.isActive"
-                      class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
-                      :class="
-                        customer.isActive
-                          ? 'bg-green-500 focus:ring-green-500'
-                          : 'bg-gray-300 focus:ring-gray-300'
-                      "
+                      @click="activeCustomerBookings = activeCustomerBookings === customer._id ? null : customer._id"
+                      :class="[
+                        'inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-full text-xs font-semibold transition-colors',
+                        getCustomerBookings(customer._id).length > 0
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-500',
+                      ]"
                     >
-                      <span
-                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ease-out"
-                        :class="
-                          customer.isActive ? 'translate-x-6' : 'translate-x-1'
-                        "
-                      ></span>
+                      {{ getCustomerBookings(customer._id).length }}
                     </button>
-                    <span
-                      class="ml-2 text-xs font-semibold w-12"
-                      :class="
-                        customer.isActive ? 'text-green-600' : 'text-gray-500'
-                      "
+                    <div
+                      v-if="activeCustomerBookings === customer._id"
+                      class="absolute z-20 mt-2 right-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 max-h-72 overflow-y-auto"
                     >
-                      {{ customer.isActive ? "ON" : "OFF" }}
-                    </span>
+                      <div
+                        v-if="getCustomerBookings(customer._id).length === 0"
+                        class="px-4 py-3 text-xs text-gray-400 text-center"
+                      >
+                        No appointments
+                      </div>
+                      <div
+                        v-for="apt in getCustomerBookings(customer._id)"
+                        :key="apt._id"
+                        class="px-4 py-2 border-b border-gray-50 last:border-b-0 text-left"
+                      >
+                        <div class="text-xs font-semibold text-gray-800">
+                          {{ apt.bookingId }} · {{ apt.resourceId?.title || apt.resourceName || "-" }}
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-0.5">
+                          {{ apt.date ? apt.date.split('T')[0] : '-' }} · {{ apt.startTime }} - {{ apt.endTime }}
+                        </div>
+                        <div class="flex items-center gap-1 mt-1">
+                          <span
+                            :class="[
+                              'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium capitalize',
+                              apt.status === 'CONFIRMED' || apt.status === 'COMPLETED'
+                                ? 'bg-green-100 text-green-700'
+                                : apt.status === 'PENDING'
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : apt.status === 'CANCELLED'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-gray-100 text-gray-700',
+                            ]"
+                          >
+                            {{ apt.status?.toLowerCase() }}
+                          </span>
+                          <span
+                            :class="[
+                              'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium capitalize',
+                              apt.paymentStatus === 'PAID'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-orange-100 text-orange-700',
+                            ]"
+                          >
+                            {{ apt.paymentStatus?.toLowerCase() }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </td> -->
+                </td>
                 <!-- Actions -->
                 <td class="px-4 py-4 whitespace-nowrap text-center">
                   <button
@@ -563,19 +599,29 @@
     GetUsersAll,
     GetServices,
     CreateUser,
+    GetBookings,
   } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
   const searchQuery = ref("");
   const customers = ref([]);
+  const bookings = ref([]);
   const isLoading = ref(false);
+  const activeCustomerBookings = ref(null);
 
   async function fetchCustomers() {
     isLoading.value = true;
     try {
-      const response = await GetUsersAll();
-      if (response.isSuccess) {
-        customers.value = response.value || [];
+      const [usersRes, bookingsRes] = await Promise.all([
+        GetUsersAll(),
+        GetBookings({ limit: 1000 }),
+      ]);
+      if (usersRes.isSuccess) {
+        customers.value = usersRes.value || [];
+      }
+      if (bookingsRes.isSuccess) {
+        const data = bookingsRes.value || {};
+        bookings.value = data.items || [];
       }
     } catch (error) {
       console.error("Error fetching customers:", error);
@@ -587,6 +633,13 @@
   onMounted(() => {
     fetchCustomers();
   });
+
+  function getCustomerBookings(customerId) {
+    return bookings.value.filter((b) => {
+      const uid = b.userId?._id || b.user?._id;
+      return uid === customerId;
+    });
+  }
 
   const filteredCustomers = computed(() => {
     if (!searchQuery.value) return customers.value;

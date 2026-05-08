@@ -9,7 +9,7 @@
       </div>
 
       <div
-        class="col-span-1 sm:flex hidden gap-2 h-10 justify-end items-center px-2 border-r border-black gap-2 relative"
+        class="col-span-1 sm:flex hidden gap-2 h-10 justify-end items-center px-2 border-r border-black relative"
       >
         <!-- notification -->
         <div
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div
-        class="md:col-span-1 col-span-2 sm:flex hidden gap-2 h-10 items-center relative"
+        class="user-menu md:col-span-1 col-span-2 sm:flex hidden gap-2 h-10 items-center relative"
       >
         <!-- avatar -->
         <div
@@ -33,7 +33,7 @@
           />
         </div>
         <!-- user-name -->
-        <span class="text-black cursor-pointer">Ayesh</span>
+        <span class="text-black cursor-pointer">{{ userName }}</span>
         <!-- down-arrow -->
         <i
           class="pi pi-angle-down text-black cursor-pointer"
@@ -57,7 +57,7 @@
 
       <!-- Mobile-view -->
       <div
-        class="col-span-2 sm:hidden flex gap-2 h-10 justify-end items-center px-2 gap-2 relative"
+        class="user-menu col-span-2 sm:hidden flex gap-2 h-10 justify-end items-center px-2 relative"
       >
         <!-- notification -->
         <div
@@ -66,13 +66,6 @@
           <i class="pi pi-bell text-white"></i>
           <!-- Notification Badge -->
         </div>
-
-        <!-- error-message -->
-        <!-- <div
-          class="notify rounded-full bg-black h-10 w-10 p-3 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
-        >
-          <i class="pi pi-exclamation-circle text-white"></i>
-        </div> -->
 
         <!-- avatar -->
         <div
@@ -85,9 +78,12 @@
           />
         </div>
         <!-- user-name -->
-        <span class="text-black cursor-pointer">Ayesh</span>
+        <span class="text-black cursor-pointer">{{ userName }}</span>
         <!-- down-arrow -->
-        <i class="pi pi-angle-down text-black cursor-pointer"></i>
+        <i
+          class="pi pi-angle-down text-black cursor-pointer"
+          @click="toggleDropdown"
+        ></i>
 
         <!-- Logout Dropdown -->
         <div
@@ -108,13 +104,46 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+  import { ref, onMounted, onBeforeUnmount } from "vue";
   import { useRouter } from "vue-router";
 
   const router = useRouter();
+  const showDropdown = ref(false);
+  const userName = ref("User");
+
+  function toggleDropdown() {
+    showDropdown.value = !showDropdown.value;
+  }
+
+  function closeDropdown(e) {
+    const target = e.target;
+    if (!target.closest(".user-menu")) {
+      showDropdown.value = false;
+    }
+  }
 
   const handleLogout = () => {
     localStorage.clear();
     router.push("/");
   };
+
+  onMounted(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const user = JSON.parse(stored);
+        userName.value = user.name || userName.value;
+      } else {
+        const name = localStorage.getItem("name");
+        if (name) userName.value = name;
+      }
+    } catch {
+      // ignore parse errors
+    }
+    document.addEventListener("click", closeDropdown);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener("click", closeDropdown);
+  });
 </script>

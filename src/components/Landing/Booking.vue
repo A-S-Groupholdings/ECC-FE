@@ -1098,6 +1098,7 @@
         userId: registeredUserId.value,
         categoryId: booking.value.type,
         resourceId: booking.value.lane,
+        serviceId: booking.value.service,
         duration: totalDurationMinutes.value,
         date: booking.value.date,
         startTime: formatMinutesToTime(startMins),

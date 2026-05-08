@@ -52,7 +52,7 @@
       </div>
 
       <!-- account -->
-      <router-link to="/dashboard/home">
+      <router-link :to="profileRoute">
         <div
           class="account p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
         >
@@ -161,7 +161,7 @@
         <!-- Drawer Footer -->
         <div class="p-5 border-t border-emerald-500/20">
           <router-link
-            to="/dashboard/home"
+            :to="profileRoute"
             class="flex items-center gap-3 px-4 py-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors duration-200"
             @click="closeMenu"
           >
@@ -179,9 +179,40 @@
 </template>
 
 <script setup>
-  import { ref } from "vue";
+  import { ref, computed, onMounted } from "vue";
+  import { useRouter } from "vue-router";
 
   const isMenuOpen = ref(false);
+  const userRole = ref("member");
+  const router = useRouter();
+
+  onMounted(() => {
+    try {
+      const stored = localStorage.getItem("user");
+
+      if (!stored) {
+        router.push("/");
+        return;
+      }
+
+      const user = JSON.parse(stored);
+
+      if (!user) {
+        router.push("/");
+        return;
+      }
+
+      const catName = user.category?.categoryName?.toLowerCase() || "";
+      if (catName === "coach") {
+        userRole.value = "coach";
+      }
+    } catch {
+      router.push("/");
+    }
+  });
+  const profileRoute = computed(() => {
+    return userRole.value === "coach" ? "/coach/profil" : "/ecc/profile";
+  });
 
   function toggleMenu() {
     isMenuOpen.value = !isMenuOpen.value;
