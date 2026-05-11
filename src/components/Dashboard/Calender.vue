@@ -183,151 +183,6 @@
         </div>
       </div>
 
-      <!-- WEEK VIEW -->
-      <div
-        v-else-if="currentView === 'week'"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-      >
-        <div class="grid grid-cols-8 border-b border-gray-100">
-          <div class="py-3 px-2 text-xs font-semibold text-gray-400"></div>
-          <div
-            v-for="(wd, i) in weekViewDays"
-            :key="i"
-            :class="[
-              'py-3 text-center text-xs font-semibold uppercase tracking-wide',
-              wd.isToday ? 'text-blue-500' : 'text-gray-500',
-            ]"
-          >
-            <div>{{ wd.label }}</div>
-            <div
-              :class="[
-                'text-lg font-bold mt-0.5',
-                wd.isToday ? 'text-blue-500' : 'text-gray-800',
-              ]"
-            >
-              {{ wd.day }}
-            </div>
-          </div>
-        </div>
-        <div class="overflow-y-auto max-h-[60vh]">
-          <div
-            v-for="hour in hours"
-            :key="hour"
-            class="grid grid-cols-8 border-b border-gray-50 min-h-[50px]"
-          >
-            <div
-              class="px-2 py-2 text-xs text-gray-400 text-right pr-3 pt-1 border-r border-gray-100"
-            >
-              {{ hour }}
-            </div>
-            <div
-              v-for="(wd, i) in weekViewDays"
-              :key="i"
-              class="border-r border-gray-50 px-1 py-1 last:border-r-0 relative"
-            >
-              <div
-                v-for="apt in getAppointmentsForWeekCell(wd.fullDate, hour)"
-                :key="apt.id"
-                class="text-xs bg-green-100 text-green-800 rounded px-1 py-0.5 mb-0.5 truncate"
-              >
-                {{ apt.name }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DAY VIEW -->
-      <div
-        v-else-if="currentView === 'day'"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-      >
-        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-          <h3 class="text-base font-bold text-gray-800">
-            {{ selectedDayLabel }}
-          </h3>
-        </div>
-        <div class="overflow-y-auto max-h-[60vh]">
-          <div
-            v-for="hour in hours"
-            :key="hour"
-            class="flex border-b border-gray-50 min-h-[50px]"
-          >
-            <div
-              class="w-20 px-4 py-2 text-xs text-gray-400 text-right border-r border-gray-100 flex-shrink-0"
-            >
-              {{ hour }}
-            </div>
-            <div class="flex-1 px-3 py-1">
-              <div
-                v-for="apt in getAppointmentsForDayHour(hour)"
-                :key="apt.id"
-                class="text-xs bg-green-100 text-green-800 rounded-lg px-3 py-2 mb-1 flex justify-between items-center"
-              >
-                <span class="font-medium">{{ apt.name }}</span>
-                <span class="text-green-600"
-                  >{{ apt.lane }} · {{ apt.service }}</span
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LIST VIEW -->
-      <div
-        v-else-if="currentView === 'list'"
-        class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
-      >
-        <div class="divide-y divide-gray-100">
-          <div
-            v-if="monthAppointments.length === 0"
-            class="px-6 py-12 text-center text-gray-400 text-sm"
-          >
-            No appointments this month
-          </div>
-          <div
-            v-for="apt in monthAppointments"
-            :key="apt.id"
-            class="px-6 py-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class="w-10 h-10 bg-gradient-to-br from-[#1a3a35] to-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-              >
-                {{ apt.name.charAt(0) }}
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-gray-900">
-                  {{ apt.name }}
-                </p>
-                <p class="text-xs text-gray-500">
-                  {{ apt.date }} · {{ apt.time }}
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 ml-14 sm:ml-0">
-              <span
-                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
-                >{{ apt.lane }}</span
-              >
-              <span class="text-xs text-gray-600 hidden sm:block">{{
-                apt.service
-              }}</span>
-              <span
-                :class="[
-                  'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-                  apt.status === 'Confirmed'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700',
-                ]"
-                >{{ apt.status }}</span
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Selected Day Appointments Panel (Month view) -->
       <div
         v-if="currentView === 'month' && selectedCell"
@@ -365,6 +220,9 @@
                 <p class="text-xs text-gray-500">
                   {{ apt.time }} · {{ apt.lane }}
                 </p>
+                <p class="text-[10px] text-gray-400">
+                  {{ apt.phone || "No phone" }}
+                </p>
               </div>
             </div>
             <span
@@ -384,34 +242,39 @@
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted, watch } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
+  import { GetResources, GetCalendarData } from "@/services/apiService.js";
 
   // ─── Resources ──────────────────────────────────────────────────────────────
   const selectedResource = ref("all");
-  const resources = [
-    { id: "all", label: "All" },
-    { id: "lane1", label: "Lane 1" },
-    { id: "lane2", label: "Lane 2" },
-    { id: "lane3", label: "Lane 3" },
-    { id: "lane4", label: "Lane 4" },
-    { id: "lane5", label: "Lane 5" },
-    { id: "lane6", label: "Lane 6" },
-    { id: "lane7", label: "Lane 7" },
-    { id: "lane8", label: "Lane 8" },
-    { id: "bm1", label: "Bowling Machine 1" },
-    { id: "bm2", label: "Bowling Machine 2" },
-    { id: "bm3", label: "Bowling Machine 3" },
-    { id: "bm4", label: "Bowling Machine 4" },
-  ];
+  const resources = ref([{ id: "all", label: "All" }]);
+  const isLoadingResources = ref(false);
+  const isLoadingCalendar = ref(false);
+  const calendarError = ref("");
+
+  async function fetchResources() {
+    isLoadingResources.value = true;
+    try {
+      const response = await GetResources();
+      if (response.isSuccess) {
+        const apiResources = (response.value || []).map((r) => ({
+          id: r._id,
+          label: r.title,
+          resourceID: r.resourceID,
+          isActive: r.isActive,
+        }));
+        resources.value = [{ id: "all", label: "All" }, ...apiResources];
+      }
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+    } finally {
+      isLoadingResources.value = false;
+    }
+  }
 
   // ─── View switcher ──────────────────────────────────────────────────────────
-  const views = [
-    { key: "month", label: "Month" },
-    { key: "week", label: "Week" },
-    { key: "day", label: "Day" },
-    { key: "list", label: "List" },
-  ];
+  const views = [{ key: "month", label: "Month" }];
   const currentView = ref("month");
 
   // ─── Date state ─────────────────────────────────────────────────────────────
@@ -541,87 +404,101 @@
   });
 
   // ─── Appointments data ───────────────────────────────────────────────────────
-  const appointments = ref([
-    {
-      id: "1826",
-      date: "2026-03-06",
-      time: "3:00 PM",
-      lane: "Lane 1",
-      name: "Nilanga",
-      phone: "+61 404 566 098",
-      email: "info@elitecricketcentre.com.au",
-      service: "Lane 1 Only Booking - Leather ball",
-      status: "Confirmed",
-    },
-    {
-      id: "1827",
-      date: "2026-03-13",
-      time: "3:00 PM",
-      lane: "Lane 1",
-      name: "Nilanga",
-      phone: "+61 404 566 098",
-      email: "info@elitecricketcentre.com.au",
-      service: "Lane 1 Only Booking - Leather ball",
-      status: "Confirmed",
-    },
-    {
-      id: "2285",
-      date: "2026-03-01",
-      time: "10:00 AM",
-      lane: "Lane 4",
-      name: "Prageeth",
-      phone: "+61 413 071 473",
-      email: "info@elitecricketcentre.com.au",
-      service: "Lane Only Booking ($40)",
-      status: "Pending",
-    },
-    {
-      id: "2286",
-      date: "2026-03-01",
-      time: "10:00 AM",
-      lane: "Lane 5",
-      name: "Prageeth",
-      phone: "+61 413 071 473",
-      email: "info@elitecricketcentre.com.au",
-      service: "Lane 5 Only - Ball Machine 2",
-      status: "Confirmed",
-    },
-    {
-      id: "2306",
-      date: "2026-03-04",
-      time: "7:30 PM",
-      lane: "Lane 6",
-      name: "Sam",
-      phone: "+61 448 814 726",
-      email: "",
-      service: "Lane + Bowling Machine",
-      status: "Confirmed",
-    },
-    {
-      id: "2307",
-      date: "2026-03-06",
-      time: "2:30 PM",
-      lane: "Lane 6",
-      name: "Sankar",
-      phone: "+61 400 632 087",
-      email: "Sankar.Melethat@gmail.com",
-      service: "Lane + Bowling Machine",
-      status: "Pending",
-    },
-  ]);
+  const appointments = ref([]);
+
+  function mapBookingToAppointment(booking) {
+    const statusMap = {
+      CONFIRMED: "Confirmed",
+      PENDING: "Pending",
+      CANCELLED: "Cancelled",
+      COMPLETED: "Completed",
+    };
+    // API date may be ISO string like "2026-05-07T00:00:00.000Z" — extract YYYY-MM-DD
+    const rawDate = booking.date || "";
+    const dateOnly = rawDate.includes("T") ? rawDate.split("T")[0] : rawDate;
+
+    return {
+      id: booking.bookingId || booking._id || String(Math.random()),
+      date: dateOnly,
+      time: booking.startTime,
+      lane: booking.resourceName || "-",
+      name: booking.userName || "-",
+      phone: booking.phoneNumber || "-",
+      email: booking.email || "",
+      service: booking.serviceName || "-",
+      status: statusMap[booking.status] || booking.status || "Pending",
+    };
+  }
+
+  async function fetchCalendarData() {
+    isLoadingCalendar.value = true;
+    calendarError.value = "";
+
+    try {
+      let dateStr;
+      if (currentView.value === "week" || currentView.value === "day") {
+        // Week/Day: use selected cell date, or fallback to today
+        if (selectedCell.value) {
+          dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}-${String(selectedCell.value.day).padStart(2, "0")}`;
+        } else {
+          dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        }
+      } else {
+        // Month/List: always use the 1st day of the currently viewed month
+        dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}-01`;
+      }
+
+      const payload = {
+        view: currentView.value,
+        date: dateStr,
+      };
+      if (selectedResource.value !== "all") {
+        payload.resourceId = selectedResource.value;
+      }
+
+      const response = await GetCalendarData(payload);
+      if (response.isSuccess) {
+        // API returns days array, each with a bookings array
+        const days = response.value?.days || [];
+        const allBookings = days.flatMap((d) => d.bookings || []);
+        appointments.value = allBookings.map(mapBookingToAppointment);
+      } else {
+        calendarError.value =
+          response.userMessage || "Failed to load calendar data.";
+        appointments.value = [];
+      }
+    } catch (error) {
+      console.error("Error fetching calendar data:", error);
+      calendarError.value = "An error occurred while loading calendar data.";
+      appointments.value = [];
+    } finally {
+      isLoadingCalendar.value = false;
+    }
+  }
 
   function getAppointmentsForDay(day) {
     const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return appointments.value.filter((a) => a.date === dateStr);
   }
 
+  function gridHourTo24(hourStr) {
+    const clean = hourStr.toLowerCase().replace(/\s/g, "");
+    const isPm = clean.includes("pm");
+    const isAm = clean.includes("am");
+    let h = parseInt(clean.split(":")[0]);
+    if (isPm && h !== 12) h += 12;
+    if (isAm && h === 12) h = 0;
+    return h;
+  }
+
+  function bookingHourTo24(timeStr) {
+    return parseInt((timeStr || "").split(":")[0]);
+  }
+
   function getAppointmentsForWeekCell(fullDate, hour) {
-    const apt12h = (t) =>
-      t.replace(" AM", "am").replace(" PM", "pm").toLowerCase();
+    const gridHour = gridHourTo24(hour);
     return appointments.value.filter(
-      (a) =>
-        a.date === fullDate &&
-        apt12h(a.time).startsWith(hour.replace(" ", "").toLowerCase()),
+      (a) => a.date === fullDate && bookingHourTo24(a.time) === gridHour,
     );
   }
 
@@ -629,12 +506,9 @@
     const cell = selectedCell.value;
     if (!cell) return [];
     const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
-    const apt12h = (t) =>
-      t.replace(" AM", "am").replace(" PM", "pm").toLowerCase();
+    const gridHour = gridHourTo24(hour);
     return appointments.value.filter(
-      (a) =>
-        a.date === dateStr &&
-        apt12h(a.time).startsWith(hour.replace(" ", "").toLowerCase()),
+      (a) => a.date === dateStr && bookingHourTo24(a.time) === gridHour,
     );
   }
 
@@ -642,4 +516,18 @@
     const prefix = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}`;
     return appointments.value.filter((a) => a.date.startsWith(prefix));
   });
+
+  // ─── Fetch data on mount and when dependencies change ────────────────────────
+  onMounted(() => {
+    fetchResources();
+    fetchCalendarData();
+  });
+
+  watch(
+    [currentView, currentYear, currentMonth, selectedResource],
+    () => {
+      fetchCalendarData();
+    },
+    { immediate: false },
+  );
 </script>

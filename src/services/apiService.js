@@ -425,6 +425,32 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const SearchBookings = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/search', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error searching bookings:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const ConfirmBooking = async (bookingId, payload) => {
+    try {
+      const response = await apiService.post(`/bookings/confirmation/${bookingId}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error confirming booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const GetUserBookingData = async (userId) => {
     try {
       const response = await apiService.post('/bookings/userBookingData', {
@@ -513,6 +539,32 @@ export const AdminLogin = async (email, otp) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching session dashboard:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetCalendarData = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/calendar', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching calendar data:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetAppointmentData = async () => {
+    try {
+      const response = await apiService.post('/bookings/appoinmentData');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching appointment data:', error);
       if (error.response && error.response.data) {
         return error.response.data;
       }
