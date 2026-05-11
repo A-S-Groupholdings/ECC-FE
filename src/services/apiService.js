@@ -559,4 +559,17 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const GetAppointmentData = async () => {
+    try {
+      const response = await apiService.post('/bookings/appoinmentData');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching appointment data:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 export default apiService;

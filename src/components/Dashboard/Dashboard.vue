@@ -40,7 +40,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-2xl font-bold text-gray-800">59</p>
+              <p class="text-2xl font-bold text-gray-800">{{ approvedAppointments }}</p>
               <p class="text-sm text-blue-500">Approved appointments</p>
             </div>
           </div>
@@ -65,7 +65,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-2xl font-bold text-gray-800">31</p>
+              <p class="text-2xl font-bold text-gray-800">{{ pendingAppointments }}</p>
               <p class="text-sm text-blue-500">Pending appointments</p>
             </div>
           </div>
@@ -90,7 +90,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-2xl font-bold text-gray-800">92</p>
+              <p class="text-2xl font-bold text-gray-800">{{ totalAppointments }}</p>
               <p class="text-sm text-blue-500">Total appointments</p>
             </div>
           </div>
@@ -366,5 +366,28 @@
   </main>
 </template>
 <script setup>
+  import { ref, onMounted } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
+  import { GetAppointmentData } from "../../services/apiService.js";
+
+  const totalAppointments = ref(0);
+  const pendingAppointments = ref(0);
+  const approvedAppointments = ref(0);
+
+  const fetchAppointmentData = async () => {
+    try {
+      const response = await GetAppointmentData();
+      if (response.isSuccess) {
+        totalAppointments.value = response.value.total;
+        pendingAppointments.value = response.value.pendingCount;
+        approvedAppointments.value = response.value.confirmedCount;
+      }
+    } catch (error) {
+      console.error("Failed to fetch appointment data:", error);
+    }
+  };
+
+  onMounted(() => {
+    fetchAppointmentData();
+  });
 </script>
