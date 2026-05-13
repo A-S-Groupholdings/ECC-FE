@@ -265,7 +265,7 @@
 
           <!-- Booking Calendar Button -->
           <router-link
-            to="/dashboard/calender"
+            to="#"
             class="block"
           >
             <div
@@ -474,96 +474,332 @@
             <!-- Settings Tab -->
             <div
               v-if="activeTab === 'settings'"
-              class="space-y-6"
+              class="space-y-8"
             >
-              <!-- Change Password -->
-              <div class="border-b border-gray-100 pb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                  Change Password
+              <!-- Quick Actions -->
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">
+                  Quick Actions
                 </h3>
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2"
-                      >Current Password</label
-                    >
-                    <input
-                      type="password"
-                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2"
-                      >New Password</label
-                    >
-                    <input
-                      type="password"
-                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2"
-                      >Confirm New Password</label
-                    >
-                    <input
-                      type="password"
-                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                    />
-                  </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Booking Cancellation Button -->
+                  <router-link
+                    to="/booking/cancel"
+                    class="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 hover:shadow-lg hover:border-orange-300 transition-all duration-300 cursor-pointer"
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                          <div
+                            class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                          >
+                            <svg
+                              class="w-6 h-6 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4
+                              class="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors"
+                            >
+                              Cancel Booking
+                            </h4>
+                            <p class="text-sm text-gray-600">
+                              Cancel an existing booking
+                            </p>
+                          </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                          Submit a cancellation request for your booking
+                        </p>
+                      </div>
+                      <svg
+                        class="w-5 h-5 text-orange-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all duration-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-orange-500/0 group-hover:from-orange-500/10 group-hover:via-orange-500/10 group-hover:to-orange-500/10 transition-all duration-500"
+                    ></div>
+                  </router-link>
+
+                  <!-- Member Cancellation Button -->
+                  <button
+                    v-if="!isMembershipCancelled"
+                    @click="handleMemberCancellation"
+                    class="group relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-xl p-6 hover:shadow-lg hover:border-red-300 transition-all duration-300 cursor-pointer w-full text-left"
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                          <div
+                            class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                          >
+                            <svg
+                              class="w-6 h-6 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4
+                              class="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors"
+                            >
+                              Cancel Membership
+                            </h4>
+                            <p class="text-sm text-gray-600">
+                              Cancel your membership
+                            </p>
+                          </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                          Request membership cancellation and account closure
+                        </p>
+                      </div>
+                      <svg
+                        class="w-5 h-5 text-red-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/10 group-hover:to-red-500/10 transition-all duration-500"
+                    ></div>
+                  </button>
                 </div>
               </div>
 
-              <!-- Notifications -->
-              <div class="border-b border-gray-100 pb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                  Notifications
-                </h3>
-                <div class="space-y-3">
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked
-                      class="w-4 h-4 text-[#1a3a35] rounded focus:ring-[#1a3a35]"
+              <!-- Important Notice -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-start gap-3">
+                  <svg
+                    class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
-                    <span class="text-gray-700"
-                      >Email notifications for booking confirmations</span
-                    >
-                  </label>
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked
-                      class="w-4 h-4 text-[#1a3a35] rounded focus:ring-[#1a3a35]"
-                    />
-                    <span class="text-gray-700"
-                      >SMS reminders before appointments</span
-                    >
-                  </label>
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="w-4 h-4 text-[#1a3a35] rounded focus:ring-[#1a3a35]"
-                    />
-                    <span class="text-gray-700"
-                      >Marketing emails and promotions</span
-                    >
-                  </label>
+                  </svg>
+                  <div>
+                    <h4 class="text-sm font-semibold text-blue-900 mb-1">
+                      Important Notice
+                    </h4>
+                    <p class="text-xs text-blue-800">
+                      Cancellation requests will be reviewed by our team. You
+                      will receive a confirmation email once your request is
+                      processed. Cancellations made less than 4 hours before the
+                      session may not be eligible for a refund.
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Action Buttons -->
-              <div class="flex justify-end gap-3">
-                <button
-                  class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  @click="saveProfile"
-                  :disabled="isSaving"
-                  class="px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors disabled:opacity-50"
-                >
-                  {{ isSaving ? "Saving..." : "Save Settings" }}
-                </button>
+            <!-- Membership Cancellation Modal -->
+            <div
+              v-if="showCancellationModal"
+              class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              @click="closeCancellationModal"
+            >
+              <div
+                class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+                @click.stop
+              >
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center"
+                      >
+                        <svg
+                          class="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 class="text-xl font-bold text-white">
+                        Cancel Membership
+                      </h3>
+                    </div>
+                    <button
+                      @click="closeCancellationModal"
+                      class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+                    >
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                  <p class="text-gray-600 text-sm mb-6">
+                    Please review your cancellation request below. Our team will
+                    contact you to process the cancellation.
+                  </p>
+
+                  <!-- Email (Read-only) -->
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      v-model="cancellationForm.email"
+                      type="email"
+                      readonly
+                      class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  <!-- Note -->
+                  <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Note <span class="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <textarea
+                      v-model="cancellationForm.note"
+                      rows="4"
+                      placeholder="Please provide a reason for cancellation..."
+                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                    ></textarea>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex gap-3">
+                    <button
+                      @click="closeCancellationModal"
+                      :disabled="isCancelling"
+                      class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      @click="submitMembershipCancellation"
+                      :disabled="isCancelling"
+                      class="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        v-if="isCancelling"
+                        class="w-5 h-5 animate-spin"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      {{ isCancelling ? "Submitting..." : "Submit Request" }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div
+              v-if="showSuccessModal"
+              class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            >
+              <div
+                class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+              >
+                <div class="p-8 text-center">
+                  <div
+                    class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+                  >
+                    <svg
+                      class="w-10 h-10 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-3">
+                    Request Submitted!
+                  </h3>
+                  <p class="text-gray-600 mb-6">
+                    Your membership cancellation request has been submitted
+                    successfully. Our team will review your request and contact
+                    you soon.
+                  </p>
+                  <button
+                    @click="showSuccessModal = false"
+                    class="w-full px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -833,6 +1069,7 @@
     GetUserById,
     UpdateUser,
     DeleteUser,
+    CancelMembership,
   } from "@/services/apiService.js";
 
   const router = useRouter();
@@ -841,9 +1078,21 @@
   const isLoading = ref(false);
   const isSaving = ref(false);
   const isDeleting = ref(false);
+  const isCancelling = ref(false);
   const showDeleteModal = ref(false);
+  const showCancellationModal = ref(false);
+  const showSuccessModal = ref(false);
   const updateError = ref("");
   const deleteError = ref("");
+
+  const cancellationForm = ref({
+    email: "",
+    note: "",
+  });
+
+  const isMembershipCancelled = computed(() => {
+    return localStorage.getItem("membershipCancelled") === "true";
+  });
 
   const tabs = [
     { id: "profile", label: "Profile", icon: "pi-user" },
@@ -940,6 +1189,68 @@
       console.error("Update error:", error);
     } finally {
       isSaving.value = false;
+    }
+  }
+
+  function handleMemberCancellation() {
+    // Auto-fill email from user profile
+    cancellationForm.value = {
+      email: user.value.email,
+      note: "",
+    };
+    showCancellationModal.value = true;
+  }
+
+  function closeCancellationModal() {
+    if (!isCancelling.value) {
+      showCancellationModal.value = false;
+      cancellationForm.value = {
+        email: "",
+        note: "",
+      };
+    }
+  }
+
+  async function submitMembershipCancellation() {
+    isCancelling.value = true;
+
+    try {
+      const payload = {
+        email: cancellationForm.value.email,
+        note: cancellationForm.value.note.trim() || "Not provided",
+      };
+
+      const response = await CancelMembership(payload);
+
+      if (response.isSuccess) {
+        // Close cancellation modal
+        showCancellationModal.value = false;
+
+        // Show success modal
+        showSuccessModal.value = true;
+
+        // Store in localStorage to prevent future submissions
+        localStorage.setItem("membershipCancelled", "true");
+
+        // Reset form
+        cancellationForm.value = {
+          email: "",
+          note: "",
+        };
+      } else {
+        alert(
+          response.userMessage ||
+            "Failed to submit cancellation request. Please try again.",
+        );
+      }
+    } catch (error) {
+      console.error("[MEMBERSHIP CANCELLATION] Error:", error);
+      alert(
+        error.response?.data?.userMessage ||
+          "Failed to submit cancellation request. Please try again.",
+      );
+    } finally {
+      isCancelling.value = false;
     }
   }
 

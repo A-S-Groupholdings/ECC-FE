@@ -53,7 +53,7 @@
       </div>
 
       <!-- account -->
-      <router-link to="/dashboard/home">
+      <router-link to="#">
         <div class="account">
           <img
             src="@/assets/account.png"

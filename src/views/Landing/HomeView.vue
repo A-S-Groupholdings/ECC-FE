@@ -7,6 +7,7 @@
   import MemberPortal from "../../components/Landing/MemberPortal.vue";
   import CoachPortal from "../../components/Landing/CoachPortal.vue";
   import Booking from "../../components/Landing/Booking.vue";
+  import BookingCancel from "../../components/Landing/BookingCancelPortal.vue";
   import Footer from "../../components/Landing/Footer.vue";
 </script>
 
@@ -22,6 +23,10 @@
       <MemberPortal />
     </router-link>
     <Booking />
+
+    <router-link to="/booking/cancel">
+      <BookingCancel />
+    </router-link>
     <router-link to="/coach/login">
       <CoachPortal />
     </router-link>

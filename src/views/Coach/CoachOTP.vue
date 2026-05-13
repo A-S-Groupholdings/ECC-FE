@@ -212,7 +212,7 @@
 
           if (categoryName !== "coach") {
             errorMessage.value =
-              "Access denied. Coaches are not allowed to log in to the coach portal. Only coaches can access this portal.";
+              "Access denied. Members are not allowed to log in to the coach portal. Only coaches can access this portal.";
             otpDigits.value = ["", "", "", "", "", ""];
             otpInputs.value[0].focus();
             isLoading.value = false;
