@@ -23,6 +23,22 @@
         </p>
       </div>
 
+      <!-- Success Message -->
+      <div
+        v-if="successMessage"
+        class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6"
+      >
+        <p class="text-green-800 text-sm">{{ successMessage }}</p>
+      </div>
+
+      <!-- Error Message -->
+      <div
+        v-if="errorMessage"
+        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+      >
+        <p class="text-red-800 text-sm">{{ errorMessage }}</p>
+      </div>
+
       <!-- Form Card -->
       <div class="bg-[#faf9f7] container mx-auto">
         <form
@@ -37,7 +53,8 @@
             <input
               v-model="form.name"
               type="text"
-              placeholder="Name"
+              placeholder="Enter your name"
+              required
               class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
             />
           </div>
@@ -50,7 +67,8 @@
             <input
               v-model="form.email"
               type="email"
-              placeholder="Email"
+              placeholder="Enter your email"
+              required
               class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
             />
           </div>
@@ -58,87 +76,53 @@
           <!-- Phone -->
           <div>
             <label class="block text-sm font-medium text-gray-800 mb-2">
-              Phone <span class="text-red-500">*</span>
+              Phone Number <span class="text-red-500">*</span>
             </label>
             <input
-              v-model="form.phone"
+              v-model="form.phoneNumber"
               type="tel"
-              placeholder=""
+              placeholder="Enter your phone number"
+              required
               class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
             />
           </div>
 
-          <!-- Booking Date -->
+          <!-- Booking ID -->
           <div>
             <label class="block text-sm font-medium text-gray-800 mb-2">
-              Booking Date <span class="text-red-500">*</span>
+              Booking ID <span class="text-red-500">*</span>
             </label>
             <input
-              v-model="form.bookingDate"
+              v-model="form.bookingId"
               type="text"
-              placeholder="dd/mm/yyyy"
+              placeholder="e.g., B1, B2, B3"
+              required
               class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
             />
           </div>
 
-          <!-- Booking Time -->
+          <!-- Reason -->
           <div>
             <label class="block text-sm font-medium text-gray-800 mb-2">
-              Booking Time <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="form.bookingTime"
-              type="text"
-              placeholder=""
-              class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
-            />
-          </div>
-
-          <!-- Booking Informations -->
-          <div>
-            <label class="block text-sm font-medium text-gray-800 mb-2">
-              Booking Informations <span class="text-red-500">*</span>
+              Cancellation Reason
             </label>
             <textarea
-              v-model="form.bookingInfo"
-              rows="5"
-              placeholder="Selected Lane & Services"
+              v-model="form.reason"
+              rows="4"
+              placeholder="Please provide a reason for cancellation (optional)"
               class="w-full px-4 py-3 bg-white border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all resize-none"
             ></textarea>
-          </div>
-
-          <!-- Booking Reference (File Upload) -->
-          <div>
-            <label class="block text-sm font-medium text-gray-800 mb-2">
-              Booking Reference (Screenshot of your booking confirmation email)
-            </label>
-            <div class="flex items-center gap-3">
-              <label class="cursor-pointer">
-                <input
-                  type="file"
-                  @change="handleFileUpload"
-                  accept="image/*"
-                  class="hidden"
-                />
-                <span
-                  class="inline-block px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  Choose files
-                </span>
-              </label>
-              <span class="text-sm text-gray-500">
-                {{ form.fileName || "No file chosen" }}
-              </span>
-            </div>
           </div>
 
           <!-- Submit Button -->
           <div class="pt-4">
             <button
               type="submit"
-              class="w-full bg-[#1a3a35] text-white py-4 rounded font-semibold tracking-wide hover:bg-[#2a4a45] transition-colors uppercase"
+              :disabled="isSubmitting"
+              class="w-full bg-[#1a3a35] text-white py-4 rounded font-semibold tracking-wide hover:bg-[#2a4a45] transition-colors uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Submit
+              <span v-if="isSubmitting">Submitting...</span>
+              <span v-else>Submit Cancellation Request</span>
             </button>
           </div>
         </form>
@@ -149,31 +133,69 @@
 
 <script setup>
   import { ref } from "vue";
+  import { useRouter } from "vue-router";
+  import { CancelBooking } from "@/services/apiService.js";
+
+  const router = useRouter();
 
   const form = ref({
     name: "",
     email: "",
-    phone: "",
-    bookingDate: "",
-    bookingTime: "",
-    bookingInfo: "",
-    file: null,
-    fileName: "",
+    phoneNumber: "",
+    bookingId: "",
+    reason: "",
   });
 
-  function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-      form.value.file = file;
-      form.value.fileName = file.name;
-    }
-  }
+  const isSubmitting = ref(false);
+  const successMessage = ref("");
+  const errorMessage = ref("");
 
-  function submitForm() {
-    console.log("Cancellation request submitted:", form.value);
-    // Handle form submission
-    alert(
-      "Your cancellation request has been submitted. Our team will review it and contact you soon.",
-    );
-  }
+  const submitForm = async () => {
+    isSubmitting.value = true;
+    successMessage.value = "";
+    errorMessage.value = "";
+
+    try {
+      const payload = {
+        bookingId: form.value.bookingId.trim(),
+        name: form.value.name.trim(),
+        email: form.value.email.trim(),
+        phoneNumber: form.value.phoneNumber.trim(),
+        reason: form.value.reason.trim() || "Not provided",
+      };
+
+      const response = await CancelBooking(payload);
+
+      if (response.isSuccess) {
+        successMessage.value =
+          response.value.message ||
+          "Your cancellation request has been submitted successfully. A confirmation email has been sent.";
+
+        // Reset form
+        form.value = {
+          name: "",
+          email: "",
+          phoneNumber: "",
+          bookingId: "",
+          reason: "",
+        };
+
+        // Redirect to home after 3 seconds
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
+      } else {
+        errorMessage.value =
+          response.userMessage ||
+          "Failed to submit cancellation request. Please try again.";
+      }
+    } catch (error) {
+      console.error("[CANCELLATION] Error:", error);
+      errorMessage.value =
+        error.response?.data?.userMessage ||
+        "Failed to submit cancellation request. Please check your details and try again.";
+    } finally {
+      isSubmitting.value = false;
+    }
+  };
 </script>

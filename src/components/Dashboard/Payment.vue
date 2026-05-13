@@ -88,10 +88,9 @@
             class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] shadow-sm"
           >
             <option value="">All Status</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-            <option value="Failed">Failed</option>
-            <option value="Refunded">Refunded</option>
+            <option value="success">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
           </select>
 
           <!-- Type Filter -->
@@ -100,16 +99,40 @@
             class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] shadow-sm"
           >
             <option value="">All Types</option>
-            <option value="Stripe Cloud">Stripe Cloud</option>
-            <option value="PayPal">PayPal</option>
-            <option value="Local">Local</option>
-            <option value="Free">Free</option>
+            <option value="stripe">Stripe Cloud</option>
+            <option value="local">Local</option>
           </select>
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div
+        v-if="loading"
+        class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-lg"
+      >
+        <div
+          class="w-12 h-12 border-4 border-[#1a3a35] border-t-transparent rounded-full animate-spin mb-4"
+        ></div>
+        <p class="text-gray-500 text-sm">Loading payments...</p>
+      </div>
+
+      <!-- Error State -->
+      <div
+        v-else-if="error"
+        class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center"
+      >
+        <p class="text-red-700 font-medium mb-4">{{ error }}</p>
+        <button
+          @click="fetchPayments"
+          class="bg-[#1a3a35] text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-[#2a4a45] transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+
       <!-- Payments Table -->
       <div
+        v-else
         class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="overflow-x-auto">
@@ -309,8 +332,8 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr
-                v-for="payment in filteredPayments"
-                :key="payment.id"
+                v-for="(payment, index) in filteredPayments"
+                :key="payment._id"
                 class="hover:bg-gray-50 transition-colors"
               >
                 <!-- No. -->
@@ -322,35 +345,47 @@
                       +
                     </button>
                     <span class="text-sm font-semibold text-gray-900">{{
-                      payment.id
+                      (currentPage - 1) * limit + index + 1
                     }}</span>
                   </div>
                 </td>
                 <!-- Date -->
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-700">{{ payment.date }}</div>
-                  <div class="text-xs text-gray-400">{{ payment.time }}</div>
+                  <div class="text-sm text-gray-700">
+                    {{ formatDate(payment.createdAt) }}
+                  </div>
+                  <div class="text-xs text-gray-400">
+                    {{ formatTime(payment.createdAt) }}
+                  </div>
                 </td>
                 <!-- Type -->
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">{{ payment.type }}</span>
+                  <span class="text-sm text-gray-700">{{
+                    mapType(
+                      payment.paymentMethod,
+                      payment.membershipId,
+                      payment.bookingId,
+                    )
+                  }}</span>
                 </td>
                 <!-- Customer -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <span class="text-sm font-medium text-gray-900">{{
-                    payment.customer
+                    payment.userId?.name || "Unknown"
                   }}</span>
                 </td>
-                <!-- Provider (Resource) -->
+                <!-- Provider (Resource/Service) -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
-                    payment.provider
+                    payment.membershipId?.name ||
+                    payment.notes?.match(/service=([^,]+)/)?.[1] ||
+                    "N/A"
                   }}</span>
                 </td>
-                <!-- Service -->
+                <!-- Service Details -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
-                    payment.service
+                    payment.membershipId ? "Membership" : "Booking"
                   }}</span>
                 </td>
                 <!-- Payment Status -->
@@ -358,37 +393,41 @@
                   <span
                     :class="[
                       'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-                      payment.status === 'Completed'
+                      payment.status === 'success'
                         ? 'bg-green-100 text-green-700'
-                        : payment.status === 'Failed'
+                        : payment.status === 'failed'
                           ? 'bg-red-100 text-red-700'
-                          : payment.status === 'Pending'
+                          : payment.status === 'pending'
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-700',
                     ]"
                   >
-                    {{ payment.status }}
+                    {{ mapStatus(payment.status) }}
                   </span>
                 </td>
                 <!-- Appointment Date -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-700">
-                    {{ payment.appointmentDate }}
+                    {{
+                      payment.bookingId
+                        ? formatDate(payment.bookingId.date)
+                        : "N/A"
+                    }}
                   </div>
                   <div class="text-xs text-gray-400">
-                    {{ payment.appointmentTime }}
+                    {{ payment.bookingId ? payment.bookingId.startTime : "" }}
                   </div>
                 </td>
                 <!-- Amount -->
                 <td class="px-4 py-4 whitespace-nowrap text-right">
                   <span class="text-sm font-semibold text-gray-900">{{
-                    payment.amount
+                    formatCurrency(payment.amount)
                   }}</span>
                 </td>
                 <!-- Subtotal -->
                 <td class="px-4 py-4 whitespace-nowrap text-right">
                   <span class="text-sm font-semibold text-gray-900">{{
-                    payment.subtotal
+                    formatCurrency(payment.amount)
                   }}</span>
                 </td>
                 <!-- Actions -->
@@ -427,18 +466,49 @@
       <!-- Pagination -->
       <div class="flex justify-between items-center mt-6">
         <p class="text-sm text-gray-500">
-          Showing {{ filteredPayments.length }} of
-          {{ payments.length }} payments
+          Showing
+          {{ pagination.totalItems > 0 ? (currentPage - 1) * limit + 1 : 0 }} -
+          {{ Math.min(currentPage * limit, pagination.totalItems) }} of
+          {{ pagination.totalItems }} payments
         </p>
         <div class="flex gap-2">
           <button
-            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-            disabled
+            @click="prevPage"
+            :disabled="!pagination.hasPrevPage"
+            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Previous
           </button>
+
+          <!-- Page numbers -->
+          <template
+            v-for="page in visiblePages"
+            :key="page"
+          >
+            <span
+              v-if="page === '...'"
+              class="px-2 py-2 text-gray-400"
+            >
+              ...
+            </span>
+            <button
+              v-else
+              @click="goToPage(page)"
+              :class="[
+                'px-4 py-2 border rounded-lg text-sm transition-colors',
+                currentPage === page
+                  ? 'bg-[#1a3a35] text-white border-[#1a3a35]'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50',
+              ]"
+            >
+              {{ page }}
+            </button>
+          </template>
+
           <button
-            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+            @click="nextPage"
+            :disabled="!pagination.hasNextPage"
+            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>
@@ -449,137 +519,184 @@
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted, watch } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
+  import { GetPayments } from "@/services/apiService.js";
 
   const selectedDate = ref("");
   const searchQuery = ref("");
   const filterStatus = ref("");
   const filterType = ref("");
+  const currentPage = ref(1);
+  const limit = ref(10);
 
-  const payments = ref([
-    {
-      id: "1056",
-      date: "February 22, 2026",
-      time: "5:17 am",
-      type: "Stripe Cloud",
-      customer: "Chanaka Lahiru",
-      provider: "Lane 6",
-      service: "Lane + Bowling Machine",
-      appointmentDate: "February 22, 2026",
-      appointmentTime: "9:00 am",
-      amount: "A$40.00",
-      subtotal: "A$40.00",
-      status: "Completed",
-    },
-    {
-      id: "1057",
-      date: "February 22, 2026",
-      time: "8:55 am",
-      type: "Free",
-      customer: "geetikasharma",
-      provider: "Lane 5",
-      service: "Lane + Bowling Machine",
-      appointmentDate: "February 22, 2026",
-      appointmentTime: "6:00 pm",
-      amount: "A$0.00",
-      subtotal: "A$0.00",
-      status: "Completed",
-    },
-    {
-      id: "1058",
-      date: "February 22, 2026",
-      time: "10:10 am",
-      type: "Stripe Cloud",
-      customer: "Beau Bugter",
-      provider: "Lane 5",
-      service: "Lane + Bowling Machine",
-      appointmentDate: "February 22, 2026",
-      appointmentTime: "12:30 pm",
-      amount: "A$40.00",
-      subtotal: "A$40.00",
-      status: "Completed",
-    },
-    {
-      id: "1059",
-      date: "February 22, 2026",
-      time: "3:40 pm",
-      type: "Stripe Cloud",
-      customer: "Suwin perera",
-      provider: "Lane 7",
-      service: "Lane + Bowling Machine & Auto Feeder ($40)",
-      appointmentDate: "February 22, 2026",
-      appointmentTime: "9:00 pm",
-      amount: "A$40.00",
-      subtotal: "A$40.00",
-      status: "Completed",
-    },
-    {
-      id: "1060",
-      date: "February 23, 2026",
-      time: "10:26 am",
-      type: "Free",
-      customer: "Amarjit Singh",
-      provider: "Lane 6",
-      service: "Lane + Bowling Machine",
-      appointmentDate: "February 23, 2026",
-      appointmentTime: "6:30 pm",
-      amount: "A$0.00",
-      subtotal: "A$0.00",
-      status: "Completed",
-    },
-    {
-      id: "1061",
-      date: "February 23, 2026",
-      time: "2:15 pm",
-      type: "PayPal",
-      customer: "John Smith",
-      provider: "Lane 1",
-      service: "Lane Only Booking",
-      appointmentDate: "February 24, 2026",
-      appointmentTime: "10:00 am",
-      amount: "A$50.00",
-      subtotal: "A$50.00",
-      status: "Pending",
-    },
-    {
-      id: "1062",
-      date: "February 23, 2026",
-      time: "4:30 pm",
-      type: "Local",
-      customer: "Sarah Johnson",
-      provider: "Lane 3",
-      service: "Lane + Bowling Machine",
-      appointmentDate: "February 25, 2026",
-      appointmentTime: "3:00 pm",
-      amount: "A$40.00",
-      subtotal: "A$40.00",
-      status: "Completed",
-    },
-  ]);
+  const payments = ref([]);
+  const pagination = ref({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
+  const loading = ref(false);
+  const error = ref("");
 
-  const filteredPayments = computed(() => {
-    let result = payments.value;
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
-    if (searchQuery.value) {
-      const query = searchQuery.value.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.customer.toLowerCase().includes(query) ||
-          p.id.includes(query) ||
-          p.service.toLowerCase().includes(query) ||
-          p.provider.toLowerCase().includes(query),
-      );
+  // Format time for display
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date
+      .toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+      .toLowerCase();
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return `A$${amount.toFixed(2)}`;
+  };
+
+  // Map API status to display status
+  const mapStatus = (status) => {
+    const statusMap = {
+      success: "Completed",
+      pending: "Pending",
+      failed: "Failed",
+    };
+    return statusMap[status] || status;
+  };
+
+  // Map API payment method to display type
+  const mapType = (paymentMethod, membershipId, bookingId) => {
+    if (membershipId) return "Membership";
+    if (bookingId) {
+      return paymentMethod === "stripe" ? "Stripe Cloud" : "Local";
+    }
+    return paymentMethod === "stripe" ? "Stripe Cloud" : "Local";
+  };
+
+  // Fetch payments from API
+  const fetchPayments = async () => {
+    loading.value = true;
+    error.value = "";
+
+    try {
+      const params = {
+        page: currentPage.value,
+        limit: limit.value,
+        ...(searchQuery.value && { search: searchQuery.value }),
+        ...(filterStatus.value && { status: filterStatus.value.toLowerCase() }),
+        ...(filterType.value && {
+          paymentMethod: filterType.value.toLowerCase(),
+        }),
+        ...(selectedDate.value && {
+          startDate: selectedDate.value,
+          endDate: selectedDate.value,
+        }),
+      };
+
+      const response = await GetPayments(params);
+
+      if (response.isSuccess) {
+        payments.value = response.value.payments;
+        pagination.value = response.value.pagination;
+      } else {
+        error.value = response.userMessage || "Failed to fetch payments";
+      }
+    } catch (err) {
+      console.error("Error fetching payments:", err);
+      error.value =
+        err.response?.data?.userMessage ||
+        "Failed to load payments. Please try again.";
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Computed filtered payments (already filtered by API)
+  const filteredPayments = computed(() => payments.value);
+
+  // Computed visible page numbers
+  const visiblePages = computed(() => {
+    const totalPages = pagination.value.totalPages;
+    const current = currentPage.value;
+    const pages = [];
+
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show smart pagination with ellipsis
+      if (current <= 4) {
+        // Near start
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (current >= totalPages - 3) {
+        // Near end
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+      } else {
+        // In middle
+        pages.push(1);
+        pages.push("...");
+        for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      }
     }
 
-    if (filterStatus.value) {
-      result = result.filter((p) => p.status === filterStatus.value);
-    }
+    return pages;
+  });
 
-    if (filterType.value) {
-      result = result.filter((p) => p.type === filterType.value);
-    }
+  // Watch for filter changes and reset to page 1
+  watch([searchQuery, filterStatus, filterType, selectedDate], () => {
+    currentPage.value = 1;
+    fetchPayments();
+  });
 
-    return result;
+  // Pagination methods
+  const goToPage = (page) => {
+    if (page >= 1 && page <= pagination.value.totalPages) {
+      currentPage.value = page;
+      fetchPayments();
+    }
+  };
+
+  const nextPage = () => {
+    if (pagination.value.hasNextPage) {
+      currentPage.value++;
+      fetchPayments();
+    }
+  };
+
+  const prevPage = () => {
+    if (pagination.value.hasPrevPage) {
+      currentPage.value--;
+      fetchPayments();
+    }
+  };
+
+  // Fetch on mount
+  onMounted(() => {
+    fetchPayments();
   });
 </script>

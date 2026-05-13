@@ -451,6 +451,21 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const UpdatePaymentStatus = async (bookingId, paymentStatus) => {
+    try {
+      const response = await apiService.post(`/bookings/paymentStatus/${bookingId}`, {
+        paymentStatus,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const GetUserBookingData = async (userId) => {
     try {
       const response = await apiService.post('/bookings/userBookingData', {
@@ -565,6 +580,99 @@ export const AdminLogin = async (email, otp) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching appointment data:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const CreateStripeSession = async (payload) => {
+    try {
+      const response = await apiService.post('/stripe/create-checkout-session', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating stripe session:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetPayments = async (params = {}) => {
+    try {
+      const response = await apiService.get('/payment', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetPaymentStats = async (params = {}) => {
+    try {
+      const response = await apiService.get('/payment/stats', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching payment stats:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const GetPaymentById = async (id) => {
+    try {
+      const response = await apiService.get(`/payment/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching payment:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const UpdatePaymentStatusAppoinment = async (id, payload) => {
+    try {
+      const response = await apiService.post(`/bookings/paymentStatus/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // Booking Cancellation
+  export const CancelBooking = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/booking-cancel', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // Membership Cancellation
+  export const CancelMembership = async (payload) => {
+    try {
+      const response = await apiService.post('/memberships/cancellation', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error cancelling membership:', error);
       if (error.response && error.response.data) {
         return error.response.data;
       }

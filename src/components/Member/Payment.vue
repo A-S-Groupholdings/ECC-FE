@@ -295,13 +295,68 @@
     if (!selectedMethod.value) return;
     purchaseError.value = "";
 
+    // Stripe payment flow
     if (selectedMethod.value === "stripe") {
-      // Stripe flow - redirect to Stripe checkout or show coming soon
-      purchaseError.value =
-        "Stripe checkout is coming soon. Please use Pay at Counter for now.";
+      if (!userId.value) {
+        purchaseError.value = "User ID is missing. Please log in again.";
+        return;
+      }
+
+      isPurchasing.value = true;
+      try {
+        // Build success and cancel URLs
+        const baseUrl = window.location.origin;
+        const successUrl = `${baseUrl}/membership/success`;
+        const cancelUrl = `${baseUrl}/membership/cancel`;
+
+        console.log("[MEMBERSHIP PAYMENT] Creating Stripe checkout session...");
+        console.log("[MEMBERSHIP PAYMENT] Membership ID:", membershipId.value);
+        console.log("[MEMBERSHIP PAYMENT] User ID:", userId.value);
+
+        const payload = {
+          userId: userId.value,
+          membershipId: membershipId.value,
+          paymentMethod: "stripe",
+          successUrl,
+          cancelUrl,
+        };
+
+        const response = await BuyMembership(payload);
+
+        if (response.isSuccess && response.value?.url) {
+          console.log("[MEMBERSHIP PAYMENT] ✅ Checkout session created");
+          console.log(
+            "[MEMBERSHIP PAYMENT] Session ID:",
+            response.value.sessionId,
+          );
+          console.log(
+            "[MEMBERSHIP PAYMENT] Payment type:",
+            response.value.type,
+          );
+          console.log("[MEMBERSHIP PAYMENT] Redirecting to Stripe...");
+
+          // Redirect to Stripe Checkout
+          window.location.href = response.value.url;
+        } else {
+          purchaseError.value =
+            response.userMessage ||
+            response.errorMessage ||
+            "Failed to create checkout session.";
+          console.error(
+            "[MEMBERSHIP PAYMENT] ❌ Failed to create session:",
+            response,
+          );
+        }
+      } catch (error) {
+        purchaseError.value = "Network error. Please try again.";
+        console.error("[MEMBERSHIP PAYMENT] ❌ Stripe checkout error:", error);
+      } finally {
+        isPurchasing.value = false;
+      }
       return;
     }
 
+    // Local payment flow
     if (selectedMethod.value === "local") {
       if (!userId.value) {
         purchaseError.value = "User ID is missing. Please log in again.";

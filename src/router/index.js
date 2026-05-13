@@ -17,6 +17,7 @@ import SubscriptionView from "../views/Dashboard/SubscriptionView.vue";
 import MembershipRegister from "../views/Landing/MembershipRegister.vue";
 import MemberPayment from "../views/Dashboard/MemberPaymentView.vue";
 import BookingCancel from "../views/Landing/BookingCancelView.vue";
+import BookingSuccess from "../views/Landing/BookingSuccessView.vue";
 import MemberProfileView from "../views/Member/MemberProfileView.vue";
 import AdminOtp from "../views/Dashboard/AdminOtp.vue";
 import MemberOtp from "../views/Member/MemberOTP.vue";
@@ -31,6 +32,8 @@ import MemberPaymentView from "../views/Member/PaymentView.vue";
 import CoachBookingView from "../views/Coach/CoachBookingView.vue";
 import PublicLiveSessionView from "../views/LiveSession.vue";
 import PublicMembershipView from "../views/Landing/MembershipView.vue";
+import MembershipSuccessView from "../views/Landing/MembershipSuccessView.vue";
+import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -136,17 +139,24 @@ const router = createRouter({
       meta: {
         title: "ECC"}
     },
-    {
-      path: "/membership/register",
-      name: "membershipregister",
-      component: MembershipRegister,
-      meta: {
-        title: "ECC"}
-    },
+    // {
+    //   path: "/membership/register",
+    //   name: "membershipregister",
+    //   component: MembershipRegister,
+    //   meta: {
+    //     title: "ECC"}
+    // },
     {
       path: "/booking/cancel",
       name: "bookingcancel",
       component: BookingCancel,
+      meta: {
+        title: "ECC"}
+    },
+    {
+      path: "/booking/success",
+      name: "bookingsuccess",
+      component: BookingSuccess,
       meta: {
         title: "ECC"}
     },
@@ -254,6 +264,20 @@ const router = createRouter({
       component: PublicMembershipView,
       meta: {
         title: "ECC"}
+    },
+    {
+      path: "/membership/success",
+      name: "membershipsuccess",
+      component: MembershipSuccessView,
+      meta: {
+        title: "Membership Payment Success"}
+    },
+    {
+      path: "/membership/cancel",
+      name: "membershipcancel",
+      component: MembershipCancelView,
+      meta: {
+        title: "Membership Payment Cancelled"}
     },
     
     {

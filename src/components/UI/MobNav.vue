@@ -183,35 +183,38 @@
   import { useRouter } from "vue-router";
 
   const isMenuOpen = ref(false);
-  const userRole = ref("member");
+  const userRole = ref("guest");
+  const isLoggedIn = ref(false);
   const router = useRouter();
 
   onMounted(() => {
     try {
       const stored = localStorage.getItem("user");
 
-      if (!stored) {
-        router.push("/");
-        return;
-      }
+      if (stored) {
+        const user = JSON.parse(stored);
 
-      const user = JSON.parse(stored);
-
-      if (!user) {
-        router.push("/");
-        return;
+        if (user && user.category) {
+          isLoggedIn.value = true;
+          const catName = user.category.categoryName?.toLowerCase() || "";
+          if (catName === "coach") {
+            userRole.value = "coach";
+          } else {
+            userRole.value = "member";
+          }
+        }
       }
-
-      const catName = user.category?.categoryName?.toLowerCase() || "";
-      if (catName === "coach") {
-        userRole.value = "coach";
-      }
-    } catch {
-      router.push("/");
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      // Don't redirect, just stay as guest
     }
   });
+
   const profileRoute = computed(() => {
-    return userRole.value === "coach" ? "/coach/profil" : "/ecc/profile";
+    if (!isLoggedIn.value) {
+      return "/member/login"; // Redirect to login if not logged in
+    }
+    return userRole.value === "coach" ? "/coach/profile" : "/ecc/profile";
   });
 
   function toggleMenu() {
