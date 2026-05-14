@@ -60,6 +60,41 @@
         </div>
       </div>
 
+      <!-- Summary Cards -->
+      <div
+        v-if="summary"
+        class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+      >
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wider">Active</p>
+          <p class="text-2xl font-bold text-green-600 mt-1">
+            {{ summary.active }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wider">Expired</p>
+          <p class="text-2xl font-bold text-yellow-600 mt-1">
+            {{ summary.expired }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wider">
+            Cancelled
+          </p>
+          <p class="text-2xl font-bold text-red-600 mt-1">
+            {{ summary.cancelled }}
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 uppercase tracking-wider">
+            No Tracking
+          </p>
+          <p class="text-2xl font-bold text-gray-600 mt-1">
+            {{ summary.noTracking }}
+          </p>
+        </div>
+      </div>
+
       <!-- Subscriptions Table -->
       <div
         class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
@@ -69,173 +104,178 @@
             <thead>
               <tr class="bg-gray-50 border-b border-gray-200">
                 <th
-                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-10"
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <input
-                    type="checkbox"
-                    class="rounded border-gray-300"
-                  />
+                  Name
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Subscription ID
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Email
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Member
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Phone
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Membership
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Membership
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Last Payment
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Type
                 </th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center gap-1">
-                    Created At
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Price
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  Duration
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  Start Date
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  End Date
                 </th>
                 <th
                   class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
-                  <div class="flex items-center justify-center gap-1">
-                    Status
-                    <svg
-                      class="w-3 h-3 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5 10l5-5 5 5H5z"></path>
-                      <path
-                        d="M5 10l5 5 5-5H5z"
-                        opacity="0.4"
-                      ></path>
-                    </svg>
-                  </div>
+                  Status
+                </th>
+                <th
+                  class="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr
+                v-if="loading"
+              >
+                <td
+                  colspan="11"
+                  class="px-6 py-12 text-center text-sm text-gray-500"
+                >
+                  Loading subscriptions...
+                </td>
+              </tr>
+              <tr
+                v-else-if="errorMessage"
+              >
+                <td
+                  colspan="11"
+                  class="px-6 py-12 text-center text-sm text-red-500"
+                >
+                  {{ errorMessage }}
+                </td>
+              </tr>
+              <tr
+                v-else-if="filteredSubscriptions.length === 0"
+              >
+                <td
+                  colspan="11"
+                  class="px-6 py-12 text-center text-sm text-gray-500"
+                >
+                  No subscriptions found.
+                </td>
+              </tr>
+              <tr
                 v-for="subscription in filteredSubscriptions"
-                :key="subscription.id"
+                :key="subscription.userId"
                 class="hover:bg-gray-50 transition-colors"
               >
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    class="rounded border-gray-300"
-                  />
+                  <span class="text-sm font-semibold text-gray-900">
+                    {{ subscription.name || "—" }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-semibold text-gray-900"
-                    >#{{ subscription.id }}</span
-                  >
+                  <span class="text-sm text-gray-700">
+                    {{ subscription.email || "—" }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">{{
-                    subscription.member
-                  }}</span>
+                  <span class="text-sm text-gray-700">
+                    {{ subscription.phoneNumber || "—" }}
+                  </span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="text-sm text-gray-700">{{
-                    subscription.membership
-                  }}</span>
+                  <span class="text-sm text-gray-700">
+                    {{ subscription.membership?.name || "—" }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-600">{{
-                    subscription.lastPayment
-                  }}</span>
+                  <span class="text-sm text-gray-600">
+                    {{ subscription.membership?.type || "—" }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-600">{{
-                    subscription.createdAt
-                  }}</span>
+                  <span class="text-sm text-gray-600">
+                    {{
+                      subscription.membership?.price != null
+                        ? `$${subscription.membership.price}`
+                        : "—"
+                    }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-600">
+                    {{
+                      subscription.membership?.durationDays != null
+                        ? `${subscription.membership.durationDays} days`
+                        : "—"
+                    }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-600">
+                    {{ formatDate(subscription.tracking?.startDate) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-600">
+                    {{ formatDate(subscription.tracking?.endDate) }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                   <span
                     :class="[
-                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                      subscription.status === 'Active'
-                        ? 'bg-green-100 text-green-700'
-                        : subscription.status === 'Cancelled'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700',
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize',
+                      statusClass(subscription.tracking?.status),
                     ]"
                   >
-                    {{ subscription.status }}
+                    {{ subscription.tracking?.status || "—" }}
                   </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <button
+                    type="button"
+                    class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    :disabled="
+                      deactivatingId === subscription.userId ||
+                      (subscription.tracking?.status || '').toLowerCase() !==
+                        'active'
+                    "
+                    @click="onDeactivate(subscription)"
+                  >
+                    {{
+                      deactivatingId === subscription.userId
+                        ? "Deactivating..."
+                        : "Deactivate"
+                    }}
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -244,20 +284,46 @@
       </div>
 
       <!-- Pagination -->
-      <div class="flex justify-between items-center mt-6">
+      <div
+        class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-6"
+      >
         <p class="text-sm text-gray-500">
-          Showing {{ filteredSubscriptions.length }} of
-          {{ subscriptions.length }} subscriptions
+          Showing
+          <span class="font-medium">{{ rangeStart }}</span>
+          –
+          <span class="font-medium">{{ rangeEnd }}</span>
+          of
+          <span class="font-medium">{{ total }}</span>
+          subscriptions
         </p>
-        <div class="flex gap-2">
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-500">Per page:</label>
+          <select
+            v-model.number="limit"
+            class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+            @change="onLimitChange"
+          >
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+          </select>
+
           <button
             class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-            disabled
+            :disabled="!hasPrevPage || loading"
+            @click="goToPage(page - 1)"
           >
             Previous
           </button>
+          <span class="text-sm text-gray-600 px-2">
+            Page {{ page }} of {{ totalPages || 1 }}
+          </span>
           <button
-            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+            class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            :disabled="!hasNextPage || loading"
+            @click="goToPage(page + 1)"
           >
             Next
           </button>
@@ -268,70 +334,207 @@
 </template>
 
 <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted, watch } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
+  import {
+    GetMembershipByUsers,
+    SearchMembershipUsers,
+    DeactivateMembershipUser,
+  } from "@/services/apiService.js";
 
   const searchQuery = ref("");
+  const subscriptions = ref([]);
+  const summary = ref(null);
 
-  const subscriptions = ref([
-    {
-      id: 28,
-      member: "Sanchitkrish@gmail.com",
-      membership: "ECC Membership Weekly Subscription (Cricket Only)",
-      lastPayment: "March 24, 2026",
-      createdAt: "March 24, 2026",
-      status: "Active",
-    },
-    {
-      id: 27,
-      member: "DeepXsingh13",
-      membership: "ECC Membership Weekly Subscription (Cricket Only)",
-      lastPayment: "March 24, 2026",
-      createdAt: "March 24, 2026",
-      status: "Active",
-    },
-    {
-      id: 26,
-      member: "Chana",
-      membership: "Default Membership",
-      lastPayment: "March 23, 2026",
-      createdAt: "March 23, 2026",
-      status: "Active",
-    },
-    {
-      id: 22,
-      member: "jdsukh.matr@gmail.com",
-      membership: "ECC Membership Monthly Subscription (Cricket Only)",
-      lastPayment: "March 10, 2026",
-      createdAt: "March 10, 2026",
-      status: "Active",
-    },
-    {
-      id: 18,
-      member: "geetikasharma",
-      membership: "ECC Membership Weekly Subscription (Cricket Only)",
-      lastPayment: "March 21, 2026",
-      createdAt: "March 21, 2026",
-      status: "Active",
-    },
-    {
-      id: 3,
-      member: "Yohan",
-      membership: "Default Membership",
-      lastPayment: "December 23, 2025",
-      createdAt: "December 23, 2025",
-      status: "Active",
-    },
-  ]);
+  const page = ref(1);
+  const limit = ref(10);
+  const total = ref(0);
+  const totalPages = ref(0);
+  const hasNextPage = ref(false);
+  const hasPrevPage = ref(false);
 
-  const filteredSubscriptions = computed(() => {
-    if (!searchQuery.value) return subscriptions.value;
-    const query = searchQuery.value.toLowerCase();
-    return subscriptions.value.filter(
-      (s) =>
-        s.member.toLowerCase().includes(query) ||
-        s.membership.toLowerCase().includes(query) ||
-        s.id.toString().includes(query),
+  const loading = ref(false);
+  const errorMessage = ref("");
+  const isSearching = ref(false);
+  const deactivatingId = ref(null);
+
+  // Track latest request to ignore stale responses (race condition guard)
+  let requestId = 0;
+  let searchDebounceTimer = null;
+
+  const applyResponse = (res) => {
+    if (res?.isSuccess && res.value) {
+      const value = res.value;
+      // Support both paginated shape and plain array shape
+      const users = Array.isArray(value)
+        ? value
+        : Array.isArray(value.users)
+          ? value.users
+          : [];
+      subscriptions.value = users;
+      summary.value = value.summary || null;
+      total.value = value.total ?? users.length;
+      totalPages.value = value.totalPages ?? 0;
+      hasNextPage.value = !!value.hasNextPage;
+      hasPrevPage.value = !!value.hasPrevPage;
+    } else {
+      subscriptions.value = [];
+      summary.value = null;
+      total.value = 0;
+      totalPages.value = 0;
+      hasNextPage.value = false;
+      hasPrevPage.value = false;
+      errorMessage.value =
+        res?.userMessage ||
+        res?.errorMessage ||
+        "Failed to load subscriptions.";
+    }
+  };
+
+  const fetchSubscriptions = async () => {
+    const currentRequestId = ++requestId;
+    loading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await GetMembershipByUsers({
+        page: page.value,
+        limit: limit.value,
+      });
+      if (currentRequestId !== requestId) return;
+      applyResponse(res);
+    } catch (err) {
+      if (currentRequestId !== requestId) return;
+      console.error("Failed to fetch subscriptions:", err);
+      errorMessage.value = "Something went wrong while loading subscriptions.";
+    } finally {
+      if (currentRequestId === requestId) loading.value = false;
+    }
+  };
+
+  const searchSubscriptions = async (term) => {
+    const currentRequestId = ++requestId;
+    loading.value = true;
+    errorMessage.value = "";
+    try {
+      const res = await SearchMembershipUsers(term);
+      if (currentRequestId !== requestId) return;
+      applyResponse(res);
+    } catch (err) {
+      if (currentRequestId !== requestId) return;
+      console.error("Failed to search subscriptions:", err);
+      errorMessage.value = "Something went wrong while searching subscriptions.";
+    } finally {
+      if (currentRequestId === requestId) loading.value = false;
+    }
+  };
+
+  const goToPage = (newPage) => {
+    if (newPage < 1 || (totalPages.value && newPage > totalPages.value)) return;
+    page.value = newPage;
+  };
+
+  const onLimitChange = () => {
+    page.value = 1;
+  };
+
+  const onDeactivate = async (subscription) => {
+    if (!subscription?.userId) return;
+    const confirmed = window.confirm(
+      `Deactivate membership for ${subscription.name || subscription.email || "this user"}?`
     );
+    if (!confirmed) return;
+
+    deactivatingId.value = subscription.userId;
+    try {
+      const res = await DeactivateMembershipUser(subscription.userId);
+      if (res?.isSuccess) {
+        // Optimistic local update so the row reflects the change immediately
+        if (subscription.tracking) {
+          subscription.tracking.status = "cancelled";
+        }
+        if (summary.value) {
+          summary.value.active = Math.max(0, (summary.value.active || 0) - 1);
+          summary.value.cancelled = (summary.value.cancelled || 0) + 1;
+        }
+        // Refresh from server to stay in sync
+        if (isSearching.value) {
+          await searchSubscriptions(searchQuery.value.trim());
+        } else {
+          await fetchSubscriptions();
+        }
+      } else {
+        const message =
+          res?.userMessage ||
+          res?.errorMessage ||
+          "Failed to deactivate membership.";
+        window.alert(message);
+      }
+    } catch (err) {
+      console.error("Failed to deactivate membership:", err);
+      window.alert("Something went wrong while deactivating the membership.");
+    } finally {
+      deactivatingId.value = null;
+    }
+  };
+
+  // Refetch paginated list only when not in search mode
+  watch([page, limit], () => {
+    if (!isSearching.value) fetchSubscriptions();
   });
+
+  // Debounced search: triggers search API when query has value,
+  // falls back to paginated list when cleared.
+  watch(searchQuery, (val) => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+    const term = (val || "").trim();
+
+    searchDebounceTimer = setTimeout(() => {
+      if (term.length === 0) {
+        isSearching.value = false;
+        page.value = 1;
+        fetchSubscriptions();
+      } else {
+        isSearching.value = true;
+        searchSubscriptions(term);
+      }
+    }, 400);
+  });
+
+  onMounted(fetchSubscriptions);
+
+  // No client-side filtering — server returns the matching set
+  const filteredSubscriptions = computed(() => subscriptions.value);
+
+  const rangeStart = computed(() => {
+    if (total.value === 0) return 0;
+    return (page.value - 1) * limit.value + 1;
+  });
+
+  const rangeEnd = computed(() => {
+    return Math.min(page.value * limit.value, total.value);
+  });
+
+  const formatDate = (value) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const statusClass = (status) => {
+    switch ((status || "").toLowerCase()) {
+      case "active":
+        return "bg-green-100 text-green-700";
+      case "expired":
+        return "bg-yellow-100 text-yellow-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
 </script>

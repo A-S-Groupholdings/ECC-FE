@@ -220,7 +220,7 @@
                 <span class="md:hidden lg:block">Subscription</span>
               </li>
             </router-link>
-            <router-link
+            <!-- <router-link
               to="/member/payment"
               class="block"
             >
@@ -235,7 +235,7 @@
                 <i class="pi pi-dollar text-xs"></i>
                 <span class="md:hidden lg:block">Payments</span>
               </li>
-            </router-link>
+            </router-link> -->
           </div>
         </div>
       </ul>

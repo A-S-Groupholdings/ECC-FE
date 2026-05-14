@@ -66,7 +66,7 @@
           >
             <svg
               :class="['w-4 h-4', autoSyncEnabled ? 'animate-spin' : '']"
-              style="animation-duration: 3s;"
+              style="animation-duration: 3s"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -78,10 +78,13 @@
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               ></path>
             </svg>
-            <span v-if="autoSyncEnabled && formattedLastSync">{{ formattedLastSync }}</span>
+            <span v-if="autoSyncEnabled && formattedLastSync">{{
+              formattedLastSync
+            }}</span>
             <span v-else>Auto Sync</span>
           </button>
           <button
+            @click="openNewAppointmentModal"
             class="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-[#2a4a45] transition-all shadow-lg hover:shadow-xl text-sm font-semibold"
           >
             <svg
@@ -374,17 +377,57 @@
                   </div>
                 </td>
                 <!-- Payment -->
-                <td class="px-4 py-4 whitespace-nowrap text-center">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize',
-                      appointment.paymentStatus === 'PAID'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-orange-100 text-orange-700',
-                    ]"
-                  >
-                    {{ appointment.paymentStatus?.toLowerCase() }}
-                  </span>
+                <td class="px-4 py-4 whitespace-nowrap text-center relative">
+                  <div class="relative inline-block">
+                    <button
+                      @click="
+                        activePaymentRow =
+                          activePaymentRow === appointment._id
+                            ? null
+                            : appointment._id
+                      "
+                      :class="[
+                        'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium capitalize cursor-pointer',
+                        appointment.paymentStatus === 'PAID'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-orange-100 text-orange-700',
+                      ]"
+                    >
+                      {{ appointment.paymentStatus?.toLowerCase() }}
+                      <svg
+                        class="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </button>
+                    <div
+                      v-if="activePaymentRow === appointment._id"
+                      class="absolute z-20 mt-1 left-1/2 -translate-x-1/2 w-32 bg-white rounded-lg shadow-lg border border-gray-100 py-1"
+                    >
+                      <button
+                        v-if="appointment.paymentStatus !== 'PAID'"
+                        @click="updatePaymentStatus(appointment, 'PAID')"
+                        class="w-full text-left px-3 py-2 text-xs text-green-700 hover:bg-green-50"
+                      >
+                        Mark as Paid
+                      </button>
+                      <button
+                        v-if="appointment.paymentStatus !== 'UNPAID'"
+                        @click="updatePaymentStatus(appointment, 'UNPAID')"
+                        class="w-full text-left px-3 py-2 text-xs text-orange-700 hover:bg-orange-50"
+                      >
+                        Mark as Unpaid
+                      </button>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -428,6 +471,337 @@
         </div>
       </div>
     </div>
+
+    <!-- New Appointment Modal -->
+    <div
+      v-if="showNewAppointmentModal"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      @click="closeNewAppointmentModal"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <!-- Modal Header -->
+        <div
+          class="bg-gradient-to-r from-[#1a3a35] to-[#2a4a45] px-6 py-4 sticky top-0 z-10"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-2xl font-bold text-white">New Appointment</h3>
+            <button
+              @click="closeNewAppointmentModal"
+              class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-6">
+          <!-- Step 1: User Search -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Step 1: Search & Select User <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                v-model="userSearchQuery"
+                @input="searchUsers"
+                type="text"
+                placeholder="Search by name or email..."
+                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+              />
+              <!-- User Dropdown -->
+              <div
+                v-if="userSearchResults.length > 0"
+                class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+              >
+                <div
+                  v-for="user in userSearchResults"
+                  :key="user._id"
+                  @click="selectUser(user)"
+                  class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                >
+                  <p class="font-medium text-gray-900">{{ user.name }}</p>
+                  <p class="text-sm text-gray-500">{{ user.email }}</p>
+                </div>
+              </div>
+            </div>
+            <!-- Selected User -->
+            <div
+              v-if="selectedUser"
+              class="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold text-gray-900">
+                    {{ selectedUser.name }}
+                  </p>
+                  <p class="text-sm text-gray-600">{{ selectedUser.email }}</p>
+                  <p class="text-sm text-gray-600">
+                    {{ selectedUser.phoneNumber }}
+                  </p>
+                </div>
+                <button
+                  @click="selectedUser = null"
+                  class="text-red-500 hover:text-red-700"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Select Service -->
+          <div v-if="selectedUser">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Step 2: Select Service <span class="text-red-500">*</span>
+            </label>
+            <select
+              v-model="bookingForm.categoryId"
+              @change="onServiceChange"
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+            >
+              <option value="">Select a service...</option>
+              <option
+                v-for="service in services"
+                :key="service._id"
+                :value="service._id"
+              >
+                {{ service.title }} ({{ service.duration }}) - ${{
+                  service.price
+                }}
+              </option>
+            </select>
+
+            <!-- Duration Adjustment -->
+            <div
+              v-if="bookingForm.categoryId"
+              class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+            >
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-blue-900">
+                  Duration Adjustment
+                </h4>
+                <span class="text-xs text-blue-600">Minimum: 1 hour</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <button
+                  @click="decreaseDuration"
+                  :disabled="customDurationMinutes <= 60"
+                  class="w-10 h-10 bg-white border border-blue-300 rounded-lg flex items-center justify-center text-blue-600 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20 12H4"
+                    />
+                  </svg>
+                </button>
+                <div class="flex-1 text-center">
+                  <p class="text-2xl font-bold text-blue-900">
+                    {{ formatDuration(customDurationMinutes) }}
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    {{ customDurationMinutes }} minutes
+                  </p>
+                </div>
+                <button
+                  @click="increaseDuration"
+                  class="w-10 h-10 bg-white border border-blue-300 rounded-lg flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-all"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Price Display -->
+            <div
+              v-if="bookingForm.categoryId"
+              class="mt-3 p-4 bg-green-50 border border-green-200 rounded-lg"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-green-900">
+                    Calculated Price
+                  </p>
+                  <p class="text-xs text-green-600 mt-1">
+                    Based on
+                    {{ formatDuration(customDurationMinutes) }} duration
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-3xl font-bold text-green-700">
+                    ${{ calculatePrice() }}
+                  </p>
+                  <p class="text-xs text-green-600">Total amount</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Select Resource -->
+          <div v-if="bookingForm.categoryId">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Step 3: Select Resource <span class="text-red-500">*</span>
+            </label>
+            <select
+              v-model="bookingForm.resourceId"
+              @change="onResourceChange"
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+            >
+              <option value="">Select a resource...</option>
+              <option
+                v-for="resource in filteredResources"
+                :key="resource._id"
+                :value="resource._id"
+              >
+                {{ resource.title }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Step 4: Select Date -->
+          <div v-if="bookingForm.resourceId">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Step 4: Select Date <span class="text-red-500">*</span>
+            </label>
+            <input
+              v-model="bookingForm.date"
+              @change="onDateChange"
+              type="date"
+              :min="new Date().toISOString().split('T')[0]"
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+            />
+          </div>
+
+          <!-- Step 5: Select Time Slot -->
+          <div v-if="bookingForm.date && availableSlots.length > 0">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Step 5: Select Time Slot <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+              <button
+                v-for="slot in availableSlots"
+                :key="slot.time"
+                @click="bookingForm.startTime = slot.time"
+                :class="[
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                  bookingForm.startTime === slot.time
+                    ? 'bg-[#1a3a35] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                ]"
+              >
+                {{ slot.time }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading Slots -->
+          <div
+            v-if="bookingForm.date && loadingSlots"
+            class="text-center py-4"
+          >
+            <div
+              class="inline-block w-6 h-6 border-2 border-[#1a3a35] border-t-transparent rounded-full animate-spin"
+            ></div>
+            <p class="text-sm text-gray-500 mt-2">Loading available slots...</p>
+          </div>
+
+          <!-- No Slots Available -->
+          <div
+            v-if="
+              bookingForm.date && availableSlots.length === 0 && !loadingSlots
+            "
+            class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+          >
+            <p class="text-yellow-800 text-sm">
+              No available slots for this date. Please select another date.
+            </p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="px-6 py-4 bg-gray-50 border-t border-gray-200 sticky bottom-0"
+        >
+          <div class="flex gap-3">
+            <button
+              @click="closeNewAppointmentModal"
+              :disabled="isCreatingBooking"
+              class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              @click="createAppointment"
+              :disabled="!canCreateBooking || isCreatingBooking"
+              class="flex-1 px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <svg
+                v-if="isCreatingBooking"
+                class="w-5 h-5 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {{ isCreatingBooking ? "Creating..." : "Create Appointment" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -437,6 +811,12 @@
     GetBookings,
     SearchBookings,
     ConfirmBooking,
+    UpdatePaymentStatusAppoinment,
+    CreateBooking,
+    GetUsersAll,
+    GetServices,
+    GetResources,
+    GetBookingSlots,
   } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
@@ -463,6 +843,47 @@
   const lastSyncTime = ref(null);
   let searchDebounceTimer = null;
   let syncIntervalId = null;
+
+  // New Appointment Modal State
+  const showNewAppointmentModal = ref(false);
+  const userSearchQuery = ref("");
+  const allUsers = ref([]);
+  const userSearchResults = ref([]);
+  const selectedUser = ref(null);
+  const services = ref([]);
+  const allResources = ref([]);
+  const availableSlots = ref([]);
+  const loadingSlots = ref(false);
+  const isCreatingBooking = ref(false);
+
+  const bookingForm = ref({
+    userId: "",
+    categoryId: "",
+    resourceId: "",
+    date: "",
+    startTime: "",
+    paymentMethod: "local",
+  });
+
+  const customDurationMinutes = ref(0);
+
+  const filteredResources = computed(() => {
+    if (!bookingForm.value.categoryId) return [];
+    const selectedService = services.value.find(
+      (s) => s._id === bookingForm.value.categoryId,
+    );
+    return selectedService?.resourceIDs || [];
+  });
+
+  const canCreateBooking = computed(() => {
+    return (
+      selectedUser.value &&
+      bookingForm.value.categoryId &&
+      bookingForm.value.resourceId &&
+      bookingForm.value.date &&
+      bookingForm.value.startTime
+    );
+  });
 
   function mapSearchBooking(booking) {
     const rawDate = booking.date || "";
@@ -549,7 +970,10 @@
     if (diff < 5) return "just now";
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    return lastSyncTime.value.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    return lastSyncTime.value.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   });
 
   async function searchAppointments() {
@@ -609,6 +1033,7 @@
   );
 
   const activeActionRow = ref(null);
+  const activePaymentRow = ref(null);
 
   async function updateStatus(appointment, newStatus) {
     const response = await ConfirmBooking(appointment._id, {
@@ -619,6 +1044,18 @@
       activeActionRow.value = null;
     } else {
       alert(response.userMessage || "Failed to update status.");
+    }
+  }
+
+  async function updatePaymentStatus(appointment, newPaymentStatus) {
+    const response = await UpdatePaymentStatusAppoinment(appointment._id, {
+      paymentStatus: newPaymentStatus,
+    });
+    if (response.isSuccess) {
+      appointment.paymentStatus = newPaymentStatus;
+      activePaymentRow.value = null;
+    } else {
+      alert(response.userMessage || "Failed to update payment status.");
     }
   }
 
@@ -638,9 +1075,15 @@
   });
 
   function formatDuration(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0 && mins > 0) {
+      return `${hours}h ${mins}m`;
+    } else if (hours > 0) {
+      return `${hours}h`;
+    } else {
+      return `${mins}m`;
+    }
   }
 
   function formatDate(dateStr) {
@@ -651,5 +1094,260 @@
       month: "short",
       day: "numeric",
     });
+  }
+
+  // New Appointment Modal Functions
+  async function openNewAppointmentModal() {
+    showNewAppointmentModal.value = true;
+    resetBookingForm();
+
+    // Load users and services (services include resources)
+    try {
+      const [usersRes, servicesRes] = await Promise.all([
+        GetUsersAll(),
+        GetServices(),
+      ]);
+
+      if (usersRes.isSuccess) allUsers.value = usersRes.value || [];
+      if (servicesRes.isSuccess) services.value = servicesRes.value || [];
+    } catch (error) {
+      console.error("Error loading modal data:", error);
+    }
+  }
+
+  function closeNewAppointmentModal() {
+    if (!isCreatingBooking.value) {
+      showNewAppointmentModal.value = false;
+      resetBookingForm();
+    }
+  }
+
+  function resetBookingForm() {
+    userSearchQuery.value = "";
+    userSearchResults.value = [];
+    selectedUser.value = null;
+    bookingForm.value = {
+      userId: "",
+      categoryId: "",
+      resourceId: "",
+      date: "",
+      startTime: "",
+      paymentMethod: "local",
+    };
+    availableSlots.value = [];
+    customDurationMinutes.value = 0;
+  }
+
+  function searchUsers() {
+    if (!userSearchQuery.value.trim()) {
+      userSearchResults.value = [];
+      return;
+    }
+
+    const query = userSearchQuery.value.toLowerCase();
+    userSearchResults.value = allUsers.value
+      .filter(
+        (user) =>
+          user.name.toLowerCase().includes(query) ||
+          user.email.toLowerCase().includes(query),
+      )
+      .slice(0, 10);
+  }
+
+  function selectUser(user) {
+    selectedUser.value = user;
+    bookingForm.value.userId = user._id;
+    userSearchQuery.value = "";
+    userSearchResults.value = [];
+  }
+
+  function onServiceChange() {
+    bookingForm.value.resourceId = "";
+    bookingForm.value.date = "";
+    bookingForm.value.startTime = "";
+    availableSlots.value = [];
+
+    // Set initial duration from service
+    const selectedService = services.value.find(
+      (s) => s._id === bookingForm.value.categoryId,
+    );
+    if (selectedService) {
+      let durationMinutes = 0;
+      if (selectedService.duration.includes("m")) {
+        durationMinutes = parseInt(selectedService.duration);
+      } else if (selectedService.duration.includes("h")) {
+        durationMinutes = parseInt(selectedService.duration) * 60;
+      }
+      // Ensure minimum 1 hour (60 minutes)
+      customDurationMinutes.value = Math.max(durationMinutes, 60);
+    }
+  }
+
+  function increaseDuration() {
+    customDurationMinutes.value += 30; // Increase by 30 minutes
+  }
+
+  function decreaseDuration() {
+    if (customDurationMinutes.value > 60) {
+      customDurationMinutes.value -= 30; // Decrease by 30 minutes
+    }
+  }
+
+  function calculatePrice() {
+    const selectedService = services.value.find(
+      (s) => s._id === bookingForm.value.categoryId,
+    );
+    if (!selectedService) return 0;
+
+    // Get base price and duration
+    const basePrice = selectedService.price;
+    let baseDuration = 0;
+    if (selectedService.duration.includes("m")) {
+      baseDuration = parseInt(selectedService.duration);
+    } else if (selectedService.duration.includes("h")) {
+      baseDuration = parseInt(selectedService.duration) * 60;
+    }
+
+    // Calculate price per minute
+    const pricePerMinute = basePrice / baseDuration;
+
+    // Calculate new price based on custom duration
+    const newPrice = pricePerMinute * customDurationMinutes.value;
+
+    return Math.round(newPrice * 100) / 100; // Round to 2 decimal places
+  }
+
+  function onResourceChange() {
+    bookingForm.value.date = "";
+    bookingForm.value.startTime = "";
+    availableSlots.value = [];
+  }
+
+  function onDateChange() {
+    bookingForm.value.startTime = "";
+    fetchAvailableSlots();
+  }
+
+  async function fetchAvailableSlots() {
+    if (!bookingForm.value.resourceId || !bookingForm.value.date) return;
+
+    loadingSlots.value = true;
+    availableSlots.value = [];
+    bookingForm.value.startTime = "";
+
+    try {
+      const response = await GetBookingSlots(
+        bookingForm.value.date,
+        bookingForm.value.resourceId,
+      );
+
+      if (response.isSuccess && response.value) {
+        // Filter only available slots
+        availableSlots.value = response.value.filter((slot) => slot.available);
+        console.log("Available slots:", availableSlots.value);
+      } else {
+        availableSlots.value = [];
+      }
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+      availableSlots.value = [];
+    } finally {
+      loadingSlots.value = false;
+    }
+  }
+
+  async function createAppointment() {
+    if (!canCreateBooking.value) return;
+
+    isCreatingBooking.value = true;
+
+    try {
+      // Find the selected service
+      const selectedService = services.value.find(
+        (s) => s._id === bookingForm.value.categoryId,
+      );
+
+      if (!selectedService) {
+        alert("Please select a valid service");
+        return;
+      }
+
+      // Use custom duration
+      const startTime12h = bookingForm.value.startTime;
+      const durationMinutes = customDurationMinutes.value;
+
+      // Convert start time from 12h to 24h format
+      const [time, period] = startTime12h.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+
+      if (period === "pm" && hours !== 12) hours += 12;
+      if (period === "am" && hours === 12) hours = 0;
+
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+      const endHours24 = endDate.getHours();
+      const endMinutes = endDate.getMinutes();
+
+      // Format times to 24-hour format (HH:MM)
+      const startTime24h = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+      const endTime24h = `${endHours24.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`;
+
+      const payload = {
+        userId: selectedUser.value._id,
+        serviceId: selectedService._id,
+        categoryId: bookingForm.value.categoryId,
+        resourceId: bookingForm.value.resourceId,
+        date: bookingForm.value.date,
+        startTime: startTime24h,
+        endTime: endTime24h,
+        duration: durationMinutes,
+        paymentMethod: "local",
+      };
+
+      console.log("Creating booking with payload:", payload);
+
+      const response = await CreateBooking(payload);
+
+      if (response.isSuccess) {
+        // Show success message
+        const successMessage = document.createElement("div");
+        successMessage.className =
+          "fixed top-4 right-4 z-[100] bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in";
+        successMessage.innerHTML = `
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <span class="font-semibold">Appointment created successfully!</span>
+        `;
+        document.body.appendChild(successMessage);
+
+        // Close modal after 5 seconds
+        setTimeout(() => {
+          // Remove success message
+          successMessage.style.opacity = "0";
+          successMessage.style.transition = "opacity 0.3s";
+          setTimeout(() => {
+            document.body.removeChild(successMessage);
+          }, 300);
+
+          // Close modal
+          closeNewAppointmentModal();
+          fetchAppointments();
+        }, 5000);
+      } else {
+        alert(response.userMessage || "Failed to create appointment");
+      }
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+      alert(
+        error.response?.data?.userMessage ||
+          error.response?.data?.errorMessage ||
+          "Failed to create appointment",
+      );
+    } finally {
+      isCreatingBooking.value = false;
+    }
   }
 </script>

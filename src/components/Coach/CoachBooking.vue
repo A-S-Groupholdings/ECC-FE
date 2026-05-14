@@ -389,12 +389,76 @@
         </div>
 
         <!-- Booking Error -->
-        <div
-          v-if="bookingError && currentStep === 0"
-          class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6"
-        >
-          {{ bookingError }}
-        </div>
+        <Teleport to="body">
+          <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <div
+              v-if="bookingError"
+              role="dialog"
+              aria-modal="true"
+              aria-live="assertive"
+              class="fixed inset-0 z-[9999] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm"
+              @click.self="bookingError = ''"
+            >
+              <Transition
+                appear
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+              >
+                <div
+                  class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+                >
+                  <div
+                    class="px-6 pt-6 pb-4 flex flex-col items-center text-center"
+                  >
+                    <div
+                      class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4"
+                    >
+                      <svg
+                        class="w-7 h-7 text-red-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 9v2m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">
+                      Booking failed
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-2 break-words">
+                      {{ bookingError }}
+                    </p>
+                  </div>
+                  <div class="px-6 pb-6 pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      @click="bookingError = ''"
+                      class="px-6 py-2.5 bg-[#1a3a35] text-white rounded-lg text-sm font-semibold hover:bg-[#2a4a45] transition-colors min-w-[120px]"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </Transition>
+        </Teleport>
 
         <!-- STEP 2: Done -->
         <div
@@ -542,6 +606,7 @@
               duration: svc.duration,
               price: svc.price,
               resourceIDs: response.value.resources || [],
+              appointmentLimit: svc.appointmentLimit || null,
             },
           ];
           booking.value.type = svc.category?._id || "";
@@ -626,12 +691,32 @@
 
   const maxDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
-    return Math.floor((maxTotalHours * 60) / baseDurationMinutes.value);
+
+    // Per-service cap from appointmentLimit.limitDuration (in hours).
+    // When the service does not define a cap, fall back to the global maxTotalHours.
+    const limit = selectedService.value?.appointmentLimit;
+    const hasServiceCap =
+      limit &&
+      limit.enabled &&
+      limit.limitDuration !== null &&
+      limit.limitDuration !== undefined &&
+      limit.limitDuration !== "";
+
+    const capHours = hasServiceCap
+      ? parseFloat(limit.limitDuration)
+      : maxTotalHours;
+
+    if (!capHours || isNaN(capHours) || capHours <= 0) return 1;
+
+    return Math.max(1, Math.floor((capHours * 60) / baseDurationMinutes.value));
   });
 
   // Reset duration to minimum (1 hour) whenever service changes
   watch(selectedService, () => {
-    durationMultiplier.value = minDurationMultiplier.value || 1;
+    const min = minDurationMultiplier.value || 1;
+    const max = maxDurationMultiplier.value || min;
+    // Clamp into [min, max] so a tighter per-service cap is respected.
+    durationMultiplier.value = Math.min(Math.max(min, min), max);
   });
 
   const selectedServiceTitle = computed(() => {
@@ -795,6 +880,20 @@
   const isRegisteringUser = ref(false);
   const isCreatingBooking = ref(false);
   const bookingError = ref("");
+
+  // Auto-dismiss the booking error popup after 6 seconds
+  let bookingErrorTimer = null;
+  watch(bookingError, (val) => {
+    if (bookingErrorTimer) {
+      clearTimeout(bookingErrorTimer);
+      bookingErrorTimer = null;
+    }
+    if (val) {
+      bookingErrorTimer = setTimeout(() => {
+        bookingError.value = "";
+      }, 6000);
+    }
+  });
 
   async function registerUser() {
     registrationError.value = "";
