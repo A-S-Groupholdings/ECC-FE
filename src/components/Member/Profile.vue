@@ -864,10 +864,13 @@
                     </div>
                     <div>
                       <p class="font-medium text-gray-900">
-                        {{ booking.service }}
+                        ID: {{ booking.bookingId }}
                       </p>
                       <p class="text-sm text-gray-500">
                         {{ booking.lane }} • {{ booking.date }}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-1">
+                        • Duration: {{ booking.duration }}min
                       </p>
                     </div>
                   </div>
@@ -880,9 +883,11 @@
                         'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
                         booking.status === 'Completed'
                           ? 'bg-green-100 text-green-700'
-                          : booking.status === 'Upcoming'
+                          : booking.status === 'Confirmed'
                             ? 'bg-blue-100 text-blue-700'
-                            : 'bg-red-100 text-red-700',
+                            : booking.status === 'Pending'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-red-100 text-red-700',
                       ]"
                     >
                       {{ booking.status }}
@@ -927,10 +932,33 @@
                   class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-[#1a3a35]/30 transition-colors"
                 >
                   <div class="flex items-center gap-4">
+                    <!-- Icon: Membership vs Booking -->
                     <div
-                      class="w-10 h-10 rounded-full bg-[#1a3a35]/10 flex items-center justify-center"
+                      :class="[
+                        'w-10 h-10 rounded-full flex items-center justify-center',
+                        payment.type === 'membership'
+                          ? 'bg-purple-100'
+                          : 'bg-[#1a3a35]/10',
+                      ]"
                     >
+                      <!-- Membership Icon -->
                       <svg
+                        v-if="payment.type === 'membership'"
+                        class="w-5 h-5 text-purple-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                        ></path>
+                      </svg>
+                      <!-- Booking Icon -->
+                      <svg
+                        v-else
                         class="w-5 h-5 text-[#1a3a35]"
                         fill="none"
                         stroke="currentColor"
@@ -949,20 +977,35 @@
                         {{ payment.description }}
                       </p>
                       <p class="text-sm text-gray-500">
-                        {{ payment.date }} • {{ payment.method }}
+                        {{ payment.subInfo }} • {{ payment.date }}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-1">
+                        {{ payment.method }}
+                        <span v-if="payment.duration"> • {{ payment.duration }}</span>
+                        <span
+                          :class="[
+                            'ml-1 px-1.5 py-0.5 rounded text-[10px] font-medium',
+                            payment.type === 'membership'
+                              ? 'bg-purple-100 text-purple-600'
+                              : 'bg-blue-100 text-blue-600',
+                          ]"
+                        >{{ payment.type }}</span>
                       </p>
                     </div>
                   </div>
                   <div class="text-right">
                     <p class="font-semibold text-gray-900">
                       {{ payment.amount }}
+                      <span class="text-xs text-gray-400 font-normal">{{ payment.currency }}</span>
                     </p>
                     <span
                       :class="[
                         'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                        payment.status === 'Completed'
+                        payment.status === 'Success'
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700',
+                          : payment.status === 'Pending'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700',
                       ]"
                     >
                       {{ payment.status }}
@@ -1070,6 +1113,8 @@
     UpdateUser,
     DeleteUser,
     CancelMembership,
+    GetBookingHistory,
+    GetPaymentHistory,
   } from "@/services/apiService.js";
 
   const router = useRouter();
@@ -1158,7 +1203,20 @@
           membership: data.membershipId?.name || "",
           membershipId: data.membershipId || null,
           categoryName: data.categoryID?.categoryName || "",
+          lastBooking: data.lastBooking || "-",
+          totalBookings: data.totalBookings || "0",
+          verifiedDate: data.verifiedAt
+            ? new Date(data.verifiedAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "",
         };
+
+        // Fetch booking history and payment history after user data is loaded
+        await fetchBookingHistory();
+        await fetchPaymentHistory();
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -1297,7 +1355,90 @@
   }
 
   const paymentHistory = ref([]);
+
+  async function fetchPaymentHistory() {
+    if (!user.value?._id) return;
+
+    try {
+      const response = await GetPaymentHistory(user.value._id);
+
+      if (response.isSuccess && response.value) {
+        paymentHistory.value = response.value.payments.map((payment) => ({
+          id: payment._id,
+          // Description: show membership name OR booking resource + bookingId
+          description:
+            payment.type === 'membership'
+              ? payment.membership?.name || 'Membership Payment'
+              : `${payment.booking?.resource?.title || 'Booking'} — ${payment.booking?.bookingId || ''}`,
+          // Sub-info: booking shows date+time, membership shows type
+          subInfo:
+            payment.type === 'membership'
+              ? payment.membership?.type || ''
+              : payment.booking?.time || '',
+          date: new Date(payment.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+          method: payment.paymentMethod === 'stripe' ? 'Stripe' : 'Local',
+          amount: payment.amount > 0 ? `$${payment.amount}` : 'Free',
+          currency: (payment.currency || 'AUD').toUpperCase(),
+          status:
+            payment.status === 'success'
+              ? 'Success'
+              : payment.status === 'pending'
+                ? 'Pending'
+                : 'Failed',
+          type: payment.type,
+          // Extra details
+          bookingId: payment.booking?.bookingId || null,
+          duration: payment.duration ? `${payment.duration}min` : null,
+          notes: payment.notes || null,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching payment history:', error);
+    }
+  }
   const bookingHistory = ref([]);
+
+  async function fetchBookingHistory() {
+    if (!user.value?._id) return;
+
+    try {
+      const response = await GetBookingHistory(user.value._id);
+
+      if (response.isSuccess && response.value) {
+        // Map API response to component format
+        bookingHistory.value = response.value.bookings.map((booking) => ({
+          id: booking._id,
+          bookingId: booking.bookingId,
+          service: booking.category?.categoryName || "Booking",
+          lane: booking.resource?.title || "-",
+          date: new Date(booking.date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          }),
+          time: `${booking.startTime} - ${booking.endTime}`,
+          duration: booking.duration,
+          status:
+            booking.status === "COMPLETED"
+              ? "Completed"
+              : booking.status === "PENDING"
+                ? "Pending"
+                : booking.status === "CONFIRMED"
+                  ? "Confirmed"
+                  : booking.status === "CANCELLED"
+                    ? "Cancelled"
+                    : booking.status,
+          paymentStatus: booking.paymentStatus,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching booking history:", error);
+    }
+  }
 
   onMounted(() => {
     fetchProfile();

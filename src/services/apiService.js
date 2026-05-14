@@ -680,4 +680,42 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // GetBookingHistory
+  export const GetBookingHistory = async (userId) => {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('GetBookingHistory: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.post('/bookings/history', { userId });
+      return data;
+    } catch (error) {
+      console.error('Error fetching booking history:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+    // GetPaymentHistory
+  export const GetPaymentHistory = async (userId) => {
+    if (!userId ) {
+      throw new Error('GetBookingHistory: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.post('/payment/history', { userId });
+      return data;
+    } catch (error) {
+      console.error('Error cancelling membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+
+
 export default apiService;
