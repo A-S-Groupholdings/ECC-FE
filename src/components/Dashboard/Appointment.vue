@@ -219,6 +219,11 @@
                 <th
                   class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider"
                 >
+                  Type
+                </th>
+                <th
+                  class="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider"
+                >
                   Category
                 </th>
                 <th
@@ -290,6 +295,12 @@
                   <div class="text-sm text-gray-500">
                     {{ appointment.userId?.email || "-" }}
                   </div>
+                </td>
+                <!-- Type -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-700">{{
+                    appointment.type || "-"
+                  }}</span>
                 </td>
                 <!-- Category -->
                 <td class="px-4 py-4 whitespace-nowrap">
@@ -1048,10 +1059,9 @@
   }
 
   async function updatePaymentStatus(appointment, newPaymentStatus) {
-    const response = await UpdatePaymentStatusAppoinment(
-      appointment._id,
-      { paymentStatus: newPaymentStatus }
-    );
+    const response = await UpdatePaymentStatusAppoinment(appointment._id, {
+      paymentStatus: newPaymentStatus,
+    });
     if (response.isSuccess) {
       appointment.paymentStatus = newPaymentStatus;
       activePaymentRow.value = null;

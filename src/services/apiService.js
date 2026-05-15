@@ -680,4 +680,97 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // GetBookingHistory
+  export const GetBookingHistory = async (userId) => {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('GetBookingHistory: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.post('/bookings/history', { userId });
+      return data;
+    } catch (error) {
+      console.error('Error fetching booking history:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+    // GetPaymentHistory
+  export const GetPaymentHistory = async (userId) => {
+    if (!userId ) {
+      throw new Error('GetBookingHistory: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.post('/payment/history', { userId });
+      return data;
+    } catch (error) {
+      console.error('Error cancelling membership:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+  // GetMembershipByUsers (paginated)
+  export const GetMembershipByUsers = async ({ page = 1, limit = 10 } = {}) => {
+    try {
+      const { data } = await apiService.get('/memberships/membershipByUsers', {
+        params: { page, limit },
+      });
+      return data;
+    } catch (error) {
+      console.error('Error fetching membership users:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+  // SearchMembershipUsers
+  export const SearchMembershipUsers = async (search) => {
+    const term = typeof search === 'string' ? search.trim() : '';
+    try {
+      const { data } = await apiService.post('/memberships/searchmethod', {
+        search: term,
+      });
+      return data;
+    } catch (error) {
+      console.error('Error searching membership users:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+  // DeactivateMembershipUser
+  export const DeactivateMembershipUser = async (userId) => {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('DeactivateMembershipUser: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.post(
+        `/memberships/membershipDeactivate/${encodeURIComponent(userId)}`
+      );
+      return data;
+    } catch (error) {
+      console.error('Error deactivating membership user:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+
+
 export default apiService;

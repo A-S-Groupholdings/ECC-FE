@@ -608,44 +608,40 @@
             <!-- Payment Methods -->
             <div class="space-y-3 mb-6">
               <label
-                class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all"
-                :class="selectedPaymentMethod === 'card' ? 'border-[#1a3a35] bg-green-50' : 'border-gray-200 hover:border-gray-300'"
+                class="flex items-center gap-3 p-4 border-2 border-[#1a3a35] rounded-lg cursor-pointer bg-green-50"
               >
                 <input
                   type="radio"
                   name="payment"
                   value="card"
-                  v-model="selectedPaymentMethod"
+                  checked
                   class="w-4 h-4 text-[#1a3a35]"
                 />
-                <span class="font-medium">Credit/Debit Card (Stripe)</span>
+                <span class="font-medium">Credit/Debit Card</span>
               </label>
               <label
-                class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all"
-                :class="selectedPaymentMethod === 'paylater' ? 'border-[#1a3a35] bg-green-50' : 'border-gray-200 hover:border-gray-300'"
+                class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300"
               >
                 <input
                   type="radio"
                   name="payment"
-                  value="paylater"
-                  v-model="selectedPaymentMethod"
+                  value="paypal"
                   class="w-4 h-4 text-[#1a3a35]"
                 />
-                <span class="font-medium">Pay at Counter</span>
+                <span class="font-medium">PayPal</span>
               </label>
             </div>
 
-            <!-- Card Form - Only show if card is selected -->
-            <div v-if="selectedPaymentMethod === 'card'" class="space-y-4 mb-6">
+            <!-- Card Form -->
+            <div class="space-y-4 mb-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1"
                   >Card Number</label
                 >
                 <input
                   type="text"
-                  placeholder="Will be redirected to Stripe secure checkout"
-                  disabled
-                  class="w-full border border-gray-300 rounded px-4 py-3 bg-gray-50 text-gray-500 cursor-not-allowed"
+                  placeholder="1234 5678 9012 3456"
+                  class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
                 />
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -656,8 +652,7 @@
                   <input
                     type="text"
                     placeholder="MM/YY"
-                    disabled
-                    class="w-full border border-gray-300 rounded px-4 py-3 bg-gray-50 text-gray-500 cursor-not-allowed"
+                    class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
                   />
                 </div>
                 <div>
@@ -667,14 +662,10 @@
                   <input
                     type="text"
                     placeholder="123"
-                    disabled
-                    class="w-full border border-gray-300 rounded px-4 py-3 bg-gray-50 text-gray-500 cursor-not-allowed"
+                    class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
                   />
                 </div>
               </div>
-              <p class="text-xs text-gray-500 mt-2">
-                ℹ️ You will be redirected to Stripe's secure checkout page to complete your payment.
-              </p>
             </div>
 
             <!-- Booking Error -->
@@ -695,7 +686,6 @@
               </button>
               <div class="flex gap-3">
                 <button
-                  v-if="selectedPaymentMethod === 'paylater'"
                   @click="completeBooking"
                   :disabled="isCreatingBooking"
                   class="bg-white border-2 border-[#1a3a35] text-[#1a3a35] px-6 py-3 rounded font-semibold hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -708,8 +698,7 @@
                   class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   <span v-if="isCreatingBooking">Processing...</span>
-                  <span v-else-if="selectedPaymentMethod === 'card'">Proceed to Stripe Checkout</span>
-                  <span v-else>Confirm Booking</span>
+                  <span v-else>PAY A${{ totalPrice.toFixed(2) }}</span>
                 </button>
               </div>
             </div>
@@ -788,9 +777,7 @@
     GetBookingSlots,
     RegisterBookingUser,
     CreateBooking,
-    CreateStripeSession,
   } from "@/services/apiService.js";
-  import { loadStripe } from '@stripe/stripe-js';
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
   const currentStep = ref(0);
@@ -1015,13 +1002,19 @@
     return ausDate.getHours() * 60 + ausDate.getMinutes();
   }
 
+  // Buffer (in minutes) before a slot becomes selectable on the same day.
+  // e.g. 60 -> if it is 5:00 PM in Sydney, the earliest selectable slot is 6:00 PM.
+  const SAME_DAY_BUFFER_MINUTES = 60;
+
   const displayTimeSlots = computed(() => {
     if (!timeSlots.value.length) return [];
     const ausToday = getAustraliaDateString();
+    // Future dates: return every available slot without time filtering.
     if (booking.value.date !== ausToday) return timeSlots.value;
-    const currentMins = getAustraliaTimeMinutes();
+    // Same day in Sydney: only show slots at least SAME_DAY_BUFFER_MINUTES ahead of "now".
+    const cutoff = getAustraliaTimeMinutes() + SAME_DAY_BUFFER_MINUTES;
     return timeSlots.value.filter(
-      (slot) => parseTimeToMinutes(slot.time) >= currentMins,
+      (slot) => parseTimeToMinutes(slot.time) >= cutoff,
     );
   });
 
@@ -1053,12 +1046,22 @@
     }
   });
 
+  // Auto-fetch slots when the calendar date changes while on Step 2.
+  watch(
+    () => booking.value.date,
+    () => {
+      if (currentStep.value === 1 && booking.value.lane) {
+        booking.value.selectedTime = null;
+        fetchBookingSlots();
+      }
+    },
+  );
+
   const registeredUserId = ref("");
   const registrationError = ref("");
   const isRegisteringUser = ref(false);
   const isCreatingBooking = ref(false);
   const bookingError = ref("");
-  const selectedPaymentMethod = ref("card"); // 'card' for Stripe, 'paylater' for local
 
   async function registerUser() {
     registrationError.value = "";
@@ -1108,12 +1111,7 @@
         booking.value.selectedTime.toLowerCase(),
       );
       const endMins = startMins + totalDurationMinutes.value;
-      
-      const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/booking/success`;
-      const cancelUrl = `${baseUrl}/booking/cancel`;
-      
-      const bookingData = {
+      const response = await CreateBooking({
         userId: registeredUserId.value,
         categoryId: booking.value.type,
         resourceId: booking.value.lane,
@@ -1123,27 +1121,14 @@
         startTime: formatMinutesToTime(startMins),
         endTime: formatMinutesToTime(endMins),
         note: booking.value.notes || "",
-        paymentMethod: selectedPaymentMethod.value === 'card' ? 'stripe' : 'local',
-        successUrl,
-        cancelUrl,
-      };
-      
-      const response = await CreateBooking(bookingData);
-      
+      });
       if (response.isSuccess) {
-        // If Stripe session was created, redirect to Stripe checkout
-        if (response.value?.stripeSessionUrl) {
-          window.location.href = response.value.stripeSessionUrl;
-        } else {
-          // Local payment - go to success page
-          currentStep.value++;
-        }
+        currentStep.value++;
       } else {
         bookingError.value =
           response.errorMessage || response.userMessage || "Booking failed.";
       }
     } catch (error) {
-      console.error('Booking error:', error);
       bookingError.value = "Network error. Please try again.";
     } finally {
       isCreatingBooking.value = false;
@@ -1190,14 +1175,30 @@
     );
   }
 
+  // Returns true when the given calendar cell is before "today" in the user's local time.
+  // Past days must not be clickable since bookings cannot be made for elapsed dates.
+  function isPastDate(date) {
+    if (!date.currentMonth) return true;
+    const candidate = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return candidate < today;
+  }
+
   function selectDate(date) {
-    if (date.currentMonth) {
-      selectedDate.value = new Date(
-        currentDate.value.getFullYear(),
-        currentDate.value.getMonth(),
-        date.day,
-      );
-    }
+    if (!date.currentMonth) return;
+    if (isPastDate(date)) return; // ignore clicks on past days
+    selectedDate.value = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    // Sync into booking.date so the slots endpoint is called with the chosen date.
+    booking.value.date = formatDateInput(selectedDate.value);
   }
 
   function selectTimeSlot(slot) {
@@ -1214,6 +1215,10 @@
       return "bg-white text-[#1a3a35] font-bold";
     }
     if (date.currentMonth) {
+      // Visually disable past days and disallow interaction.
+      if (isPastDate(date)) {
+        return "text-white/30 cursor-not-allowed line-through";
+      }
       return "text-white hover:bg-white/20";
     }
     return "text-white/40";

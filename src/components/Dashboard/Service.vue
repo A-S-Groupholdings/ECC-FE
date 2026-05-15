@@ -698,6 +698,7 @@
                 <option value="Individual">Individual</option>
                 <option value="Group">Group</option>
                 <option value="Club">Club</option>
+                <option value="Club">Membership</option>
               </select>
             </div>
 
@@ -795,13 +796,26 @@
               </select>
             </div>
 
+            <!-- limitDuration -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-2"
+                >Limit Duration</label
+              >
+              <input
+                v-model="newService.appointmentLimit.limitDuration"
+                type="text"
+                placeholder="1h"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+
             <!-- Min Time Before Booking -->
             <div class="md:col-span-2">
               <label class="block text-sm font-semibold text-gray-700 mb-2"
                 >Min Time Before Booking</label
               >
               <input
-                v-model="newService.minTimeBeforeBooking"
+                v-model="newService.appointmentLimit.minTimeBeforeBooking"
                 type="text"
                 placeholder="1h"
                 class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
@@ -814,7 +828,7 @@
                 >Min Time Before Canceling</label
               >
               <input
-                v-model="newService.minTimeBeforeCanceling"
+                v-model="newService.appointmentLimit.minTimeBeforeCanceling"
                 type="text"
                 placeholder="2h"
                 class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
@@ -1292,6 +1306,18 @@
                   <option value="perMonth">perMonth</option>
                 </select>
               </div>
+              <!-- limitDuration -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2"
+                  >Limit Duration</label
+                >
+                <input
+                  v-model="editingService.appointmentLimit.limitDuration"
+                  type="text"
+                  placeholder="1h"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+                />
+              </div>
 
               <!-- Min Time Before Booking -->
               <div class="md:col-span-2">
@@ -1523,6 +1549,7 @@
           },
           minTimeBeforeBooking: data.minTimeBeforeBooking || null,
           minTimeBeforeCanceling: data.minTimeBeforeCanceling || null,
+          limitDuration: data.limitDuration || "",
         };
         editSelectedResourceIds.value = (data.resourceIDs || []).map((r) =>
           typeof r === "object" ? r._id : r,
@@ -1559,6 +1586,10 @@
         appointmentLimit: editingService.value.appointmentLimit,
         minTimeBeforeBooking: editingService.value.minTimeBeforeBooking,
         minTimeBeforeCanceling: editingService.value.minTimeBeforeCanceling,
+        limitDuration:
+          typeof editingService.value.limitDuration === "string"
+            ? editingService.value.limitDuration.trim()
+            : editingService.value.limitDuration,
       };
       const response = await UpdateService(editingServiceId.value, payload);
       if (response.isSuccess) {
@@ -1622,9 +1653,14 @@
     price: "",
     isVisible: true,
     description: "",
-    appointmentLimit: { enabled: false, limit: null, period: null },
-    minTimeBeforeBooking: null,
-    minTimeBeforeCanceling: null,
+    appointmentLimit: {
+      enabled: false,
+      limit: null,
+      period: null,
+      minTimeBeforeBooking: null,
+      minTimeBeforeCanceling: null,
+      limitDuration: "",
+    },
   });
 
   // Resource multi-select
@@ -1655,6 +1691,13 @@
 
     isCreating.value = true;
     try {
+      const appointmentLimit = {
+        ...(newService.value.appointmentLimit || {}),
+      };
+      if (typeof appointmentLimit.limitDuration === "string") {
+        appointmentLimit.limitDuration = appointmentLimit.limitDuration.trim();
+      }
+
       const payload = {
         title: newService.value.title.trim(),
         categoryID: newService.value.categoryID,
@@ -1664,9 +1707,7 @@
         isVisible: newService.value.isVisible,
         description: newService.value.description.trim(),
         duration: "30m",
-        appointmentLimit: newService.value.appointmentLimit,
-        minTimeBeforeBooking: newService.value.minTimeBeforeBooking,
-        minTimeBeforeCanceling: newService.value.minTimeBeforeCanceling,
+        appointmentLimit,
       };
 
       const response = await CreateService(payload);
@@ -1683,9 +1724,14 @@
           price: "",
           isVisible: true,
           description: "",
-          appointmentLimit: { enabled: false, limit: null, period: null },
-          minTimeBeforeBooking: null,
-          minTimeBeforeCanceling: null,
+          appointmentLimit: {
+            enabled: false,
+            limit: null,
+            period: null,
+            limitDuration: "",
+            minTimeBeforeBooking: null,
+            minTimeBeforeCanceling: null,
+          },
         };
         selectedResourceIds.value = [];
         selectAllResources.value = false;
