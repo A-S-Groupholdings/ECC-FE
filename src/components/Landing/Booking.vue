@@ -1002,13 +1002,19 @@
     return ausDate.getHours() * 60 + ausDate.getMinutes();
   }
 
+  // Buffer (in minutes) before a slot becomes selectable on the same day.
+  // e.g. 60 -> if it is 5:00 PM in Sydney, the earliest selectable slot is 6:00 PM.
+  const SAME_DAY_BUFFER_MINUTES = 60;
+
   const displayTimeSlots = computed(() => {
     if (!timeSlots.value.length) return [];
     const ausToday = getAustraliaDateString();
+    // Future dates: return every available slot without time filtering.
     if (booking.value.date !== ausToday) return timeSlots.value;
-    const currentMins = getAustraliaTimeMinutes();
+    // Same day in Sydney: only show slots at least SAME_DAY_BUFFER_MINUTES ahead of "now".
+    const cutoff = getAustraliaTimeMinutes() + SAME_DAY_BUFFER_MINUTES;
     return timeSlots.value.filter(
-      (slot) => parseTimeToMinutes(slot.time) >= currentMins,
+      (slot) => parseTimeToMinutes(slot.time) >= cutoff,
     );
   });
 
@@ -1039,6 +1045,17 @@
       fetchBookingSlots();
     }
   });
+
+  // Auto-fetch slots when the calendar date changes while on Step 2.
+  watch(
+    () => booking.value.date,
+    () => {
+      if (currentStep.value === 1 && booking.value.lane) {
+        booking.value.selectedTime = null;
+        fetchBookingSlots();
+      }
+    },
+  );
 
   const registeredUserId = ref("");
   const registrationError = ref("");
@@ -1158,14 +1175,30 @@
     );
   }
 
+  // Returns true when the given calendar cell is before "today" in the user's local time.
+  // Past days must not be clickable since bookings cannot be made for elapsed dates.
+  function isPastDate(date) {
+    if (!date.currentMonth) return true;
+    const candidate = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return candidate < today;
+  }
+
   function selectDate(date) {
-    if (date.currentMonth) {
-      selectedDate.value = new Date(
-        currentDate.value.getFullYear(),
-        currentDate.value.getMonth(),
-        date.day,
-      );
-    }
+    if (!date.currentMonth) return;
+    if (isPastDate(date)) return; // ignore clicks on past days
+    selectedDate.value = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    // Sync into booking.date so the slots endpoint is called with the chosen date.
+    booking.value.date = formatDateInput(selectedDate.value);
   }
 
   function selectTimeSlot(slot) {
@@ -1182,6 +1215,10 @@
       return "bg-white text-[#1a3a35] font-bold";
     }
     if (date.currentMonth) {
+      // Visually disable past days and disallow interaction.
+      if (isPastDate(date)) {
+        return "text-white/30 cursor-not-allowed line-through";
+      }
       return "text-white hover:bg-white/20";
     }
     return "text-white/40";

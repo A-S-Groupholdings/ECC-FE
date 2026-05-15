@@ -819,13 +819,19 @@
     return ausDate.getHours() * 60 + ausDate.getMinutes();
   }
 
+  // Buffer (in minutes) before a slot becomes selectable on the same day.
+  // e.g. 60 -> if it is 5:00 PM in Sydney, the earliest selectable slot is 6:00 PM.
+  const SAME_DAY_BUFFER_MINUTES = 60;
+
   const displayTimeSlots = computed(() => {
     if (!timeSlots.value.length) return [];
     const ausToday = getAustraliaDateString();
+    // Future dates: return every available slot without time filtering.
     if (booking.value.date !== ausToday) return timeSlots.value;
-    const currentMins = getAustraliaTimeMinutes();
+    // Same day in Sydney: only show slots at least SAME_DAY_BUFFER_MINUTES ahead of "now".
+    const cutoff = getAustraliaTimeMinutes() + SAME_DAY_BUFFER_MINUTES;
     return timeSlots.value.filter(
-      (slot) => parseTimeToMinutes(slot.time) >= currentMins,
+      (slot) => parseTimeToMinutes(slot.time) >= cutoff,
     );
   });
 
