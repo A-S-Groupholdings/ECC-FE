@@ -180,7 +180,7 @@
           </div>
 
           <!-- Select Date -->
-          <div class="max-w-xs mb-6">
+          <!-- <div class="max-w-xs mb-6">
             <label class="block text-[#1a3a35] font-semibold mb-2"
               >Select a Date</label
             >
@@ -190,7 +190,7 @@
               :min="todayStr"
               class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
             />
-          </div>
+          </div> -->
 
           <p class="text-gray-700 mb-6">
             Click on a time slot to proceed with booking.
@@ -418,7 +418,9 @@
                 <div
                   class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
                 >
-                  <div class="px-6 pt-6 pb-4 flex flex-col items-center text-center">
+                  <div
+                    class="px-6 pt-6 pb-4 flex flex-col items-center text-center"
+                  >
                     <div
                       class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4"
                     >
@@ -545,8 +547,16 @@
   const durationMultiplier = ref(1);
   const maxTotalHours = 12.5; // max 12 hours 30 minutes
 
-  const currentDate = ref(new Date());
-  const selectedDate = ref(new Date());
+  // Use Australia/Sydney date so the calendar always reflects the correct "today".
+  const ausNowStr = new Date().toLocaleString("en-US", {
+    timeZone: "Australia/Sydney",
+  });
+  const ausNow = new Date(ausNowStr);
+  // Default selected date = today + 3 days (today + 2 buffer days)
+  const ausDefault = new Date(ausNow);
+  ausDefault.setDate(ausDefault.getDate() + 3);
+  const currentDate = ref(new Date(ausNow));
+  const selectedDate = ref(new Date(ausDefault));
 
   // Visible services from API
   const visibleServices = ref([]);
@@ -556,7 +566,7 @@
     type: "",
     service: "",
     lane: "",
-    date: formatDateInput(new Date()),
+    date: formatDateInput(ausDefault),
     selectedTime: null,
     fullName: "",
     phone: "",
@@ -571,7 +581,7 @@
     return `${y}-${m}-${d}`;
   }
 
-  const todayStr = formatDateInput(new Date());
+  const todayStr = formatDateInput(ausNow);
 
   async function fetchVisibleServices() {
     isLoadingServices.value = true;
@@ -617,14 +627,6 @@
       isLoadingMemberData.value = false;
     }
   }
-
-  onMounted(() => {
-    if (memberUserId.value) {
-      fetchMemberBookingData();
-    } else {
-      fetchVisibleServices();
-    }
-  });
 
   // Unique categories from visible services
   const categories = computed(() => {
@@ -706,10 +708,7 @@
 
     if (!capHours || isNaN(capHours) || capHours <= 0) return 1;
 
-    return Math.max(
-      1,
-      Math.floor((capHours * 60) / baseDurationMinutes.value)
-    );
+    return Math.max(1, Math.floor((capHours * 60) / baseDurationMinutes.value));
   });
 
   // Reset duration to minimum (1 hour) whenever service changes
@@ -1010,15 +1009,36 @@
     );
   }
 
+  // Returns true when the calendar cell is before "today" in Australia/Sydney.
+  // 3-day buffer: today is 19th → 19, 20, 21 disabled → 22nd is first selectable.
+  const BOOKING_BUFFER_DAYS = 3;
+
+  function isPastDate(date) {
+    if (!date.currentMonth) return true;
+    const candidate = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    const todayAus = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
+    );
+    todayAus.setHours(0, 0, 0, 0);
+    // Add buffer: earliest allowed date = today + BOOKING_BUFFER_DAYS
+    const earliest = new Date(todayAus);
+    earliest.setDate(earliest.getDate() + BOOKING_BUFFER_DAYS);
+    return candidate < earliest;
+  }
+
   function selectDate(date) {
-    if (date.currentMonth) {
-      selectedDate.value = new Date(
-        currentDate.value.getFullYear(),
-        currentDate.value.getMonth(),
-        date.day,
-      );
-      booking.value.date = formatDateInput(selectedDate.value);
-    }
+    if (!date.currentMonth) return;
+    if (isPastDate(date)) return; // block past-date clicks
+    selectedDate.value = new Date(
+      currentDate.value.getFullYear(),
+      currentDate.value.getMonth(),
+      date.day,
+    );
+    booking.value.date = formatDateInput(selectedDate.value);
   }
 
   function selectTimeSlot(slot) {
@@ -1035,6 +1055,9 @@
       return "bg-white text-[#1a3a35] font-bold";
     }
     if (date.currentMonth) {
+      if (isPastDate(date)) {
+        return "text-white/30 cursor-not-allowed line-through";
+      }
       return "text-white hover:bg-white/20";
     }
     return "text-white/40";
@@ -1042,26 +1065,43 @@
 
   function resetBooking() {
     currentStep.value = 0;
+    // Recalculate Australian date with 3-day buffer
+    const nowStr = new Date().toLocaleString("en-US", {
+      timeZone: "Australia/Sydney",
+    });
+    const nowAus = new Date(nowStr);
+    const defaultDate = new Date(nowAus);
+    defaultDate.setDate(defaultDate.getDate() + BOOKING_BUFFER_DAYS);
+
     const prevType = booking.value.type;
     const prevService = booking.value.service;
     booking.value = {
       type: prevType,
       service: prevService,
       lane: "",
-      date: formatDateInput(new Date()),
+      date: formatDateInput(defaultDate),
       selectedTime: null,
       fullName: "",
       phone: "",
       email: "",
       notes: "",
     };
-    selectedDate.value = new Date();
+    selectedDate.value = new Date(defaultDate);
+    currentDate.value = new Date(nowAus);
     durationMultiplier.value = 1;
     registeredUserId.value = "";
     registrationError.value = "";
     bookingError.value = "";
     timeSlots.value = [];
   }
+
+  onMounted(() => {
+    if (memberUserId.value) {
+      fetchMemberBookingData();
+    } else {
+      fetchVisibleServices();
+    }
+  });
 </script>
 
 <style scoped>

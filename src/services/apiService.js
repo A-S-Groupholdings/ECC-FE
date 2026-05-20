@@ -751,6 +751,43 @@ export const AdminLogin = async (email, otp) => {
   };
 
 
+  // GetMembershipPayments (paginated): GET /memberships/membershipPayment?page=&limit=
+  export const GetMembershipPayments = async ({ page = 1, limit = 10 } = {}) => {
+    try {
+      const { data } = await apiService.get('/memberships/membershipPayment', {
+        params: { page, limit },
+      });
+      return data;
+    } catch (error) {
+      console.error('Error fetching membership payments:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
+  // GetMembershipPaymentIndividual: GET /memberships/membershipPaymentIndivual/:userId
+  export const GetMembershipPaymentIndividual = async (userId) => {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('GetMembershipPaymentIndividual: a valid userId string is required');
+    }
+    try {
+      const { data } = await apiService.get(
+        `/memberships/membershipPaymentIndividual/${encodeURIComponent(userId)}`
+      );
+      return data;
+    } catch (error) {
+      console.error('Error fetching individual membership payments:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
   // DeactivateMembershipUser
   export const DeactivateMembershipUser = async (userId) => {
     if (!userId || typeof userId !== 'string') {

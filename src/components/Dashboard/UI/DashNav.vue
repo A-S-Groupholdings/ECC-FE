@@ -220,14 +220,14 @@
                 <span class="md:hidden lg:block">Subscription</span>
               </li>
             </router-link>
-            <!-- <router-link
-              to="/member/payment"
+            <router-link
+              to="/dashboard/membership/payment"
               class="block"
             >
               <li
                 :class="[
                   'w-full h-8 rounded-l-md lg:ml-[70px] md:ml-[30px] flex items-center gap-2 pl-2 cursor-pointer text-sm',
-                  isActive('/member/payment')
+                  isActive('/dashboard/membership/payment')
                     ? 'bg-secondary/70 text-black'
                     : 'bg-primary/80 hover:bg-secondary/50 text-white/90',
                 ]"
@@ -235,7 +235,7 @@
                 <i class="pi pi-dollar text-xs"></i>
                 <span class="md:hidden lg:block">Payments</span>
               </li>
-            </router-link> -->
+            </router-link>
           </div>
         </div>
       </ul>

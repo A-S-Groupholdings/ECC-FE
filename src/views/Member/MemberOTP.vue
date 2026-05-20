@@ -210,9 +210,9 @@
             data.user.category?.categoryName?.toLowerCase() || "";
           console.log("Category Name:", categoryName);
 
-          if (categoryName !== "member") {
+          if (categoryName === "coach") {
             errorMessage.value =
-              "Access denied. Coaches are not allowed to log in to the member portal. Only members can access this portal.";
+              "Access denied. Coaches are not allowed to log in to the member portal.";
             otpDigits.value = ["", "", "", "", "", ""];
             otpInputs.value[0].focus();
             isLoading.value = false;
