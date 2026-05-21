@@ -260,9 +260,9 @@ const router = createRouter({
         title: "ECC"}
     },
     {
-      path: "/ecc/membership",
+      path: "/ecc/membership/new",
       name: "publicmembership",
-      component: MembershipRegister,
+      component: PublicMembershipView,
       meta: {
         title: "ECC"}
     },
