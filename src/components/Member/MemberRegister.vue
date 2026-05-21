@@ -139,7 +139,7 @@
         email: email.value,
         phoneNumber: phoneNumber.value,
         role: "user",
-        categoryID: "69cde98e5e186e2469e9b4b8",
+        categoryID: "6a0c8864c5ba691ff6967c4e",
       };
       const response = await SendOtp(payload);
 

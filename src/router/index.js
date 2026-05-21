@@ -34,6 +34,7 @@ import PublicLiveSessionView from "../views/LiveSession.vue";
 import PublicMembershipView from "../views/Landing/MembershipView.vue";
 import MembershipSuccessView from "../views/Landing/MembershipSuccessView.vue";
 import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
+import MembershipPaymentView from "../views/Dashboard/MembershipPaymentView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -278,6 +279,13 @@ const router = createRouter({
       component: MembershipCancelView,
       meta: {
         title: "Membership Payment Cancelled"}
+    },
+    {
+      path: "/dashboard/membership/payment",
+      name: "membershipcancel",
+      component: MembershipPaymentView,
+      meta: {
+        title: "Membership Payment View"}
     },
     
     {
