@@ -589,9 +589,16 @@
       const response = await GetVisibleServices();
       if (response.isSuccess) {
         visibleServices.value = response.value || [];
+      } else {
+        // Surface API failure through the shared error popup.
+        bookingError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Failed to load services.";
       }
     } catch (error) {
       console.error("Error fetching visible services:", error);
+      bookingError.value = "Network error while loading services.";
     } finally {
       isLoadingServices.value = false;
     }
@@ -620,9 +627,16 @@
           booking.value.type = svc.category?._id || "";
           booking.value.service = svc._id;
         }
+      } else {
+        // Surface API failure through the shared error popup.
+        bookingError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Failed to load member booking data.";
       }
     } catch (error) {
       console.error("Error fetching member booking data:", error);
+      bookingError.value = "Network error while loading member data.";
     } finally {
       isLoadingMemberData.value = false;
     }
@@ -909,13 +923,18 @@
         registeredUserId.value = response.value.userId;
         currentStep.value++;
       } else {
-        registrationError.value =
+        // Mirror into bookingError so the shared popup is the single source of truth.
+        const msg =
           response.errorMessage ||
           response.userMessage ||
           "Registration failed.";
+        registrationError.value = msg;
+        bookingError.value = msg;
       }
     } catch (error) {
-      registrationError.value = "Network error. Please try again.";
+      const msg = "Network error. Please try again.";
+      registrationError.value = msg;
+      bookingError.value = msg;
     } finally {
       isRegisteringUser.value = false;
     }
@@ -960,6 +979,7 @@
           response.errorMessage || response.userMessage || "Booking failed.";
       }
     } catch (error) {
+      console.error("Error creating booking:", error);
       bookingError.value = "Network error. Please try again.";
     } finally {
       isCreatingBooking.value = false;
