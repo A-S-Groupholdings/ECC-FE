@@ -259,9 +259,16 @@ const router = createRouter({
       meta: {
         title: "ECC"}
     },
+    // {
+    //   path: "/ecc/membership/new",
+    //   name: "publicmembership",
+    //   component: PublicMembershipView,
+    //   meta: {
+    //     title: "ECC"}
+    // },
     {
-      path: "/ecc/membership",
-      name: "publicmembership",
+      path: "/membership/public",
+      name: "membershippublic",
       component: PublicMembershipView,
       meta: {
         title: "ECC"}

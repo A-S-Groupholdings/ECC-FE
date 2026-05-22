@@ -26,7 +26,7 @@
           >Land Booking</a
         >
         <a
-          href="/ecc/membership"
+          href="/membership/public"
           class="text-white"
           >Membership</a
         >

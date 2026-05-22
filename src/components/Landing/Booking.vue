@@ -507,16 +507,28 @@
                   class="border border-r-0 border-gray-300 rounded-l px-3 py-3 bg-gray-50 text-gray-600"
                 >
                   <option>🇦🇺 +61</option>
-                  <option>🇱🇰 +94</option>
-                  <option>🇬🇧 +44</option>
+                  <!-- <option>🇱🇰 +94</option>
+                  <option>🇬🇧 +44</option> -->
                 </select>
                 <input
                   v-model="booking.phone"
                   type="tel"
-                  placeholder="071 234 5678"
-                  class="flex-1 border border-gray-300 rounded-r px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+                  placeholder="0390 675 696"
+                  @blur="validatePhone"
+                  :class="[
+                    'flex-1 border rounded-r px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]',
+                    phoneError
+                      ? 'border-red-400 focus:ring-red-400'
+                      : 'border-gray-300',
+                  ]"
                 />
               </div>
+              <p
+                v-if="phoneError"
+                class="text-red-500 text-sm mt-1"
+              >
+                {{ phoneError }}
+              </p>
             </div>
             <!-- Email -->
             <div>
@@ -527,8 +539,20 @@
                 v-model="booking.email"
                 type="email"
                 placeholder="Enter email"
-                class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+                @blur="validateEmail"
+                :class="[
+                  'w-full border rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2',
+                  emailError
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-[#1a3a35]',
+                ]"
               />
+              <p
+                v-if="emailError"
+                class="text-red-500 text-sm mt-1"
+              >
+                {{ emailError }}
+              </p>
             </div>
           </div>
 
@@ -614,58 +638,23 @@
                   type="radio"
                   name="payment"
                   value="card"
-                  checked
+                  v-model="selectedPaymentMethod"
                   class="w-4 h-4 text-[#1a3a35]"
                 />
                 <span class="font-medium">Credit/Debit Card</span>
               </label>
-              <label
+              <!-- <label
                 class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300"
               >
                 <input
                   type="radio"
                   name="payment"
                   value="paypal"
+                  v-model="selectedPaymentMethod"
                   class="w-4 h-4 text-[#1a3a35]"
                 />
                 <span class="font-medium">PayPal</span>
-              </label>
-            </div>
-
-            <!-- Card Form -->
-            <div class="space-y-4 mb-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Card Number</label
-                >
-                <input
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                />
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >Expiry Date</label
-                  >
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
-                    >CVC</label
-                  >
-                  <input
-                    type="text"
-                    placeholder="123"
-                    class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                  />
-                </div>
-              </div>
+              </label> -->
             </div>
 
             <!-- Booking Error -->
@@ -686,18 +675,23 @@
               </button>
               <div class="flex gap-3">
                 <button
-                  @click="completeBooking"
+                  @click="completeBooking('paylater')"
                   :disabled="isCreatingBooking"
                   class="bg-white border-2 border-[#1a3a35] text-[#1a3a35] px-6 py-3 rounded font-semibold hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  Pay Later
+                  <span v-if="isCreatingBooking && paymentMode === 'paylater'"
+                    >Processing...</span
+                  >
+                  <span v-else>Pay Later</span>
                 </button>
                 <button
-                  @click="completeBooking"
+                  @click="completeBooking('stripe')"
                   :disabled="isCreatingBooking"
                   class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                  <span v-if="isCreatingBooking">Processing...</span>
+                  <span v-if="isCreatingBooking && paymentMode === 'stripe'"
+                    >Processing...</span
+                  >
                   <span v-else>PAY A${{ totalPrice.toFixed(2) }}</span>
                 </button>
               </div>
@@ -777,6 +771,7 @@
     GetBookingSlots,
     RegisterBookingUser,
     CreateBooking,
+    CreateStripeSession,
   } from "@/services/apiService.js";
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
@@ -1062,9 +1057,40 @@
   const isRegisteringUser = ref(false);
   const isCreatingBooking = ref(false);
   const bookingError = ref("");
+  const selectedPaymentMethod = ref("card"); // 'card' = Stripe, 'paypal' = future
+  const paymentMode = ref("");
+  const emailError = ref("");
+  const phoneError = ref("");
+
+  function validateEmail() {
+    const val = booking.value.email.trim();
+    if (!val) {
+      emailError.value = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+      emailError.value = "Please enter a valid email address.";
+    } else {
+      emailError.value = "";
+    }
+    return !emailError.value;
+  }
+
+  function validatePhone() {
+    const val = booking.value.phone.trim().replace(/\s/g, "");
+    if (!val) {
+      phoneError.value = "Phone number is required.";
+    } else if (!/^0[0-9]{8,9}$/.test(val)) {
+      phoneError.value = "Enter a valid Australian number (e.g. 0412 345 678).";
+    } else {
+      phoneError.value = "";
+    }
+    return !phoneError.value;
+  }
 
   async function registerUser() {
     registrationError.value = "";
+    const emailOk = validateEmail();
+    const phoneOk = validatePhone();
+    if (!emailOk || !phoneOk) return;
     isRegisteringUser.value = true;
     try {
       const response = await RegisterBookingUser({
@@ -1103,35 +1129,110 @@
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   }
 
-  async function completeBooking() {
+  async function completeBooking(method = "stripe") {
     bookingError.value = "";
     isCreatingBooking.value = true;
+    paymentMode.value = method;
     try {
       const startMins = parseTimeToMinutes(
         booking.value.selectedTime.toLowerCase(),
       );
       const endMins = startMins + totalDurationMinutes.value;
-      const response = await CreateBooking({
-        userId: registeredUserId.value,
-        categoryId: booking.value.type,
-        resourceId: booking.value.lane,
-        serviceId: booking.value.service,
-        duration: totalDurationMinutes.value,
-        date: booking.value.date,
-        startTime: formatMinutesToTime(startMins),
-        endTime: formatMinutesToTime(endMins),
-        note: booking.value.notes || "",
-      });
-      if (response.isSuccess) {
-        currentStep.value++;
+
+      if (method === "stripe") {
+        // ── STRIPE FLOW ──────────────────────────────────────────────────
+        // Step 1: Create booking with pending payment status
+        const response = await CreateBooking({
+          userId: registeredUserId.value,
+          categoryId: booking.value.type,
+          resourceId: booking.value.lane,
+          serviceId: booking.value.service,
+          duration: totalDurationMinutes.value,
+          date: booking.value.date,
+          startTime: formatMinutesToTime(startMins),
+          endTime: formatMinutesToTime(endMins),
+          note: booking.value.notes || "",
+          paymentMethod: "stripe",
+          paymentStatus: "pending",
+        });
+
+        if (!response.isSuccess) {
+          bookingError.value =
+            response.errorMessage || response.userMessage || "Booking failed.";
+          return;
+        }
+
+        // Extract bookingId — try all possible field paths
+        const bookingId =
+          response.value?._id ||
+          response.value?.bookingId ||
+          response.value?.id ||
+          response.value?.booking?._id ||
+          response.value?.booking?.id ||
+          "";
+        console.log(
+          "[BOOKING] CreateBooking response.value:",
+          JSON.stringify(response.value),
+        );
+        console.log("[BOOKING] Extracted bookingId:", bookingId);
+
+        if (!bookingId) {
+          bookingError.value = "Failed to get booking ID. Please try again.";
+          return;
+        }
+
+        // Step 2: Create Stripe checkout session linked to the booking
+        const baseUrl = window.location.origin;
+        const stripeResponse = await CreateStripeSession({
+          bookingId,
+          userId: registeredUserId.value,
+          amount: Math.round(totalPrice.value * 100), // cents
+          currency: "aud",
+          productName: selectedServiceTitle.value,
+          successUrl: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}`,
+          cancelUrl: `${baseUrl}/booking/cancel`,
+          metadata: {
+            bookingId,
+            userId: registeredUserId.value,
+          },
+        });
+
+        if (stripeResponse.isSuccess && stripeResponse.value?.url) {
+          window.location.href = stripeResponse.value.url;
+        } else {
+          bookingError.value =
+            stripeResponse.userMessage ||
+            stripeResponse.errorMessage ||
+            "Failed to create payment session. Please try Pay Later.";
+        }
       } else {
-        bookingError.value =
-          response.errorMessage || response.userMessage || "Booking failed.";
+        // ── PAY LATER FLOW ───────────────────────────────────────────────
+        const response = await CreateBooking({
+          userId: registeredUserId.value,
+          categoryId: booking.value.type,
+          resourceId: booking.value.lane,
+          serviceId: booking.value.service,
+          duration: totalDurationMinutes.value,
+          date: booking.value.date,
+          startTime: formatMinutesToTime(startMins),
+          endTime: formatMinutesToTime(endMins),
+          note: booking.value.notes || "",
+          paymentMethod: "local",
+        });
+
+        if (!response.isSuccess) {
+          bookingError.value =
+            response.errorMessage || response.userMessage || "Booking failed.";
+          return;
+        }
+        currentStep.value++;
       }
     } catch (error) {
+      console.error("Booking error:", error);
       bookingError.value = "Network error. Please try again.";
     } finally {
       isCreatingBooking.value = false;
+      paymentMode.value = "";
     }
   }
 

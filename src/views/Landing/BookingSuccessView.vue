@@ -142,8 +142,8 @@
     const bookingId = params.get("booking_id");
     const ref = params.get("ref");
 
-    console.log('[SUCCESS PAGE] Session ID:', sessionId);
-    console.log('[SUCCESS PAGE] Booking ID:', bookingId);
+    console.log("[SUCCESS PAGE] Session ID:", sessionId);
+    console.log("[SUCCESS PAGE] Booking ID:", bookingId);
 
     if (ref) {
       bookingRef.value = ref;
@@ -152,30 +152,39 @@
     // If we have a session ID, confirm the payment
     if (sessionId) {
       try {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-        console.log('[SUCCESS PAGE] Calling confirm-payment endpoint...');
-        
-        const response = await axios.post(`${apiUrl}/stripe/confirm-payment`, {
-          sessionId: sessionId
-        });
+        const apiUrl =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+        console.log("[SUCCESS PAGE] Calling confirm-payment endpoint...");
 
-        console.log('[SUCCESS PAGE] Response:', response.data);
+        const response = await axios.post(
+          `${apiUrl}/stripe/confirm-payment-booking`,
+          {
+            sessionId: sessionId,
+            bookingId: bookingId,
+          },
+        );
+
+        console.log("[SUCCESS PAGE] Response:", response.data);
 
         if (response.data.isSuccess) {
-          console.log('[SUCCESS PAGE] Payment confirmed successfully');
+          console.log("[SUCCESS PAGE] Payment confirmed successfully");
           isConfirming.value = false;
         } else {
-          confirmError.value = response.data.userMessage || 'Failed to confirm payment';
+          confirmError.value =
+            response.data.userMessage || "Failed to confirm payment";
           isConfirming.value = false;
         }
       } catch (error) {
-        console.error('[SUCCESS PAGE] Error confirming payment:', error);
-        confirmError.value = 'Error confirming payment. Please contact support.';
+        console.error("[SUCCESS PAGE] Error confirming payment:", error);
+        confirmError.value =
+          "Error confirming payment. Please contact support.";
         isConfirming.value = false;
       }
     } else {
       // No session ID - user might have bookmarked the page or came directly
-      console.log('[SUCCESS PAGE] No session ID found, showing success without confirmation');
+      console.log(
+        "[SUCCESS PAGE] No session ID found, showing success without confirmation",
+      );
       isConfirming.value = false;
     }
   });
