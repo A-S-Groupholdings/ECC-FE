@@ -211,7 +211,7 @@
                     </svg>
                   </div>
                 </th>
-                <th
+                <!-- <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
                   <div class="flex items-center gap-1">
@@ -228,7 +228,7 @@
                       ></path>
                     </svg>
                   </div>
-                </th>
+                </th> -->
 
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
@@ -373,15 +373,18 @@
                   <span class="text-sm font-medium text-gray-900">{{
                     payment.userId?.name || "Unknown"
                   }}</span>
+                  <div class="text-xs text-gray-400">
+                    {{ payment.userId?.email || "Unknown" }}
+                  </div>
                 </td>
                 <!-- Provider (Resource/Service) -->
-                <td class="px-4 py-4 whitespace-nowrap">
+                <!-- <td class="px-4 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
                     payment.membershipId?.name ||
                     payment.notes?.match(/service=([^,]+)/)?.[1] ||
                     "N/A"
                   }}</span>
-                </td>
+                </td> -->
                 <!-- Service Details -->
                 <td class="px-4 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{

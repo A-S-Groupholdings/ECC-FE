@@ -425,6 +425,32 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const GetBookingById = async (bookingId) => {
+    try {
+      const response = await apiService.get(`/bookings/${bookingId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching booking by id:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  export const UpdateBooking = async (bookingId, payload) => {
+    try {
+      const response = await apiService.put(`/bookings/${bookingId}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const SearchBookings = async (payload) => {
     try {
       const response = await apiService.post('/bookings/search', payload);
