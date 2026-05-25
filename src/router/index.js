@@ -35,6 +35,7 @@ import PublicMembershipView from "../views/Landing/MembershipView.vue";
 import MembershipSuccessView from "../views/Landing/MembershipSuccessView.vue";
 import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
 import MembershipPaymentView from "../views/Dashboard/MembershipPaymentView.vue";
+import AvailableSlotsView from "../views/Dashboard/AvailableSlotsView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,8 +61,8 @@ const router = createRouter({
       name: "dashhome",
       component: DashboardView,
       meta: {
-        title: "ECC"}
-
+        title: "ECC" , requiresRole: "admin"}
+      
     },
     {
       path: "/dashboard/livesession",
@@ -75,70 +76,77 @@ const router = createRouter({
       name: "appoinment",
       component: appoinment,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
+    },
+    {
+      path: "/dashboard/available",
+      name: "availableslots",
+      component: AvailableSlotsView,
+      meta: {
+        title: "ECC", requiresRole: "admin"}
     },
      {
       path: "/dashboard/service",
       name: "service",
       component: ServiceView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/customer",
       name: "customer",
       component: CustomerView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/calender",
       name: "calender",
       component: CalenderView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/payment",
       name: "payment",
       component: PaymentView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/resource",
       name: "resource",
       component: ResourceView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/category",
       name: "category",
       component: CategoryView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/membership",
       name: "membership",
       component: MembershipView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     {
       path: "/dashboard/membership/create",
       name: "membershipcreate",
       component: MembershipCreateView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },  
     {
       path: "/dashboard/subscription",
       name: "subscription",
       component: SubscriptionView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresRole: "admin"}
     },
     // {
     //   path: "/membership/register",
@@ -166,14 +174,14 @@ const router = createRouter({
       name: "memberpayment",
       component: MemberPayment,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresMember: true}
     },
     {
       path: "/ecc/profile",
       name: "memberprofile",
       component: MemberProfileView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresMember: true}
     },
     {
       path: "/admin/otp",
@@ -215,7 +223,7 @@ const router = createRouter({
       name: "memberbooking",
       component: MemberBookingView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresMember: true}
     },
     {
       path: "/member/login",
@@ -236,21 +244,21 @@ const router = createRouter({
       name: "coachprofile",
       component: CoachProfileView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresCategory: "Coach"}
     },
     {
       path: "/member/payment",
       name: "memberpayment",
       component: MemberPaymentView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresMember: true}
     },
     {
       path: "/coach/booking",
       name: "coachbooking",
       component: CoachBookingView,
       meta: {
-        title: "ECC"}
+        title: "ECC", requiresCategory: "Coach"}
     },
     {
       path: "/live-on-ecc",
@@ -312,6 +320,61 @@ const router = createRouter({
   },
 });
 
+
+router.beforeEach((to, from, next) => {
+  // Set page title
+  document.title = to.meta.title || "ECC";
+
+  // Get user from localStorage
+  let user = null;
+  try {
+    const stored = localStorage.getItem("user");
+    if (stored) user = JSON.parse(stored);
+  } catch (e) {
+    user = null;
+  }
+
+  const userRole = user?.role || null;
+  const userCategory = user?.category?.categoryName || null;
+
+  // Admin-only routes
+  if (to.meta.requiresRole === "admin") {
+    if (userRole !== "admin") {
+      return next("/dashboard");
+    }
+  }
+
+  // If admin is already logged in and visits /dashboard (login page), redirect to home
+  if (to.path === "/dashboard" && userRole === "admin") {
+    return next("/dashboard/home");
+  }
+
+  // Coach-only routes
+  if (to.meta.requiresCategory === "Coach") {
+    if (userRole !== "user" || userCategory !== "Coach") {
+      return next("/coach/login");
+    }
+  }
+
+  // If coach is already logged in and visits /coach/login, redirect to profile
+  if (to.path === "/coach/login" && userRole === "user" && userCategory === "Coach") {
+    return next("/coach/profile");
+  }
+
+  // Member-only routes (user role + NOT Coach category)
+  if (to.meta.requiresMember) {
+    if (userRole !== "user" || userCategory === "Coach") {
+      return next("/member/login");
+    }
+  }
+
+  // If member is already logged in and visits /member/login, redirect to profile
+  if (to.path === "/member/login" && userRole === "user" && userCategory !== "Coach") {
+    return next("/ecc/profile");
+  }
+
+  next();
+});
 
 
 
