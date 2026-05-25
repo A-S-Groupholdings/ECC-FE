@@ -336,6 +336,21 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const GetUnbookingSlots = async (date, resourceId) => {
+    try {
+      const response = await apiService.get('/bookings/UnbookingSlot', {
+        params: { date, resourceId },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching unbooking slots:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const CreateMembership = async (payload) => {
     try {
       const response = await apiService.post('/memberships', payload);

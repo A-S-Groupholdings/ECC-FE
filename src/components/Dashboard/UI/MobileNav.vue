@@ -85,6 +85,23 @@
             </li>
           </router-link>
           <router-link
+            to="/dashboard/available"
+            @click="toggleMenu"
+            class="block"
+          >
+            <li
+              :class="[
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/available')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
+              ]"
+            >
+              <i class="pi pi-calendar-plus"></i>
+              <span>Available Slots</span>
+            </li>
+          </router-link>
+          <router-link
             to="/dashboard/resource"
             @click="toggleMenu"
             class="block"

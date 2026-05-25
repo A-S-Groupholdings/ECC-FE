@@ -53,7 +53,7 @@
       </div>
 
       <!-- account -->
-      <router-link to="#">
+      <router-link :to="profileRoute">
         <div class="account">
           <img
             src="@/assets/account.png"
@@ -65,3 +65,33 @@
     </div>
   </nav>
 </template>
+
+<script setup>
+import { computed } from "vue";
+
+const isLoggedIn = computed(() => {
+  try {
+    return !!localStorage.getItem("user");
+  } catch {
+    return false;
+  }
+});
+
+const userCategory = computed(() => {
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return null;
+    const user = JSON.parse(stored);
+    return user?.category?.categoryName || null;
+  } catch {
+    return null;
+  }
+});
+
+const profileRoute = computed(() => {
+  if (!isLoggedIn.value) {
+    return "/member/login";
+  }
+  return userCategory.value === "Coach" ? "/coach/profile" : "/ecc/profile";
+});
+</script>

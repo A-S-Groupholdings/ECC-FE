@@ -225,7 +225,7 @@
             name: data.user.name,
             email: data.user.email,
             role: data.user.role,
-            category: data.user.category,
+            category: data.user.category ? data.user.category.categoryName : "",
             membership: data.user.membership,
           });
 

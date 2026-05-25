@@ -241,7 +241,12 @@
                 <td class="px-4 py-4 whitespace-nowrap text-center relative">
                   <div class="relative inline-block">
                     <button
-                      @click="activeCustomerBookings = activeCustomerBookings === customer._id ? null : customer._id"
+                      @click="
+                        activeCustomerBookings =
+                          activeCustomerBookings === customer._id
+                            ? null
+                            : customer._id
+                      "
                       :class="[
                         'inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-full text-xs font-semibold transition-colors',
                         getCustomerBookings(customer._id).length > 0
@@ -267,16 +272,19 @@
                         class="px-4 py-2 border-b border-gray-50 last:border-b-0 text-left"
                       >
                         <div class="text-xs font-semibold text-gray-800">
-                          {{ apt.bookingId }} · {{ apt.resourceId?.title || apt.resourceName || "-" }}
+                          {{ apt.bookingId }} ·
+                          {{ apt.resourceId?.title || apt.resourceName || "-" }}
                         </div>
                         <div class="text-[10px] text-gray-500 mt-0.5">
-                          {{ apt.date ? apt.date.split('T')[0] : '-' }} · {{ apt.startTime }} - {{ apt.endTime }}
+                          {{ apt.date ? apt.date.split("T")[0] : "-" }} ·
+                          {{ apt.startTime }} - {{ apt.endTime }}
                         </div>
                         <div class="flex items-center gap-1 mt-1">
                           <span
                             :class="[
                               'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium capitalize',
-                              apt.status === 'CONFIRMED' || apt.status === 'COMPLETED'
+                              apt.status === 'CONFIRMED' ||
+                              apt.status === 'COMPLETED'
                                 ? 'bg-green-100 text-green-700'
                                 : apt.status === 'PENDING'
                                   ? 'bg-yellow-100 text-yellow-700'
@@ -733,8 +741,8 @@
       role: "user",
       phoneNumber: form.phoneNumber,
       categoryID: isMember
-        ? "69cde98e5e186e2469e9b4b8"
-        : "69cdfb2dd0319919ab30f83c",
+        ? "6a0c8864c5ba691ff6967c4e"
+        : "6a0c886bc5ba691ff6967c54",
       membershipId: null,
       serviceId: isMember ? null : form.serviceId || null,
     };
