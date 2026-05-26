@@ -24,7 +24,7 @@
             <p class="text-[#fefefe]">9:30 am to 11:00 pm (Mon - Fri)</p>
             <p class="text-[#fefefe]">9:00 am to 10:00 pm (Sat - Sun)</p>
             <p class="mt-3 text-[#bbb]">8-9 Becon Court, Hallam VIC 3803</p>
-            <p class="text-[#bbb]">0406 499 499</p>
+            <p class="text-[#bbb]">0390 675 696</p>
             <p class="text-[#bbb]">info@elitecricketcentre.com.au</p>
           </div>
         </div>

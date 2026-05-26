@@ -13,7 +13,7 @@
           <a
             href="tel:406499499"
             class="text-white font-normal text-[13.5px] font-montserrat"
-            >0406 499 499</a
+            >0390 675 696</a
           >
         </div>
         <div class="phone flex space-x-2 items-center">
