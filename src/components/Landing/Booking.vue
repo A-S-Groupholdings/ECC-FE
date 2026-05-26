@@ -149,8 +149,8 @@
                 </option>
               </select>
             </div>
-            <!-- Service -->
-            <div>
+            <!-- Service (only after Type) -->
+            <div v-if="booking.type">
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Service</label
               >
@@ -165,12 +165,12 @@
                   :key="svc._id"
                   :value="svc._id"
                 >
-                  {{ svc.title }} (A${{ svc.price }})
+                  {{ svc.title }} (A${{ svc.price * 2 }})
                 </option>
               </select>
             </div>
-            <!-- Lane -->
-            <div>
+            <!-- Lane (only after Service) -->
+            <div v-if="booking.service">
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Lane</label
               >
@@ -188,8 +188,8 @@
                 </option>
               </select>
             </div>
-            <!-- Duration -->
-            <div>
+            <!-- Duration (only after Lane) -->
+            <div v-if="booking.lane">
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Duration</label
               >
@@ -232,8 +232,8 @@
             </div>
           </div>
 
-          <!-- Select Date -->
-          <div class="max-w-xs mb-8">
+          <!-- Select Date (only after Lane) -->
+          <div v-if="booking.lane" class="max-w-xs mb-8">
             <label class="block text-[#1a3a35] font-semibold mb-2"
               >Select a Date</label
             >

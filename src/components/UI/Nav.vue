@@ -23,30 +23,30 @@
         <a
           href="/"
           class="text-white"
-          >Land Booking</a
+          >Lane Booking</a
         >
         <a
-          href="/membership/public"
+          href="#"
           class="text-white"
           >Membership</a
         >
         <a
-          href=""
+          href="https://elitecricketcentre.com.au/gym/"
           class="text-white"
           >Gym</a
         >
         <a
-          href=""
+          href="https://elitecricketcentre.com.au/gallery/"
           class="text-white"
           >Gallery</a
         >
         <a
-          href=""
+          href="https://elitecricketcentre.com.au/about-us/"
           class="text-white"
           >About Us</a
         >
         <a
-          href=""
+          href="https://elitecricketcentre.com.au/contact-us/"
           class="text-white"
           >Contact Us</a
         >
@@ -67,31 +67,31 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+  import { computed } from "vue";
 
-const isLoggedIn = computed(() => {
-  try {
-    return !!localStorage.getItem("user");
-  } catch {
-    return false;
-  }
-});
+  const isLoggedIn = computed(() => {
+    try {
+      return !!localStorage.getItem("user");
+    } catch {
+      return false;
+    }
+  });
 
-const userCategory = computed(() => {
-  try {
-    const stored = localStorage.getItem("user");
-    if (!stored) return null;
-    const user = JSON.parse(stored);
-    return user?.category?.categoryName || null;
-  } catch {
-    return null;
-  }
-});
+  const userCategory = computed(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (!stored) return null;
+      const user = JSON.parse(stored);
+      return user?.category?.categoryName || null;
+    } catch {
+      return null;
+    }
+  });
 
-const profileRoute = computed(() => {
-  if (!isLoggedIn.value) {
-    return "/member/login";
-  }
-  return userCategory.value === "Coach" ? "/coach/profile" : "/ecc/profile";
-});
+  const profileRoute = computed(() => {
+    if (!isLoggedIn.value) {
+      return "/member/login";
+    }
+    return userCategory.value === "Coach" ? "/coach/profile" : "/ecc/profile";
+  });
 </script>

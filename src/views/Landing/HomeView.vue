@@ -19,17 +19,17 @@
       <MobNav />
     </div>
     <Hero />
-    <router-link to="/member/login">
+    <!-- <router-link to="/member/login">
       <MemberPortal />
-    </router-link>
+    </router-link> -->
     <Booking />
 
     <router-link to="/booking/cancel">
       <BookingCancel />
     </router-link>
-    <router-link to="/coach/login">
+    <!-- <router-link to="/coach/login">
       <CoachPortal />
-    </router-link>
+    </router-link> -->
 
     <Footer />
   </main>
