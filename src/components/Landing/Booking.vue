@@ -844,6 +844,8 @@
   // Services filtered by selected category
   const filteredServices = computed(() => {
     let list = visibleServices.value;
+    // Only show services where isVisible is true (or not set, default true)
+    list = list.filter((s) => s.isVisible !== false);
     // Exclude member and coach category services
     list = list.filter((s) => {
       const catName = s.categoryID?.categoryName?.toLowerCase() || "";
@@ -863,7 +865,9 @@
 
   // Resources (lanes) from selected service
   const serviceResources = computed(() => {
-    return selectedService.value?.resourceIDs || [];
+    const resources = selectedService.value?.resourceIDs || [];
+    // Only show resources where isActive is true (or not set, default true)
+    return resources.filter((r) => r.isActive !== false);
   });
 
   // Parse duration string like "30m" or "1h" into minutes
