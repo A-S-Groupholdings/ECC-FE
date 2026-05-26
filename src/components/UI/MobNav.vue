@@ -233,27 +233,27 @@
     },
     {
       label: "Membership",
-      href: "/membership/public",
+      href: "#",
       icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
     },
     {
       label: "Gym",
-      href: "",
+      href: "https://elitecricketcentre.com.au/gym/",
       icon: "M4 6h16M4 10h16M4 14h16M4 18h16",
     },
     {
       label: "Gallery",
-      href: "",
+      href: "https://elitecricketcentre.com.au/gallery/",
       icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z",
     },
     {
       label: "About Us",
-      href: "",
+      href: "https://elitecricketcentre.com.au/about-us/",
       icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
     },
     {
       label: "Contact Us",
-      href: "",
+      href: "https://elitecricketcentre.com.au/contact-us/",
       icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
     },
   ];
