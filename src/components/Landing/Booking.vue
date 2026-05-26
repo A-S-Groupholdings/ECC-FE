@@ -233,7 +233,10 @@
           </div>
 
           <!-- Select Date (only after Lane) -->
-          <div v-if="booking.lane" class="max-w-xs mb-8">
+          <div
+            v-if="booking.lane"
+            class="max-w-xs mb-8"
+          >
             <label class="block text-[#1a3a35] font-semibold mb-2"
               >Select a Date</label
             >
@@ -674,16 +677,6 @@
                 BACK
               </button>
               <div class="flex gap-3">
-                <button
-                  @click="completeBooking('paylater')"
-                  :disabled="isCreatingBooking"
-                  class="bg-white border-2 border-[#1a3a35] text-[#1a3a35] px-6 py-3 rounded font-semibold hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <span v-if="isCreatingBooking && paymentMode === 'paylater'"
-                    >Processing...</span
-                  >
-                  <span v-else>Pay Later</span>
-                </button>
                 <button
                   @click="completeBooking('stripe')"
                   :disabled="isCreatingBooking"
