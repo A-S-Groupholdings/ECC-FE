@@ -129,90 +129,6 @@
     </header>
 
     <!-- Stats Bar -->
-    <div class="px-6 py-4 border-b border-emerald-500/10 relative z-10">
-      <div class="flex items-center gap-6">
-        <!-- Active Sessions -->
-        <div
-          class="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 border border-emerald-200/50 shadow-sm"
-        >
-          <div
-            class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-600/10 flex items-center justify-center border border-emerald-400/20"
-          >
-            <svg
-              class="w-5 h-5 text-emerald-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-          </div>
-          <div>
-            <p
-              class="text-xs text-emerald-600/60 font-bold uppercase tracking-wider"
-            >
-              Active
-            </p>
-            <p class="text-xl font-black text-emerald-700">
-              {{ activeSessionCount }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Total Bookings Today -->
-        <div
-          class="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 border border-emerald-200/50 shadow-sm"
-        >
-          <div
-            class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-600/10 flex items-center justify-center border border-emerald-400/20"
-          >
-            <svg
-              class="w-5 h-5 text-emerald-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              ></path>
-            </svg>
-          </div>
-          <div>
-            <p
-              class="text-xs text-emerald-600/60 font-bold uppercase tracking-wider"
-            >
-              Bookings Today
-            </p>
-            <p class="text-xl font-black text-emerald-700">
-              {{ dashboardData?.totalBookingsToday || 0 }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Overall Status -->
-        <div
-          class="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 border border-emerald-200/50 shadow-sm ml-auto"
-        >
-          <div
-            class="w-3 h-3 rounded-full animate-pulse shadow-lg"
-            :class="overallStatusColor"
-          ></div>
-          <p
-            class="text-sm font-bold text-emerald-700/80 uppercase tracking-wider"
-          >
-            {{ dashboardData?.overall?.status || "Loading..." }}
-          </p>
-        </div>
-      </div>
-    </div>
 
     <!-- Main Content -->
     <div class="p-6 relative z-10">
@@ -359,7 +275,7 @@
                     {{ resource.currentSession.startTime }} -
                     {{ resource.currentSession.endTime }}
                   </span>
-                  <span
+                  <!-- <span
                     class="text-xs font-black px-2 py-0.5 rounded-full border"
                     :class="
                       getPaymentBadgeClass(
@@ -368,7 +284,7 @@
                     "
                   >
                     {{ resource.currentSession.paymentStatus }}
-                  </span>
+                  </span> -->
                 </div>
                 <p class="text-lg font-black text-white mb-0.5">
                   {{ resource.currentSession.userName }}
