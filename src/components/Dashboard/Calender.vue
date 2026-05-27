@@ -264,14 +264,11 @@
           No resources to display.
         </div>
 
-        <div
-          v-else
-          class="overflow-x-auto"
-        >
-          <div class="flex min-w-max">
+        <div v-else>
+          <div class="flex w-full">
             <!-- Time labels column -->
             <div
-              class="flex-shrink-0 w-20 border-r border-gray-100 bg-gray-50/60"
+              class="flex-shrink-0 w-16 border-r border-gray-100 bg-gray-50/60"
             >
               <div class="h-12 border-b border-gray-100"></div>
               <div
@@ -287,15 +284,16 @@
             <div
               v-for="resource in dayResources"
               :key="resource.id"
-              class="flex-1 min-w-[260px] border-r border-gray-100 last:border-r-0"
+              class="flex-1 min-w-0 border-r border-gray-100 last:border-r-0"
             >
               <!-- Resource header -->
               <div
-                class="h-12 border-b border-gray-200 flex items-center justify-center bg-white"
+                class="h-12 border-b border-gray-200 flex items-center justify-center bg-white px-1"
               >
-                <span class="text-sm font-semibold text-gray-800">{{
-                  resource.label
-                }}</span>
+                <span
+                  class="text-xs font-semibold text-gray-800 truncate text-center leading-tight"
+                  >{{ resource.label }}</span
+                >
               </div>
 
               <!-- Schedule body -->
@@ -323,7 +321,7 @@
                     height: blockHeightPx(apt) + 'px',
                   }"
                   :class="[
-                    'absolute left-1 right-1 rounded-md border-l-4 p-2 text-xs overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow',
+                    'absolute left-0.5 right-0.5 rounded-md border-l-4 p-1 text-[10px] overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow',
                     apt.status === 'Confirmed'
                       ? 'bg-green-100/90 border-green-500'
                       : apt.status === 'Cancelled'

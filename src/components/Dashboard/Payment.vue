@@ -588,9 +588,9 @@
   const mapType = (paymentMethod, membershipId, bookingId) => {
     if (membershipId) return "Membership";
     if (bookingId) {
-      return paymentMethod === "stripe" ? "Stripe Cloud" : "Local";
+      return paymentMethod === "stripe" ? "Stripe" : "Local";
     }
-    return paymentMethod === "stripe" ? "Stripe Cloud" : "Local";
+    return paymentMethod === "stripe" ? "Stripe" : "Local";
   };
 
   // Fetch payments from API

@@ -24,9 +24,7 @@
     </router-link> -->
     <Booking />
 
-    <router-link to="/booking/cancel">
-      <BookingCancel />
-    </router-link>
+    <BookingCancel />
     <!-- <router-link to="/coach/login">
       <CoachPortal />
     </router-link> -->
