@@ -567,20 +567,27 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-semibold text-green-900">
-                  Calculated Price
+                  Price
                 </p>
                 <p class="text-xs text-green-600 mt-1">
                   Based on
                   {{ formatDurationMinutes(customDurationMinutes) }} duration
                 </p>
               </div>
-              <div class="text-right">
-                <p class="text-3xl font-bold text-green-700">
-                  ${{ calculatePrice() }}
-                </p>
-                <p class="text-xs text-green-600">Total amount</p>
+              <div class="text-right flex items-center gap-2">
+                <span class="text-2xl font-bold text-green-700">$</span>
+                <input
+                  v-model.number="customPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-28 px-3 py-2 text-2xl font-bold text-green-700 bg-white border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right"
+                />
               </div>
             </div>
+            <p class="text-xs text-green-600 mt-2">
+              Default: ${{ calculatePrice() }} — Edit above to override
+            </p>
           </div>
         </div>
 
@@ -895,6 +902,61 @@
             v-else
             class="space-y-4"
           >
+            <!-- Edit User -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">User</label>
+              <div v-if="editSelectedUser" class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">{{ editSelectedUser.name }}</p>
+                  <p class="text-xs text-gray-600">{{ editSelectedUser.email }}</p>
+                </div>
+                <button @click="editSelectedUser = null; editForm.userId = ''" class="text-red-500 hover:text-red-700 text-xs">Change</button>
+              </div>
+              <div v-else class="relative">
+                <input
+                  v-model="editUserSearch"
+                  @input="searchEditUsers"
+                  type="text"
+                  placeholder="Search user by name or email..."
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+                />
+                <div v-if="editUserResults.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  <div v-for="user in editUserResults" :key="user._id" @click="selectEditUser(user)" class="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                    <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
+                    <p class="text-xs text-gray-500">{{ user.email }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Service -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Service</label>
+              <select
+                v-model="editForm.categoryId"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+              >
+                <option value="">Select service...</option>
+                <option v-for="svc in editServices" :key="svc._id" :value="svc._id">
+                  {{ svc.title }} ({{ svc.duration }}) - ${{ svc.price }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Edit Resource -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Resource</label>
+              <select
+                v-model="editForm.resourceId"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+              >
+                <option value="">Select resource...</option>
+                <option v-for="res in editResources" :key="res._id" :value="res._id">
+                  {{ res.title }}
+                </option>
+              </select>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1"
@@ -987,20 +1049,57 @@
       >
         <div
           v-if="!isEditingBooking"
-          class="flex gap-3"
+          class="space-y-3"
         >
-          <button
-            @click="closeDetailsModal"
-            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-          >
-            Close
-          </button>
-          <button
-            @click="startEditBooking"
-            class="flex-1 px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors"
-          >
-            Edit
-          </button>
+          <!-- Quick Actions -->
+          <div class="flex gap-2 flex-wrap">
+            <button
+              v-if="bookingDetails.status !== 'CONFIRMED'"
+              @click="quickUpdateBooking('status', 'CONFIRMED')"
+              :disabled="isUpdatingBooking"
+              class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              Confirm
+            </button>
+            <button
+              v-if="bookingDetails.paymentStatus !== 'PAID'"
+              @click="quickUpdateBooking('paymentStatus', 'PAID')"
+              :disabled="isUpdatingBooking"
+              class="px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
+            >
+              Mark Paid
+            </button>
+            <button
+              v-if="bookingDetails.paymentStatus === 'PAID'"
+              @click="quickUpdateBooking('paymentStatus', 'PENDING')"
+              :disabled="isUpdatingBooking"
+              class="px-4 py-2 bg-orange-500 text-white text-sm rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
+            >
+              Mark Unpaid
+            </button>
+            <button
+              v-if="bookingDetails.status !== 'CANCELLED'"
+              @click="quickUpdateBooking('status', 'CANCELLED')"
+              :disabled="isUpdatingBooking"
+              class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+            >
+              Cancel Booking
+            </button>
+          </div>
+          <div class="flex gap-3">
+            <button
+              @click="closeDetailsModal"
+              class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              @click="startEditBooking"
+              class="flex-1 px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors"
+            >
+              Edit
+            </button>
+          </div>
         </div>
         <div
           v-else
@@ -1163,7 +1262,7 @@
     { key: "month", label: "Month" },
     { key: "day", label: "Day" },
   ];
-  const currentView = ref("month");
+  const currentView = ref("day");
 
   // ─── Date state ─────────────────────────────────────────────────────────────
   const today = new Date();
@@ -1614,7 +1713,15 @@
     status: "",
     paymentStatus: "",
     note: "",
+    categoryId: "",
+    resourceId: "",
+    userId: "",
   });
+  const editServices = ref([]);
+  const editResources = ref([]);
+  const editUserSearch = ref("");
+  const editUserResults = ref([]);
+  const editSelectedUser = ref(null);
 
   function formatDateTimeDate(d) {
     if (!d) return "-";
@@ -1642,8 +1749,15 @@
     isEditingBooking.value = false;
     detailsError.value = "";
     bookingDetails.value = null;
+    editSelectedUser.value = null;
     try {
-      const response = await GetBookingById(id);
+      const [response, servicesRes, resourcesRes] = await Promise.all([
+        GetBookingById(id),
+        GetServices(),
+        GetResources(),
+      ]);
+      if (servicesRes.isSuccess) editServices.value = servicesRes.value || [];
+      if (resourcesRes.isSuccess) editResources.value = (resourcesRes.value || []).filter(r => r.isActive !== false);
       if (response.isSuccess) {
         bookingDetails.value = response.value || null;
         // Initialize edit form
@@ -1656,7 +1770,13 @@
           status: v.status || "",
           paymentStatus: v.paymentStatus || "",
           note: v.note || "",
+          categoryId: v.categoryId?._id || v.categoryId || "",
+          resourceId: v.resourceId?._id || v.resourceId || "",
+          userId: v.userId?._id || v.userId || "",
         };
+        if (v.userId && typeof v.userId === "object") {
+          editSelectedUser.value = v.userId;
+        }
       } else {
         detailsError.value =
           response.userMessage || "Failed to load booking details.";
@@ -1681,6 +1801,34 @@
     isEditingBooking.value = true;
   }
 
+  async function searchEditUsers() {
+    if (!editUserSearch.value.trim()) {
+      editUserResults.value = [];
+      return;
+    }
+    if (allUsers.value.length === 0) {
+      try {
+        const res = await GetUsersAll();
+        if (res.isSuccess) allUsers.value = res.value || [];
+      } catch (e) { console.error(e); }
+    }
+    const q = editUserSearch.value.toLowerCase();
+    editUserResults.value = allUsers.value
+      .filter(
+        (u) =>
+          (u.name || "").toLowerCase().includes(q) ||
+          (u.email || "").toLowerCase().includes(q),
+      )
+      .slice(0, 10);
+  }
+
+  function selectEditUser(user) {
+    editSelectedUser.value = user;
+    editForm.value.userId = user._id;
+    editUserSearch.value = "";
+    editUserResults.value = [];
+  }
+
   function cancelEditBooking() {
     isEditingBooking.value = false;
     const v = bookingDetails.value || {};
@@ -1692,7 +1840,13 @@
       status: v.status || "",
       paymentStatus: v.paymentStatus || "",
       note: v.note || "",
+      categoryId: v.categoryId?._id || v.categoryId || "",
+      resourceId: v.resourceId?._id || v.resourceId || "",
+      userId: v.userId?._id || v.userId || "",
     };
+    if (v.userId && typeof v.userId === "object") {
+      editSelectedUser.value = v.userId;
+    }
   }
 
   async function saveBookingUpdate() {
@@ -1708,6 +1862,9 @@
         status: editForm.value.status,
         paymentStatus: editForm.value.paymentStatus,
         note: editForm.value.note,
+        categoryId: editForm.value.categoryId,
+        resourceId: editForm.value.resourceId,
+        userId: editForm.value.userId,
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
@@ -1738,6 +1895,35 @@
     }
   }
 
+  async function quickUpdateBooking(field, value) {
+    const id = bookingDetails.value?._id;
+    if (!id) return;
+    isUpdatingBooking.value = true;
+    try {
+      const payload = { [field]: value };
+      const response = await UpdateBooking(id, payload);
+      if (response.isSuccess) {
+        bookingDetails.value[field] = value;
+        successMessage.value = `Booking ${field === 'status' ? 'status' : 'payment status'} updated to ${value}!`;
+        showSuccessPopup.value = true;
+        setTimeout(() => {
+          showSuccessPopup.value = false;
+          fetchCalendarData();
+        }, 1500);
+      } else {
+        errorMessage.value =
+          response.userMessage || response.errorMessage || "Failed to update.";
+        showErrorPopup.value = true;
+      }
+    } catch (error) {
+      console.error("Error quick updating booking:", error);
+      errorMessage.value = "Failed to update booking. Please try again.";
+      showErrorPopup.value = true;
+    } finally {
+      isUpdatingBooking.value = false;
+    }
+  }
+
   const bookingForm = ref({
     userId: "",
     categoryId: "",
@@ -1747,6 +1933,7 @@
     paymentMethod: "local",
   });
   const customDurationMinutes = ref(0);
+  const customPrice = ref(0);
 
   const filteredResources = computed(() => {
     if (!bookingForm.value.categoryId) return [];
@@ -1788,6 +1975,7 @@
     };
     availableSlots.value = [];
     customDurationMinutes.value = 0;
+    customPrice.value = 0;
   }
 
   async function openNewAppointmentModal(prefill) {
@@ -1851,6 +2039,7 @@
       if (dur.includes("m")) durationMinutes = parseInt(dur);
       else if (dur.includes("h")) durationMinutes = parseInt(dur) * 60;
       customDurationMinutes.value = Math.max(durationMinutes, 60);
+      customPrice.value = calculatePrice();
     }
 
     // Apply prefilled resource and date if compatible
@@ -1877,9 +2066,11 @@
 
   function increaseDuration() {
     customDurationMinutes.value += 30;
+    customPrice.value = calculatePrice();
   }
   function decreaseDuration() {
     if (customDurationMinutes.value > 60) customDurationMinutes.value -= 30;
+    customPrice.value = calculatePrice();
   }
 
   function calculatePrice() {
@@ -1963,6 +2154,7 @@
         startTime: startTime24h,
         endTime: endTime24h,
         duration: durationMinutes,
+        price: customPrice.value || calculatePrice(),
         paymentMethod: "local",
       };
       const response = await CreateBooking(payload);
