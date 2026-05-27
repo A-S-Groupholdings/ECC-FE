@@ -12,27 +12,29 @@
         Cancellations made less than 4 hours before the session may not be
         eligible for a refund.
       </p>
-      <button
-        class="bg-gradient-to-r from-[#1a3a35] to-[#3d6b5f] text-white px-12 py-4 rounded-lg flex items-center gap-3 mx-auto hover:opacity-90 transition-opacity"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      <router-link to="/booking/cancel">
+        <button
+          class="bg-gradient-to-r from-[#1a3a35] to-[#3d6b5f] text-white px-12 py-4 rounded-lg flex items-center gap-3 mx-auto hover:opacity-90 transition-opacity"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-          />
-        </svg>
-        <span class="font-semibold tracking-wide sm:text-lg text-sm"
-          >Booking Cancellation</span
-        >
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+            />
+          </svg>
+          <span class="font-semibold tracking-wide sm:text-lg text-sm"
+            >Booking Cancellation</span
+          >
+        </button>
+      </router-link>
     </div>
   </div>
 </template>

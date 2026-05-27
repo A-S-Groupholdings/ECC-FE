@@ -284,6 +284,19 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const DeleteBooking = async (id) => {
+    try {
+      const response = await apiService.delete(`/bookings/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const GetBookingSlots = async (date, resourceId) => {
     try {
       const response = await apiService.post('/bookings/bookingSlot', {
