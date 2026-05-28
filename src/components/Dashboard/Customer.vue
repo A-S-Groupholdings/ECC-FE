@@ -312,11 +312,22 @@
                 </td>
                 <!-- Actions -->
                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                  <button
-                    class="text-[#1a3a35] hover:text-green-600 font-medium text-sm transition-colors"
-                  >
-                    Edit
-                  </button>
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      @click="openEditModal(customer)"
+                      class="text-[#1a3a35] hover:text-green-600 font-medium text-sm transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="confirmDeleteUser(customer)"
+                      :disabled="deletingUserId === customer._id"
+                      class="text-red-500 hover:text-red-700 font-medium text-sm transition-colors disabled:opacity-50"
+                    >
+                      <span v-if="deletingUserId === customer._id">...</span>
+                      <span v-else>Delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -598,6 +609,124 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Customer Modal -->
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click="closeEditModal"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <!-- Modal Header -->
+        <div
+          class="px-6 py-4 border-b border-gray-100 flex justify-between items-center"
+        >
+          <h2 class="text-lg font-bold text-gray-800">Edit Customer</h2>
+          <button
+            @click="closeEditModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="isLoadingEdit" class="p-8 text-center text-gray-500 text-sm">
+          <svg class="w-6 h-6 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading...
+        </div>
+
+        <!-- Edit Form -->
+        <div v-else class="p-6 space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Name <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <input
+                v-model="editForm.name"
+                type="text"
+                placeholder="Enter name..."
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Email <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <input
+                v-model="editForm.email"
+                type="email"
+                placeholder="Enter email..."
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-semibold text-gray-700 md:text-right">
+              Phone <span class="text-red-500">*</span> :
+            </label>
+            <div class="md:col-span-3">
+              <input
+                v-model="editForm.phoneNumber"
+                type="text"
+                placeholder="Enter phone number..."
+                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          v-if="!isLoadingEdit"
+          class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-3"
+        >
+          <div
+            v-if="editError"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"
+          >
+            {{ editError }}
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="closeEditModal"
+              class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="updateCustomer"
+              :disabled="isUpdating"
+              class="px-6 py-3 bg-gradient-to-r from-[#1a3a35] to-green-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              <span v-if="isUpdating">Updating...</span>
+              <span v-else>Update Customer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -608,6 +737,9 @@
     GetServices,
     CreateUser,
     GetBookings,
+    GetUserById,
+    UpdateUser,
+    DeleteUser,
   } from "@/services/apiService.js";
   import Nav from "../Dashboard/UI/SecondNav.vue";
 
@@ -762,6 +894,115 @@
       createError.value = "Network error. Please try again.";
     } finally {
       isCreating.value = false;
+    }
+  }
+
+  // ─── Edit Customer ──────────────────────────────────────────────────────────
+  const showEditModal = ref(false);
+  const isLoadingEdit = ref(false);
+  const isUpdating = ref(false);
+  const editError = ref("");
+  const editingCustomerId = ref(null);
+  const editForm = ref({
+    name: "",
+    email: "",
+    phoneNumber: "",
+  });
+
+  async function openEditModal(customer) {
+    editError.value = "";
+    editingCustomerId.value = customer._id;
+    showEditModal.value = true;
+    isLoadingEdit.value = true;
+    try {
+      const response = await GetUserById(customer._id);
+      if (response.isSuccess) {
+        const user = response.value || {};
+        editForm.value = {
+          name: user.name || "",
+          email: user.email || "",
+          phoneNumber: user.phoneNumber || "",
+        };
+      } else {
+        editForm.value = {
+          name: customer.name || "",
+          email: customer.email || "",
+          phoneNumber: customer.phoneNumber || "",
+        };
+      }
+    } catch (error) {
+      editForm.value = {
+        name: customer.name || "",
+        email: customer.email || "",
+        phoneNumber: customer.phoneNumber || "",
+      };
+    } finally {
+      isLoadingEdit.value = false;
+    }
+  }
+
+  function closeEditModal() {
+    showEditModal.value = false;
+    editingCustomerId.value = null;
+    editError.value = "";
+  }
+
+  async function updateCustomer() {
+    editError.value = "";
+    isUpdating.value = true;
+
+    const payload = {
+      name: editForm.value.name,
+      email: editForm.value.email,
+      phoneNumber: editForm.value.phoneNumber,
+    };
+
+    try {
+      const response = await UpdateUser(editingCustomerId.value, payload);
+      if (response.isSuccess) {
+        closeEditModal();
+        await fetchCustomers();
+      } else {
+        editError.value =
+          response.errorMessage ||
+          response.userMessage ||
+          "Failed to update user.";
+      }
+    } catch (error) {
+      editError.value = "Network error. Please try again.";
+    } finally {
+      isUpdating.value = false;
+    }
+  }
+
+  // ─── Delete Customer ────────────────────────────────────────────────────────
+  const deletingUserId = ref(null);
+
+  async function confirmDeleteUser(customer) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${customer.name}"? This action cannot be undone.`,
+      )
+    )
+      return;
+    deletingUserId.value = customer._id;
+    try {
+      const response = await DeleteUser(customer._id);
+      if (response.isSuccess) {
+        customers.value = customers.value.filter(
+          (c) => c._id !== customer._id,
+        );
+      } else {
+        alert(
+          response.errorMessage ||
+            response.userMessage ||
+            "Failed to delete user.",
+        );
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      deletingUserId.value = null;
     }
   }
 </script>
