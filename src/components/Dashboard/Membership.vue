@@ -150,10 +150,25 @@
                     membership.name
                   }}</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm text-gray-700">{{
-                    membership.serviceId?.title || "-"
-                  }}</span>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-1">
+                    <template v-if="Array.isArray(membership.serviceId) && membership.serviceId.length > 0">
+                      <span
+                        v-for="svc in membership.serviceId"
+                        :key="svc._id"
+                        class="inline-block px-2 py-0.5 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700"
+                      >
+                        {{ svc.title }}
+                      </span>
+                    </template>
+                    <span
+                      v-else-if="membership.serviceId?.title"
+                      class="text-sm text-gray-700"
+                    >
+                      {{ membership.serviceId.title }}
+                    </span>
+                    <span v-else class="text-sm text-gray-400">-</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-700">{{
@@ -366,12 +381,45 @@
             </div>
           </div>
 
-          <!-- Service Dropdown -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-semibold text-gray-700 md:text-right">
-              Service :
+          <!-- Service Dropdown (Multiple) -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+            <label class="text-sm font-semibold text-gray-700 md:text-right pt-3">
+              Services :
             </label>
             <div class="md:col-span-3 relative">
+              <!-- Selected Services Tags -->
+              <div
+                v-if="editSelectedServices.length > 0"
+                class="flex flex-wrap gap-2 mb-2"
+              >
+                <span
+                  v-for="service in editSelectedServices"
+                  :key="service._id"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800"
+                >
+                  {{ service.title }}
+                  <button
+                    @click="removeEditService(service._id)"
+                    type="button"
+                    class="text-green-600 hover:text-red-500 ml-1"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+              <!-- Search Input -->
               <div class="relative">
                 <input
                   v-model="serviceSearchQuery"
@@ -379,45 +427,19 @@
                   @input="showServiceDropdown = true"
                   @blur="setTimeout(() => (showServiceDropdown = false), 150)"
                   type="text"
-                  placeholder="Search and select a service..."
+                  placeholder="Search and add services..."
                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
                 />
-                <button
-                  v-if="editForm.serviceId"
-                  @click="clearService"
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                  </svg>
-                </button>
               </div>
               <!-- Dropdown -->
               <div
-                v-if="showServiceDropdown"
+                v-if="showServiceDropdown && editAvailableServices.length > 0"
                 class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto"
               >
                 <div
-                  v-if="filteredServices.length === 0"
-                  class="px-4 py-3 text-sm text-gray-500"
-                >
-                  No services found
-                </div>
-                <div
-                  v-for="service in filteredServices"
+                  v-for="service in editAvailableServices"
                   :key="service._id"
-                  @click="selectService(service)"
+                  @click="addEditService(service)"
                   class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                 >
                   <div class="text-sm font-medium text-gray-800">
@@ -427,6 +449,14 @@
                     {{ service.categoryID?.categoryName || "No Category" }} —
                     A${{ service.price }}
                   </div>
+                </div>
+              </div>
+              <div
+                v-if="showServiceDropdown && editAvailableServices.length === 0"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg"
+              >
+                <div class="px-4 py-3 text-sm text-gray-500">
+                  No more services available
                 </div>
               </div>
             </div>
@@ -556,17 +586,18 @@
     description: "",
     type: "FREE",
     price: 0,
-    serviceId: "",
+    serviceIds: [],
     durationDays: 30,
     isActive: true,
   });
   const isUpdating = ref(false);
   const updateError = ref("");
 
-  // Service dropdown state
+  // Service dropdown state (multiple)
   const services = ref([]);
   const serviceSearchQuery = ref("");
   const showServiceDropdown = ref(false);
+  const editSelectedServices = ref([]);
 
   async function fetchServices() {
     try {
@@ -579,23 +610,26 @@
     }
   }
 
-  const filteredServices = computed(() => {
-    if (!serviceSearchQuery.value) return services.value;
-    const query = serviceSearchQuery.value.toLowerCase();
-    return services.value.filter((s) =>
-      s.title?.toLowerCase().includes(query),
-    );
+  const editAvailableServices = computed(() => {
+    const selectedIds = editSelectedServices.value.map((s) => s._id);
+    let list = services.value.filter((s) => !selectedIds.includes(s._id));
+    if (serviceSearchQuery.value) {
+      const query = serviceSearchQuery.value.toLowerCase();
+      list = list.filter((s) => s.title?.toLowerCase().includes(query));
+    }
+    return list;
   });
 
-  function selectService(service) {
-    editForm.value.serviceId = service._id;
-    serviceSearchQuery.value = service.title;
+  function addEditService(service) {
+    editSelectedServices.value.push({ _id: service._id, title: service.title });
+    editForm.value.serviceIds = editSelectedServices.value.map((s) => s._id);
+    serviceSearchQuery.value = "";
     showServiceDropdown.value = false;
   }
 
-  function clearService() {
-    editForm.value.serviceId = "";
-    serviceSearchQuery.value = "";
+  function removeEditService(id) {
+    editSelectedServices.value = editSelectedServices.value.filter((s) => s._id !== id);
+    editForm.value.serviceIds = editSelectedServices.value.map((s) => s._id);
   }
 
   async function fetchMemberships() {
@@ -636,20 +670,26 @@
       if (response.isSuccess && response.value) {
         const data = response.value;
         selectedMembership.value = data;
-        const svc =
-          typeof data.serviceId === "object" && data.serviceId
-            ? data.serviceId
-            : null;
+
+        // Handle serviceId as array or single object
+        let svcArray = [];
+        if (Array.isArray(data.serviceId)) {
+          svcArray = data.serviceId.map((s) => ({ _id: s._id, title: s.title }));
+        } else if (typeof data.serviceId === "object" && data.serviceId) {
+          svcArray = [{ _id: data.serviceId._id, title: data.serviceId.title }];
+        }
+
+        editSelectedServices.value = svcArray;
         editForm.value = {
           name: data.name || "",
           description: data.description || "",
           type: data.type || "FREE",
           price: data.price || 0,
-          serviceId: svc?._id || data.serviceId || "",
+          serviceIds: svcArray.map((s) => s._id),
           durationDays: data.durationDays || 30,
           isActive: data.isActive ?? true,
         };
-        serviceSearchQuery.value = svc?.title || "";
+        serviceSearchQuery.value = "";
         isEditModalOpen.value = true;
       }
     } catch (error) {
@@ -673,7 +713,7 @@
         description: editForm.value.description,
         type: editForm.value.type,
         price: Number(editForm.value.price) || 0,
-        serviceId: editForm.value.serviceId || null,
+        serviceIds: editForm.value.serviceIds.length > 0 ? editForm.value.serviceIds : [],
         durationDays: Number(editForm.value.durationDays) || 30,
         isActive: editForm.value.isActive,
       });
