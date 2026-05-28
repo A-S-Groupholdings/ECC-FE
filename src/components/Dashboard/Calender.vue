@@ -95,6 +95,12 @@
           >
             Today
           </button>
+          <input
+            type="date"
+            :value="calendarDatePickerValue"
+            @change="onCalendarDatePick($event)"
+            class="px-2 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
           <h2 class="text-lg font-bold text-gray-800 ml-2">
             {{ currentMonthLabel }} {{ currentYear }} ▾
           </h2>
@@ -512,12 +518,12 @@
               <h4 class="text-sm font-semibold text-blue-900">
                 Duration Adjustment
               </h4>
-              <span class="text-xs text-blue-600">Minimum: 1 hour</span>
+              <span class="text-xs text-blue-600">Minimum: 30 min</span>
             </div>
             <div class="flex items-center gap-4">
               <button
                 @click="decreaseDuration"
-                :disabled="customDurationMinutes <= 60"
+                :disabled="customDurationMinutes <= 30"
                 class="w-10 h-10 bg-white border border-blue-300 rounded-lg flex items-center justify-center text-blue-600 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <svg
@@ -569,9 +575,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm font-semibold text-green-900">
-                  Price
-                </p>
+                <p class="text-sm font-semibold text-green-900">Price</p>
                 <p class="text-xs text-green-600 mt-1">
                   Based on
                   {{ formatDurationMinutes(customDurationMinutes) }} duration
@@ -595,7 +599,7 @@
         </div>
 
         <!-- Step 3: Select Resource -->
-        <div v-if="bookingForm.categoryId">
+        <div v-if="selectedUser">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Step 3: Select Resource <span class="text-red-500">*</span>
           </label>
@@ -606,7 +610,7 @@
           >
             <option value="">Select a resource...</option>
             <option
-              v-for="resource in filteredResources"
+              v-for="resource in allFilteredResources"
               :key="resource._id"
               :value="resource._id"
             >
@@ -819,11 +823,8 @@
             <p class="text-sm text-gray-600">
               {{ bookingDetails.userId?.email || "-" }}
             </p>
-            <p
-              v-if="bookingDetails.userId?.phoneNumber"
-              class="text-sm text-gray-600"
-            >
-              {{ bookingDetails.userId.phoneNumber }}
+            <p class="text-sm text-gray-600">
+              {{ bookingDetails.userId?.phoneNumber || bookingDetails.phoneNumber || "-" }}
             </p>
           </div>
 
@@ -907,15 +908,35 @@
           >
             <!-- Edit User -->
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">User</label>
-              <div v-if="editSelectedUser" class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+              <label class="block text-xs font-semibold text-gray-700 mb-1"
+                >User</label
+              >
+              <div
+                v-if="editSelectedUser"
+                class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between"
+              >
                 <div>
-                  <p class="text-sm font-semibold text-gray-900">{{ editSelectedUser.name }}</p>
-                  <p class="text-xs text-gray-600">{{ editSelectedUser.email }}</p>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ editSelectedUser.name }}
+                  </p>
+                  <p class="text-xs text-gray-600">
+                    {{ editSelectedUser.email }}
+                  </p>
                 </div>
-                <button @click="editSelectedUser = null; editForm.userId = ''" class="text-red-500 hover:text-red-700 text-xs">Change</button>
+                <button
+                  @click="
+                    editSelectedUser = null;
+                    editForm.userId = '';
+                  "
+                  class="text-red-500 hover:text-red-700 text-xs"
+                >
+                  Change
+                </button>
               </div>
-              <div v-else class="relative">
+              <div
+                v-else
+                class="relative"
+              >
                 <input
                   v-model="editUserSearch"
                   @input="searchEditUsers"
@@ -923,9 +944,19 @@
                   placeholder="Search user by name or email..."
                   class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
                 />
-                <div v-if="editUserResults.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                  <div v-for="user in editUserResults" :key="user._id" @click="selectEditUser(user)" class="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
-                    <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
+                <div
+                  v-if="editUserResults.length > 0"
+                  class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
+                >
+                  <div
+                    v-for="user in editUserResults"
+                    :key="user._id"
+                    @click="selectEditUser(user)"
+                    class="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <p class="text-sm font-medium text-gray-900">
+                      {{ user.name }}
+                    </p>
                     <p class="text-xs text-gray-500">{{ user.email }}</p>
                   </div>
                 </div>
@@ -934,13 +965,19 @@
 
             <!-- Edit Service -->
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Service</label>
+              <label class="block text-xs font-semibold text-gray-700 mb-1"
+                >Service</label
+              >
               <select
                 v-model="editForm.categoryId"
                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
               >
                 <option value="">Select service...</option>
-                <option v-for="svc in editServices" :key="svc._id" :value="svc._id">
+                <option
+                  v-for="svc in editServices"
+                  :key="svc._id"
+                  :value="svc._id"
+                >
                   {{ svc.title }} ({{ svc.duration }}) - ${{ svc.price }}
                 </option>
               </select>
@@ -948,13 +985,19 @@
 
             <!-- Edit Resource -->
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Resource</label>
+              <label class="block text-xs font-semibold text-gray-700 mb-1"
+                >Resource</label
+              >
               <select
                 v-model="editForm.resourceId"
                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
               >
                 <option value="">Select resource...</option>
-                <option v-for="res in editResources" :key="res._id" :value="res._id">
+                <option
+                  v-for="res in editResources"
+                  :key="res._id"
+                  :value="res._id"
+                >
                   {{ res.title }}
                 </option>
               </select>
@@ -1346,6 +1389,26 @@
     }
     currentYear.value = today.getFullYear();
     currentMonth.value = today.getMonth();
+    selectedCell.value = null;
+  }
+
+  const calendarDatePickerValue = computed(() => {
+    if (currentView.value === "day") {
+      const d = selectedDayDate.value;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    return `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, "0")}-01`;
+  });
+
+  function onCalendarDatePick(event) {
+    const val = event.target.value;
+    if (!val) return;
+    const [y, m, d] = val.split("-").map(Number);
+    currentYear.value = y;
+    currentMonth.value = m - 1;
+    if (currentView.value === "day") {
+      selectedDayDate.value = new Date(y, m - 1, d);
+    }
     selectedCell.value = null;
   }
 
@@ -1778,7 +1841,10 @@
         GetResources(),
       ]);
       if (servicesRes.isSuccess) editServices.value = servicesRes.value || [];
-      if (resourcesRes.isSuccess) editResources.value = (resourcesRes.value || []).filter(r => r.isActive !== false);
+      if (resourcesRes.isSuccess)
+        editResources.value = (resourcesRes.value || []).filter(
+          (r) => r.isActive !== false,
+        );
       if (response.isSuccess) {
         bookingDetails.value = response.value || null;
         // Initialize edit form
@@ -1831,7 +1897,9 @@
       try {
         const res = await GetUsersAll();
         if (res.isSuccess) allUsers.value = res.value || [];
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
     const q = editUserSearch.value.toLowerCase();
     editUserResults.value = allUsers.value
@@ -1889,14 +1957,8 @@
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
-        successMessage.value =
-          response.userMessage || "Booking updated successfully!";
-        showSuccessPopup.value = true;
         showDetailsModal.value = false;
-        setTimeout(() => {
-          showSuccessPopup.value = false;
-          window.location.reload();
-        }, 1800);
+        fetchCalendarData();
       } else {
         errorMessage.value =
           response.userMessage ||
@@ -1925,12 +1987,7 @@
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
         bookingDetails.value[field] = value;
-        successMessage.value = `Booking ${field === 'status' ? 'status' : 'payment status'} updated to ${value}!`;
-        showSuccessPopup.value = true;
-        setTimeout(() => {
-          showSuccessPopup.value = false;
-          fetchCalendarData();
-        }, 1500);
+        fetchCalendarData();
       } else {
         errorMessage.value =
           response.userMessage || response.errorMessage || "Failed to update.";
@@ -1964,10 +2021,17 @@
     return selectedService?.resourceIDs || [];
   });
 
+  const allFilteredResources = computed(() => {
+    if (bookingForm.value.categoryId) return filteredResources.value;
+    // When no service selected, show all active resources
+    return resources.value
+      .filter((r) => r.id !== "all" && r.isActive !== false)
+      .map((r) => ({ _id: r.id, title: r.label }));
+  });
+
   const canCreateBooking = computed(() => {
     return (
       selectedUser.value &&
-      bookingForm.value.categoryId &&
       bookingForm.value.resourceId &&
       bookingForm.value.date &&
       bookingForm.value.startTime
@@ -2059,7 +2123,7 @@
       const dur = String(selectedService.duration || "");
       if (dur.includes("m")) durationMinutes = parseInt(dur);
       else if (dur.includes("h")) durationMinutes = parseInt(dur) * 60;
-      customDurationMinutes.value = Math.max(durationMinutes, 60);
+      customDurationMinutes.value = Math.max(durationMinutes, 30);
       customPrice.value = calculatePrice();
     }
 
@@ -2090,7 +2154,7 @@
     customPrice.value = calculatePrice();
   }
   function decreaseDuration() {
-    if (customDurationMinutes.value > 60) customDurationMinutes.value -= 30;
+    if (customDurationMinutes.value > 30) customDurationMinutes.value -= 30;
     customPrice.value = calculatePrice();
   }
 
@@ -2150,12 +2214,8 @@
       const selectedService = services.value.find(
         (s) => s._id === bookingForm.value.categoryId,
       );
-      if (!selectedService) {
-        alert("Please select a valid service");
-        return;
-      }
       const startTime12h = bookingForm.value.startTime;
-      const durationMinutes = customDurationMinutes.value;
+      const durationMinutes = customDurationMinutes.value || 60;
       const [time, period] = startTime12h.split(" ");
       let [hours, minutes] = time.split(":").map(Number);
       if (period === "pm" && hours !== 12) hours += 12;
@@ -2168,8 +2228,8 @@
 
       const payload = {
         userId: selectedUser.value._id,
-        serviceId: selectedService._id,
-        categoryId: bookingForm.value.categoryId,
+        serviceId: selectedService ? selectedService._id : undefined,
+        categoryId: bookingForm.value.categoryId || undefined,
         resourceId: bookingForm.value.resourceId,
         date: bookingForm.value.date,
         startTime: startTime24h,
@@ -2180,15 +2240,9 @@
       };
       const response = await CreateBooking(payload);
       if (response.isSuccess) {
-        successMessage.value =
-          response.userMessage || "Appointment created successfully!";
-        showSuccessPopup.value = true;
+        isCreatingBooking.value = false;
         closeNewAppointmentModal();
-        // Auto-close popup and reload after a short delay
-        setTimeout(() => {
-          showSuccessPopup.value = false;
-          window.location.reload();
-        }, 1800);
+        fetchCalendarData();
       } else {
         errorMessage.value =
           response.userMessage ||
