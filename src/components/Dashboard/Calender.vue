@@ -167,7 +167,14 @@
                 <div
                   v-for="apt in getAppointmentsForDay(cell.day)"
                   :key="apt.id"
-                  class="text-xs px-1 py-0.5 rounded bg-green-100 text-green-800 truncate hidden sm:block"
+                  :class="[
+                    'text-xs px-1 py-0.5 rounded truncate hidden sm:block',
+                    apt.email === 'staff@ecc.com'
+                      ? 'bg-purple-100 text-purple-800'
+                      : apt.paymentStatus === 'PAID'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-blue-100 text-blue-800',
+                  ]"
                 >
                   {{ apt.time }} {{ apt.name }}
                 </div>
@@ -322,11 +329,7 @@
                   }"
                   :class="[
                     'absolute left-0.5 right-0.5 rounded-md border-l-4 p-1 text-[10px] overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow',
-                    apt.status === 'Confirmed'
-                      ? 'bg-green-100/90 border-green-500'
-                      : apt.status === 'Cancelled'
-                        ? 'bg-red-100/80 border-red-500'
-                        : 'bg-blue-100/90 border-blue-500',
+                    getBookingBlockColor(apt),
                   ]"
                 >
                   <p class="font-bold text-gray-900">
@@ -1437,6 +1440,7 @@
       email: booking.email || "",
       service: booking.serviceName || "-",
       status: statusMap[booking.status] || booking.status || "Pending",
+      paymentStatus: booking.paymentStatus || "",
     };
   }
 
@@ -1656,6 +1660,23 @@
     }
     if (!durMin || durMin <= 0) durMin = 60;
     return Math.max(durMin * PIXELS_PER_MINUTE, 28);
+  }
+
+  function getBookingBlockColor(apt) {
+    // Priority 1: Staff user (purple)
+    if (apt.email === "staff@ecc.com") {
+      return "bg-purple-100/90 border-purple-500";
+    }
+    // Priority 2: Cancelled (red)
+    if (apt.status === "Cancelled") {
+      return "bg-red-100/80 border-red-500";
+    }
+    // Priority 3: Payment status
+    if (apt.paymentStatus === "PAID") {
+      return "bg-green-100/90 border-green-500";
+    }
+    // Default: UNPAID / PENDING (blue)
+    return "bg-blue-100/90 border-blue-500";
   }
 
   // "Now" indicator (auto-updating each minute)
