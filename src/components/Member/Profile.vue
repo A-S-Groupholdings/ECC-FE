@@ -41,7 +41,7 @@
               </button>
 
               <!-- Buy Membership Link -->
-              <router-link
+              <!-- <router-link
                 v-if="!hasMembership"
                 to="/member/membership"
                 class="bg-white text-[#1a3a35] hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 shadow-lg animate-pulse"
@@ -60,7 +60,7 @@
                   ></path>
                 </svg>
                 Buy a Membership
-              </router-link>
+              </router-link> -->
             </div>
             <!-- <button
             class="absolute border border-secondary top-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -154,7 +154,7 @@
                 </p>
                 <p class="text-white font-semibold">
                   <span v-if="user.membership">{{ user.membership }}</span>
-                  <router-link
+                  <!-- <router-link
                     v-else
                     to="/member/membership"
                     class="inline-flex items-center gap-1 bg-white text-[#1a3a35] px-3 py-1 rounded-md text-xs font-bold hover:bg-green-50 transition-colors"
@@ -173,7 +173,7 @@
                       ></path>
                     </svg>
                     Buy
-                  </router-link>
+                  </router-link> -->
                 </p>
               </div>
             </div>
@@ -981,7 +981,9 @@
                       </p>
                       <p class="text-xs text-gray-400 mt-1">
                         {{ payment.method }}
-                        <span v-if="payment.duration"> • {{ payment.duration }}</span>
+                        <span v-if="payment.duration">
+                          • {{ payment.duration }}</span
+                        >
                         <span
                           :class="[
                             'ml-1 px-1.5 py-0.5 rounded text-[10px] font-medium',
@@ -989,14 +991,17 @@
                               ? 'bg-purple-100 text-purple-600'
                               : 'bg-blue-100 text-blue-600',
                           ]"
-                        >{{ payment.type }}</span>
+                          >{{ payment.type }}</span
+                        >
                       </p>
                     </div>
                   </div>
                   <div class="text-right">
                     <p class="font-semibold text-gray-900">
                       {{ payment.amount }}
-                      <span class="text-xs text-gray-400 font-normal">{{ payment.currency }}</span>
+                      <span class="text-xs text-gray-400 font-normal">{{
+                        payment.currency
+                      }}</span>
                     </p>
                     <span
                       :class="[
@@ -1367,28 +1372,28 @@
           id: payment._id,
           // Description: show membership name OR booking resource + bookingId
           description:
-            payment.type === 'membership'
-              ? payment.membership?.name || 'Membership Payment'
-              : `${payment.booking?.resource?.title || 'Booking'} — ${payment.booking?.bookingId || ''}`,
+            payment.type === "membership"
+              ? payment.membership?.name || "Membership Payment"
+              : `${payment.booking?.resource?.title || "Booking"} — ${payment.booking?.bookingId || ""}`,
           // Sub-info: booking shows date+time, membership shows type
           subInfo:
-            payment.type === 'membership'
-              ? payment.membership?.type || ''
-              : payment.booking?.time || '',
-          date: new Date(payment.createdAt).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+            payment.type === "membership"
+              ? payment.membership?.type || ""
+              : payment.booking?.time || "",
+          date: new Date(payment.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
           }),
-          method: payment.paymentMethod === 'stripe' ? 'Stripe' : 'Local',
-          amount: payment.amount > 0 ? `$${payment.amount}` : 'Free',
-          currency: (payment.currency || 'AUD').toUpperCase(),
+          method: payment.paymentMethod === "stripe" ? "Stripe" : "Local",
+          amount: payment.amount > 0 ? `$${payment.amount}` : "Free",
+          currency: (payment.currency || "AUD").toUpperCase(),
           status:
-            payment.status === 'success'
-              ? 'Success'
-              : payment.status === 'pending'
-                ? 'Pending'
-                : 'Failed',
+            payment.status === "success"
+              ? "Success"
+              : payment.status === "pending"
+                ? "Pending"
+                : "Failed",
           type: payment.type,
           // Extra details
           bookingId: payment.booking?.bookingId || null,
@@ -1397,7 +1402,7 @@
         }));
       }
     } catch (error) {
-      console.error('Error fetching payment history:', error);
+      console.error("Error fetching payment history:", error);
     }
   }
   const bookingHistory = ref([]);
