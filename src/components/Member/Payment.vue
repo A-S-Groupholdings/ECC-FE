@@ -134,57 +134,6 @@
               ></div>
             </div>
           </button>
-
-          <!-- Local Option -->
-          <button
-            @click="selectedMethod = 'local'"
-            class="w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left"
-            :class="
-              selectedMethod === 'local'
-                ? 'border-[#1a3a35] bg-[#1a3a35]/5'
-                : 'border-gray-200 hover:border-gray-300'
-            "
-          >
-            <div
-              class="w-12 h-12 rounded-xl flex items-center justify-center"
-              :class="
-                selectedMethod === 'local'
-                  ? 'bg-[#1a3a35] text-white'
-                  : 'bg-gray-100 text-gray-500'
-              "
-            >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                ></path>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-900">Pay at Counter</p>
-              <p class="text-sm text-gray-500">Cash or in-person payment</p>
-            </div>
-            <div
-              class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-              :class="
-                selectedMethod === 'local'
-                  ? 'border-[#1a3a35] bg-[#1a3a35]'
-                  : 'border-gray-300'
-              "
-            >
-              <div
-                v-if="selectedMethod === 'local'"
-                class="w-2 h-2 bg-white rounded-full"
-              ></div>
-            </div>
-          </button>
         </div>
 
         <!-- Error Message -->

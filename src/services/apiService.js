@@ -522,7 +522,7 @@ export const AdminLogin = async (email, otp) => {
 
   export const GetUserBookingData = async (userId) => {
     try {
-      const response = await apiService.post('/bookings/userBookingData', {
+      const response = await apiService.post('/bookings/membershipServiceResources', {
         userId,
       });
       return response.data;

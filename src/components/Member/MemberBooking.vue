@@ -93,6 +93,7 @@
         >
           <!-- Service Info -->
           <div
+            v-if="selectedService"
             class="bg-[#1a3a35] rounded-xl p-4 mb-6 text-white flex items-center justify-between"
           >
             <div>
@@ -114,7 +115,36 @@
             </div>
           </div>
 
-          <div class="booking-grid grid grid-cols-1 lg:grid-cols-2">
+          <!-- Service Selection -->
+          <div class="mb-6">
+            <label class="block text-[#1a3a35] font-semibold mb-3"
+              >Select Service</label
+            >
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <button
+                v-for="svc in visibleServices"
+                :key="svc._id"
+                @click="selectMemberService(svc)"
+                type="button"
+                class="p-4 rounded-xl border-2 text-left transition-all"
+                :class="
+                  booking.service === svc._id
+                    ? 'border-[#1a3a35] bg-green-50 shadow-md'
+                    : 'border-gray-200 hover:border-[#1a3a35]/50 hover:bg-gray-50'
+                "
+              >
+                <p class="font-semibold text-[#1a3a35] text-sm">{{ svc.title }}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ svc.duration }} • A${{ svc.price }}
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ svc.resourceIDs?.length || 0 }} lane(s) available
+                </p>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="selectedService" class="booking-grid grid grid-cols-1 lg:grid-cols-2">
             <!-- Lane Selection -->
             <div class="max-w-xs mb-6">
               <label class="block text-[#1a3a35] font-semibold mb-2"
@@ -140,7 +170,17 @@
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Duration</label
               >
+              <!-- Fixed duration (when limitDuration is set) -->
               <div
+                v-if="fixedDurationMultiplier !== null"
+                class="border border-gray-300 rounded bg-gray-50 px-4 py-3 text-center"
+              >
+                <span class="text-gray-700 font-semibold">{{ formattedDuration }}</span>
+                <span class="text-xs text-gray-500 ml-2">(Fixed)</span>
+              </div>
+              <!-- Adjustable duration -->
+              <div
+                v-else
                 class="flex items-center border border-gray-300 rounded bg-white"
               >
                 <button
@@ -192,11 +232,11 @@
             />
           </div> -->
 
-          <p class="text-gray-700 mb-6">
+          <p v-if="selectedService" class="text-gray-700 mb-6">
             Click on a time slot to proceed with booking.
           </p>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div v-if="selectedService" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Calendar -->
             <div class="bg-[#1a3a35] rounded-lg overflow-hidden">
               <!-- Calendar Header -->
@@ -611,24 +651,22 @@
       const response = await GetUserBookingData(memberUserId.value);
       if (response.isSuccess && response.value) {
         memberData.value = response.value;
-        const svc = response.value.service;
-        if (svc) {
-          visibleServices.value = [
-            {
-              _id: svc._id,
-              title: svc.title,
-              categoryID: svc.category,
-              duration: svc.duration,
-              price: svc.price,
-              resourceIDs: response.value.resources || [],
-              appointmentLimit: svc.appointmentLimit || null,
-            },
-          ];
-          booking.value.type = svc.category?._id || "";
-          booking.value.service = svc._id;
+        const svcList = response.value.services || [];
+        if (svcList.length > 0) {
+          visibleServices.value = svcList.map((svc) => ({
+            _id: svc._id,
+            title: svc.title,
+            categoryID: svc.category,
+            duration: svc.duration,
+            price: svc.price,
+            resourceIDs: svc.resources || [],
+            appointmentLimit: svc.appointmentLimit || null,
+            limitDuration: svc.appointmentLimit?.limitDuration || svc.limitDuration || null,
+          }));
+          // Set category from first service
+          booking.value.type = svcList[0].category?._id || "";
         }
       } else {
-        // Surface API failure through the shared error popup.
         bookingError.value =
           response.errorMessage ||
           response.userMessage ||
@@ -682,6 +720,16 @@
     return selectedService.value?.resourceIDs || [];
   });
 
+  // Select a service from the member's available services
+  function selectMemberService(svc) {
+    booking.value.service = svc._id;
+    booking.value.type = svc.categoryID?._id || booking.value.type;
+    // Reset lane and time when switching service
+    booking.value.lane = "";
+    booking.value.selectedTime = null;
+    timeSlots.value = [];
+  }
+
   // Parse duration string like "30m" or "1h" into minutes
   const baseDurationMinutes = computed(() => {
     const dur = selectedService.value?.duration || "30m";
@@ -698,31 +746,38 @@
     return durationMultiplier.value * baseDurationMinutes.value;
   });
 
+  // Fixed duration from appointmentLimit.limitDuration
+  const fixedDurationMultiplier = computed(() => {
+    if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return null;
+    const svc = selectedService.value;
+    const limit = svc?.appointmentLimit;
+    // Check appointmentLimit.limitDuration or service-level limitDuration
+    const limitDur = limit?.limitDuration || svc?.limitDuration;
+    if (
+      limitDur !== null &&
+      limitDur !== undefined &&
+      limitDur !== ""
+    ) {
+      const capHours = parseFloat(limitDur);
+      if (capHours && !isNaN(capHours) && capHours > 0) {
+        return Math.max(1, Math.round((capHours * 60) / baseDurationMinutes.value));
+      }
+    }
+    return null; // no fixed duration
+  });
+
   const minDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
+    // If limitDuration is set, lock to that value
+    if (fixedDurationMultiplier.value !== null) return fixedDurationMultiplier.value;
     return Math.ceil(60 / baseDurationMinutes.value); // minimum 1 hour
   });
 
   const maxDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
-
-    // Per-service cap from appointmentLimit.limitDuration (in hours).
-    // When the service does not define a cap, fall back to the global maxTotalHours.
-    const limit = selectedService.value?.appointmentLimit;
-    const hasServiceCap =
-      limit &&
-      limit.enabled &&
-      limit.limitDuration !== null &&
-      limit.limitDuration !== undefined &&
-      limit.limitDuration !== "";
-
-    const capHours = hasServiceCap
-      ? parseFloat(limit.limitDuration)
-      : maxTotalHours;
-
-    if (!capHours || isNaN(capHours) || capHours <= 0) return 1;
-
-    return Math.max(1, Math.floor((capHours * 60) / baseDurationMinutes.value));
+    // If limitDuration is set, lock to that value
+    if (fixedDurationMultiplier.value !== null) return fixedDurationMultiplier.value;
+    return Math.max(1, Math.floor((maxTotalHours * 60) / baseDurationMinutes.value));
   });
 
   // Reset duration to minimum (1 hour) whenever service changes

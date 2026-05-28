@@ -292,12 +292,45 @@
             </div>
           </div>
 
-          <!-- Service Dropdown -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-semibold text-gray-700 md:text-right">
-              Service :
+          <!-- Service Dropdown (Multiple) -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+            <label class="text-sm font-semibold text-gray-700 md:text-right pt-3">
+              Services :
             </label>
             <div class="md:col-span-3 relative">
+              <!-- Selected Services Tags -->
+              <div
+                v-if="selectedServices.length > 0"
+                class="flex flex-wrap gap-2 mb-2"
+              >
+                <span
+                  v-for="service in selectedServices"
+                  :key="service._id"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800"
+                >
+                  {{ service.title }}
+                  <button
+                    @click="removeService(service._id)"
+                    type="button"
+                    class="text-green-600 hover:text-red-500 ml-1"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+              <!-- Search Input -->
               <div class="relative">
                 <input
                   v-model="serviceSearchQuery"
@@ -305,45 +338,19 @@
                   @input="showServiceDropdown = true"
                   @blur="setTimeout(() => (showServiceDropdown = false), 150)"
                   type="text"
-                  placeholder="Search and select a service..."
+                  placeholder="Search and add services..."
                   class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent transition-all"
                 />
-                <button
-                  v-if="form.serviceId"
-                  @click="clearService"
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                  </svg>
-                </button>
               </div>
               <!-- Dropdown -->
               <div
-                v-if="showServiceDropdown"
+                v-if="showServiceDropdown && availableServices.length > 0"
                 class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto"
               >
                 <div
-                  v-if="filteredServices.length === 0"
-                  class="px-4 py-3 text-sm text-gray-500"
-                >
-                  No services found
-                </div>
-                <div
-                  v-for="service in filteredServices"
+                  v-for="service in availableServices"
                   :key="service._id"
-                  @click="selectService(service)"
+                  @click="addService(service)"
                   class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                 >
                   <div class="text-sm font-medium text-gray-800">
@@ -353,6 +360,14 @@
                     {{ service.categoryID?.categoryName || "No Category" }} —
                     A${{ service.price }}
                   </div>
+                </div>
+              </div>
+              <div
+                v-if="showServiceDropdown && availableServices.length === 0"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg"
+              >
+                <div class="px-4 py-3 text-sm text-gray-500">
+                  No more services available
                 </div>
               </div>
             </div>
@@ -451,7 +466,7 @@
     description: "",
     type: "free",
     price: "",
-    serviceId: "",
+    serviceIds: [],
     durationDays: 30,
     active: true,
   });
@@ -459,11 +474,11 @@
   const isSubmitting = ref(false);
   const submitError = ref("");
 
-  // Service dropdown
+  // Service dropdown (multiple)
   const services = ref([]);
   const serviceSearchQuery = ref("");
   const showServiceDropdown = ref(false);
-  const selectedServiceTitle = ref("");
+  const selectedServices = ref([]);
 
   async function fetchServices() {
     try {
@@ -480,25 +495,26 @@
     fetchServices();
   });
 
-  const filteredServices = computed(() => {
-    if (!serviceSearchQuery.value) return services.value;
-    const query = serviceSearchQuery.value.toLowerCase();
-    return services.value.filter((s) =>
-      s.title?.toLowerCase().includes(query),
-    );
+  const availableServices = computed(() => {
+    const selectedIds = selectedServices.value.map((s) => s._id);
+    let list = services.value.filter((s) => !selectedIds.includes(s._id));
+    if (serviceSearchQuery.value) {
+      const query = serviceSearchQuery.value.toLowerCase();
+      list = list.filter((s) => s.title?.toLowerCase().includes(query));
+    }
+    return list;
   });
 
-  function selectService(service) {
-    form.value.serviceId = service._id;
-    selectedServiceTitle.value = service.title;
-    serviceSearchQuery.value = service.title;
+  function addService(service) {
+    selectedServices.value.push({ _id: service._id, title: service.title });
+    form.value.serviceIds = selectedServices.value.map((s) => s._id);
+    serviceSearchQuery.value = "";
     showServiceDropdown.value = false;
   }
 
-  function clearService() {
-    form.value.serviceId = "";
-    selectedServiceTitle.value = "";
-    serviceSearchQuery.value = "";
+  function removeService(id) {
+    selectedServices.value = selectedServices.value.filter((s) => s._id !== id);
+    form.value.serviceIds = selectedServices.value.map((s) => s._id);
   }
 
   async function createMembership() {
@@ -518,7 +534,7 @@
       price: form.value.type === "free" ? 0 : Number(form.value.price) || 0,
       durationDays: Number(form.value.durationDays) || 30,
       isActive: form.value.active,
-      serviceId: form.value.serviceId || null,
+      serviceIds: form.value.serviceIds.length > 0 ? form.value.serviceIds : [],
     };
 
     try {
