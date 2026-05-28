@@ -361,14 +361,14 @@
                     {{ resource.nextSession.startTime }} -
                     {{ resource.nextSession.endTime }}
                   </span>
-                  <span
+                  <!-- <span
                     class="text-xs font-black px-2 py-0.5 rounded-full border"
                     :class="
                       getPaymentBadgeClass(resource.nextSession.paymentStatus)
                     "
                   >
                     {{ resource.nextSession.paymentStatus }}
-                  </span>
+                  </span> -->
                 </div>
                 <p class="text-lg font-black text-white mb-0.5">
                   {{ resource.nextSession.userName }}
@@ -376,14 +376,14 @@
                 <p class="text-sm text-white/60">
                   {{ resource.nextSession.serviceName }}
                 </p>
-                <div class="flex items-center gap-3 mt-2">
+                <!-- <div class="flex items-center gap-3 mt-2">
                   <span
                     class="text-xs px-2 py-0.5 rounded-full font-black uppercase tracking-wider"
                     :class="getBookingStatusClass(resource.nextSession.status)"
                   >
                     {{ resource.nextSession.status }}
                   </span>
-                </div>
+                </div> -->
               </div>
 
               <div
