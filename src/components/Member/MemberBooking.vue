@@ -133,7 +133,9 @@
                     : 'border-gray-200 hover:border-[#1a3a35]/50 hover:bg-gray-50'
                 "
               >
-                <p class="font-semibold text-[#1a3a35] text-sm">{{ svc.title }}</p>
+                <p class="font-semibold text-[#1a3a35] text-sm">
+                  {{ svc.title }}
+                </p>
                 <p class="text-xs text-gray-500 mt-1">
                   {{ svc.duration }} • A${{ svc.price }}
                 </p>
@@ -144,7 +146,10 @@
             </div>
           </div>
 
-          <div v-if="selectedService" class="booking-grid grid grid-cols-1 lg:grid-cols-2">
+          <div
+            v-if="selectedService"
+            class="booking-grid grid grid-cols-1 lg:grid-cols-2"
+          >
             <!-- Lane Selection -->
             <div class="max-w-xs mb-6">
               <label class="block text-[#1a3a35] font-semibold mb-2"
@@ -223,11 +228,17 @@
             />
           </div> -->
 
-          <p v-if="selectedService" class="text-gray-700 mb-6">
+          <p
+            v-if="selectedService"
+            class="text-gray-700 mb-6"
+          >
             Click on a time slot to proceed with booking.
           </p>
 
-          <div v-if="selectedService" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div
+            v-if="selectedService"
+            class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+          >
             <!-- Calendar -->
             <div class="bg-[#1a3a35] rounded-lg overflow-hidden">
               <!-- Calendar Header -->
@@ -653,7 +664,8 @@
             price: svc.price,
             resourceIDs: svc.resources || [],
             appointmentLimit: svc.appointmentLimit || null,
-            limitDuration: svc.appointmentLimit?.limitDuration || svc.limitDuration || null,
+            limitDuration:
+              svc.appointmentLimit?.limitDuration || svc.limitDuration || null,
           }));
           // Set category from first service
           booking.value.type = svcList[0].category?._id || "";
@@ -740,19 +752,19 @@
 
   // Maximum limit duration from appointmentLimit.limitDuration
   const limitDurationMultiplier = computed(() => {
-    if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return null;
+    if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0)
+      return null;
     const svc = selectedService.value;
     const limit = svc?.appointmentLimit;
     // Check appointmentLimit.limitDuration or service-level limitDuration
     const limitDur = limit?.limitDuration || svc?.limitDuration;
-    if (
-      limitDur !== null &&
-      limitDur !== undefined &&
-      limitDur !== ""
-    ) {
+    if (limitDur !== null && limitDur !== undefined && limitDur !== "") {
       const capHours = parseFloat(limitDur);
       if (capHours && !isNaN(capHours) && capHours > 0) {
-        return Math.max(1, Math.round((capHours * 60) / baseDurationMinutes.value));
+        return Math.max(
+          1,
+          Math.round((capHours * 60) / baseDurationMinutes.value),
+        );
       }
     }
     return null; // no maximum limit set by service
@@ -766,8 +778,12 @@
   const maxDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
     // If limitDuration is set, use it as the maximum allowed
-    if (limitDurationMultiplier.value !== null) return limitDurationMultiplier.value;
-    return Math.max(1, Math.floor((maxTotalHours * 60) / baseDurationMinutes.value));
+    if (limitDurationMultiplier.value !== null)
+      return limitDurationMultiplier.value;
+    return Math.max(
+      1,
+      Math.floor((maxTotalHours * 60) / baseDurationMinutes.value),
+    );
   });
 
   // Reset duration to minimum (1 hour) whenever service changes

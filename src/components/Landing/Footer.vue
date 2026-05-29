@@ -30,7 +30,7 @@
         </div>
 
         <!-- Information Links -->
-        <div>
+        <div class="text-center md:text-left">
           <h4 class="text-[#fefefe] font-bold tracking-wider mb-6">
             INFORMATION
           </h4>
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Useful Links -->
-        <div>
+        <div class="text-center md:text-left">
           <h4 class="text-white font-bold tracking-wider mb-6">USEFUL LINKS</h4>
           <ul class="space-y-3 text-sm">
             <li>
@@ -130,11 +130,11 @@
         </div>
 
         <!-- Newsletter Signup -->
-        <div>
+        <div class="text-center md:text-left">
           <h4 class="text-white font-bold tracking-wider mb-6">
             NEWSLETTER SIGNUP
           </h4>
-          <div class="flex">
+          <div class="flex justify-center md:justify-start">
             <input
               type="email"
               placeholder="Email Address"

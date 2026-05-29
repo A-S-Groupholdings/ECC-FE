@@ -538,7 +538,7 @@
   const membershipFees = [
     {
       title: "Cricket Only Weekly Membership",
-      price: "$85",
+      price: "$25",
       unit: "week",
       renewal: "This will automatically renew every week",
       detail:
@@ -546,7 +546,7 @@
     },
     {
       title: "Cricket + Gym Weekly Membership",
-      price: "$100",
+      price: "$40",
       unit: "week",
       renewal: "This will automatically renew every week",
       detail:
@@ -554,7 +554,7 @@
     },
     {
       title: "Cricket-Only Monthly Membership",
-      price: "$340",
+      price: "$100",
       unit: "month",
       renewal: "This will automatically renew every month",
       detail:
@@ -562,7 +562,7 @@
     },
     {
       title: "Cricket + Gym Monthly Membership",
-      price: "$390",
+      price: "$150",
       unit: "month",
       renewal: "This will automatically renew every month",
       detail:
