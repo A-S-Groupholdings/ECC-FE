@@ -1,7 +1,7 @@
 {
   "name": "ECC",
   "private": true,
-  "version": "0.0.9",
+  "version": "0.0.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
     "@heroicons/vue": "^2.2.0",
     "@stripe/stripe-js": "^9.4.0",
     "@tailwindcss/vite": "^4.1.7",
+    "@vuepic/vue-datepicker": "^13.0.0",
     "axios": "^1.15.0",
     "crypto-js": "^4.2.0",
     "gsap": "^3.13.0",
