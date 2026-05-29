@@ -233,7 +233,7 @@
           </div>
 
           <!-- Select Date (only after Lane) -->
-          <div
+          <!-- <div
             v-if="booking.lane"
             class="max-w-xs mb-8"
           >
@@ -246,7 +246,7 @@
               :min="todayStr"
               class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
             />
-          </div>
+          </div> -->
 
           <!-- Divider -->
           <div class="border-t border-gray-300 mb-6"></div>
@@ -345,8 +345,8 @@
                 <!-- Days -->
                 <div class="grid grid-cols-7 gap-1">
                   <button
-                    v-for="date in calendarDays"
-                    :key="date.day"
+                    v-for="(date, index) in calendarDays"
+                    :key="index"
                     @click="selectDate(date)"
                     class="aspect-square flex items-center justify-center text-sm rounded transition-all"
                     :class="getDateClass(date)"
@@ -956,9 +956,12 @@
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days = [];
 
+    // Convert getDay() (0=Sun, 1=Mon, etc.) to Monday-based index (0=Mon, 1=Tue, ..., 6=Sun)
+    const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
+
     // Previous month padding
     const prevMonthDays = new Date(year, month, 0).getDate();
-    for (let i = firstDay - 1; i >= 0; i--) {
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
       days.push({ day: prevMonthDays - i, currentMonth: false });
     }
 
@@ -1151,6 +1154,7 @@
           note: booking.value.notes || "",
           paymentMethod: "stripe",
           paymentStatus: "pending",
+          paymentMethodChecked: true,
         });
 
         if (!response.isSuccess) {
@@ -1214,7 +1218,7 @@
           startTime: formatMinutesToTime(startMins),
           endTime: formatMinutesToTime(endMins),
           note: booking.value.notes || "",
-          paymentMethod: "local",
+          paymentMethod: "stripe",
         });
 
         if (!response.isSuccess) {
