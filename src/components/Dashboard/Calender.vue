@@ -1287,7 +1287,7 @@
     GetUsersAll,
     GetServices,
     GetBookingSlots,
-    CreateBooking,
+    CreateBookingDashboard,
     GetBookingById,
     UpdateBooking,
   } from "@/services/apiService.js";
@@ -2259,7 +2259,7 @@
         note: bookingForm.value.note || "",
         paymentMethod: "local",
       };
-      const response = await CreateBooking(payload);
+      const response = await CreateBookingDashboard(payload);
       if (response.isSuccess) {
         isCreatingBooking.value = false;
         closeNewAppointmentModal();

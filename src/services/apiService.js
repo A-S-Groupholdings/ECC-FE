@@ -349,6 +349,19 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  export const CreateBookingDashboard = async (payload) => {
+    try {
+      const response = await apiService.post('/bookings/Dashboard', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   export const GetUnbookingSlots = async (date, resourceId) => {
     try {
       const response = await apiService.get('/bookings/UnbookingSlot', {
