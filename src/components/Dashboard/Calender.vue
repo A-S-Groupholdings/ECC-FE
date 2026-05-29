@@ -345,10 +345,10 @@
                     >
                   </p>
                   <p
-                    v-if="apt.service && apt.service !== '-'"
+                    v-if="apt.resourceName && apt.resourceName !== '-'"
                     class="text-gray-800 truncate"
                   >
-                    {{ apt.service }}
+                    {{ apt.resourceName }}
                   </p>
                   <p
                     v-if="apt.name && apt.name !== '-'"
@@ -675,6 +675,19 @@
             No available slots for this date. Please select another date.
           </p>
         </div>
+
+        <!-- Step 6: Notes (Optional) -->
+        <div v-if="bookingForm.startTime">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Notes <span class="text-gray-400">(Optional)</span>
+          </label>
+          <textarea
+            v-model="bookingForm.note"
+            rows="3"
+            placeholder="Add any notes for this appointment..."
+            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] resize-none"
+          ></textarea>
+        </div>
       </div>
 
       <!-- Modal Footer -->
@@ -824,7 +837,11 @@
               {{ bookingDetails.userId?.email || "-" }}
             </p>
             <p class="text-sm text-gray-600">
-              {{ bookingDetails.userId?.phoneNumber || bookingDetails.phoneNumber || "-" }}
+              {{
+                bookingDetails.userId?.phoneNumber ||
+                bookingDetails.phoneNumber ||
+                "-"
+              }}
             </p>
           </div>
 
@@ -1497,6 +1514,7 @@
       endTime: booking.endTime || "",
       duration: booking.duration || 0,
       resourceId: booking.resourceId || null,
+      resourceName: booking.resourceName || "-",
       lane: booking.resourceName || "-",
       name: booking.userName || "-",
       phone: booking.phoneNumber || "-",
@@ -2008,6 +2026,7 @@
     resourceId: "",
     date: "",
     startTime: "",
+    note: "",
     paymentMethod: "local",
   });
   const customDurationMinutes = ref(0);
@@ -2056,6 +2075,7 @@
       resourceId: "",
       date: "",
       startTime: "",
+      note: "",
       paymentMethod: "local",
     };
     availableSlots.value = [];
@@ -2236,6 +2256,7 @@
         endTime: endTime24h,
         duration: durationMinutes,
         price: customPrice.value || calculatePrice(),
+        note: bookingForm.value.note || "",
         paymentMethod: "local",
       };
       const response = await CreateBooking(payload);
