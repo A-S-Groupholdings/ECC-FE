@@ -3,16 +3,19 @@
     <div class="container mx-auto flex items-center justify-between h-full">
       <div class="flex items-center space-x-3">
         <!-- logo -->
-        <div class="logo">
-          <img
-            src="@/assets/logo.webp"
-            alt=""
-            class="w-[94px] h-[94px]"
-          />
-        </div>
+        <a href="https://elitecricketcentre.com.au/">
+          <div class="logo">
+            <img
+              src="@/assets/logo.webp"
+              alt=""
+              class="w-[94px] h-[94px]"
+            />
+          </div>
+        </a>
+
         <div class="web-name">
           <a
-            href=""
+            href="https://elitecricketcentre.com.au/"
             class="text-white text-[28px] font-medium font-times"
             >ELITE CRICKET CENTRE</a
           >
@@ -26,7 +29,7 @@
           >Lane Booking</a
         >
         <a
-          href="#"
+          href="/membership/public"
           class="text-white"
           >Membership</a
         >

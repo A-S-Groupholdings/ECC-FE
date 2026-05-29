@@ -170,17 +170,8 @@
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Duration</label
               >
-              <!-- Fixed duration (when limitDuration is set) -->
-              <div
-                v-if="fixedDurationMultiplier !== null"
-                class="border border-gray-300 rounded bg-gray-50 px-4 py-3 text-center"
-              >
-                <span class="text-gray-700 font-semibold">{{ formattedDuration }}</span>
-                <span class="text-xs text-gray-500 ml-2">(Fixed)</span>
-              </div>
               <!-- Adjustable duration -->
               <div
-                v-else
                 class="flex items-center border border-gray-300 rounded bg-white"
               >
                 <button
@@ -305,8 +296,8 @@
                 <!-- Days -->
                 <div class="grid grid-cols-7 gap-1">
                   <button
-                    v-for="date in calendarDays"
-                    :key="date.day"
+                    v-for="(date, index) in calendarDays"
+                    :key="index"
                     @click="selectDate(date)"
                     class="aspect-square flex items-center justify-center text-sm rounded transition-all"
                     :class="getDateClass(date)"
@@ -574,6 +565,7 @@
     RegisterBookingUser,
     CreateBooking,
     GetUserBookingData,
+    CreateStripeSession,
   } from "@/services/apiService.js";
 
   const route = useRoute();
@@ -746,8 +738,8 @@
     return durationMultiplier.value * baseDurationMinutes.value;
   });
 
-  // Fixed duration from appointmentLimit.limitDuration
-  const fixedDurationMultiplier = computed(() => {
+  // Maximum limit duration from appointmentLimit.limitDuration
+  const limitDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return null;
     const svc = selectedService.value;
     const limit = svc?.appointmentLimit;
@@ -763,20 +755,18 @@
         return Math.max(1, Math.round((capHours * 60) / baseDurationMinutes.value));
       }
     }
-    return null; // no fixed duration
+    return null; // no maximum limit set by service
   });
 
   const minDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
-    // If limitDuration is set, lock to that value
-    if (fixedDurationMultiplier.value !== null) return fixedDurationMultiplier.value;
     return Math.ceil(60 / baseDurationMinutes.value); // minimum 1 hour
   });
 
   const maxDurationMultiplier = computed(() => {
     if (!baseDurationMinutes.value || baseDurationMinutes.value <= 0) return 1;
-    // If limitDuration is set, lock to that value
-    if (fixedDurationMultiplier.value !== null) return fixedDurationMultiplier.value;
+    // If limitDuration is set, use it as the maximum allowed
+    if (limitDurationMultiplier.value !== null) return limitDurationMultiplier.value;
     return Math.max(1, Math.floor((maxTotalHours * 60) / baseDurationMinutes.value));
   });
 
@@ -850,9 +840,12 @@
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days = [];
 
+    // Convert getDay() (0=Sun, 1=Mon, etc.) to Monday-based index (0=Mon, 1=Tue, ..., 6=Sun)
+    const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
+
     // Previous month padding
     const prevMonthDays = new Date(year, month, 0).getDate();
-    for (let i = firstDay - 1; i >= 0; i--) {
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
       days.push({ day: prevMonthDays - i, currentMonth: false });
     }
 
@@ -1009,7 +1002,7 @@
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   }
 
-  async function completeBooking() {
+  async function completeBooking(method = "stripe") {
     bookingError.value = "";
     isCreatingBooking.value = true;
     try {
@@ -1021,17 +1014,62 @@
         userId: memberUserId.value || registeredUserId.value,
         categoryId: booking.value.type,
         resourceId: booking.value.lane,
+        serviceId: booking.value.service,
         duration: totalDurationMinutes.value,
         date: booking.value.date,
         startTime: formatMinutesToTime(startMins),
         endTime: formatMinutesToTime(endMins),
         note: booking.value.notes || "",
+        paymentMethod: method,
+        paymentStatus: "pending",
+        paymentMethodChecked: true,
       });
-      if (response.isSuccess) {
-        currentStep.value++;
-      } else {
+
+      if (!response.isSuccess) {
         bookingError.value =
           response.errorMessage || response.userMessage || "Booking failed.";
+        return;
+      }
+
+      if (method === "stripe" && totalPrice.value > 0) {
+        const bookingId =
+          response.value?._id ||
+          response.value?.bookingId ||
+          response.value?.id ||
+          response.value?.booking?._id ||
+          response.value?.booking?.id ||
+          "";
+
+        if (!bookingId) {
+          bookingError.value = "Failed to get booking ID. Please try again.";
+          return;
+        }
+
+        const baseUrl = window.location.origin;
+        const stripeResponse = await CreateStripeSession({
+          bookingId,
+          userId: memberUserId.value || registeredUserId.value,
+          amount: Math.round(totalPrice.value * 100), // cents
+          currency: "aud",
+          productName: selectedServiceTitle.value,
+          successUrl: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}`,
+          cancelUrl: `${baseUrl}/booking/cancel`,
+          metadata: {
+            bookingId,
+            userId: memberUserId.value || registeredUserId.value,
+          },
+        });
+
+        if (stripeResponse.isSuccess && stripeResponse.value?.url) {
+          window.location.href = stripeResponse.value.url;
+        } else {
+          bookingError.value =
+            stripeResponse.userMessage ||
+            stripeResponse.errorMessage ||
+            "Failed to create payment session. Please try Pay Later.";
+        }
+      } else {
+        currentStep.value++;
       }
     } catch (error) {
       console.error("Error creating booking:", error);
