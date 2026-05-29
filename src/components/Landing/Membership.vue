@@ -260,7 +260,12 @@
                 <ul
                   class="mt-3 list-disc list-inside text-sm text-gray-600 space-y-1"
                 >
-                  <li>{{ fee.detail }}</li>
+                  <li
+                    v-for="(line, index) in fee.details"
+                    :key="index"
+                  >
+                    {{ line }}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -541,32 +546,56 @@
       price: "$25",
       unit: "week",
       renewal: "This will automatically renew every week",
-      detail:
+      details: [
         "Full access to designated cricket facilities throughout the membership period.",
+        "Lane only $20 per hour, Bowling Machine $25 per hour",
+        "Maximum 2 Hrs per day",
+        "Monday - Friday 9.30am to 5pm",
+        "Monday - Friday 9pm to 11pm",
+        "Sat- Sun 6pm to 10pm",
+      ],
     },
     {
       title: "Cricket + Gym Weekly Membership",
       price: "$40",
       unit: "week",
       renewal: "This will automatically renew every week",
-      detail:
-        "Full access to cricket facilities with Elite power hub Gym access.",
+      details: [
+        "Full access to designated cricket facilities throughout the membership period.",
+        "Lane only $20 per hour, Bowling Machine $25 per hour",
+        "Maximum 2 Hrs per day",
+        "Monday - Friday 9.30am to 5pm",
+        "Monday - Friday 9pm to 11pm",
+        "Sat- Sun 6pm to 10pm",
+      ],
     },
     {
       title: "Cricket-Only Monthly Membership",
       price: "$100",
       unit: "month",
       renewal: "This will automatically renew every month",
-      detail:
+      details: [
         "Full access to designated cricket facilities throughout the membership period.",
+        "Lane only $20 per hour, Bowling Machine $25 per hour",
+        "Maximum 2 Hrs per day",
+        "Monday - Friday 9.30am to 5pm",
+        "Monday - Friday 9pm to 11pm",
+        "Sat- Sun 6pm to 10pm",
+      ],
     },
     {
       title: "Cricket + Gym Monthly Membership",
       price: "$150",
       unit: "month",
       renewal: "This will automatically renew every month",
-      detail:
-        "Full access to cricket facilities with Elite power hub Gym access.",
+      details: [
+        "Full access to designated cricket facilities throughout the membership period.",
+        "Lane only $20 per hour, Bowling Machine $25 per hour",
+        "Maximum 2 Hrs per day",
+        "Monday - Friday 9.30am to 5pm",
+        "Monday - Friday 9pm to 11pm",
+        "Sat- Sun 6pm to 10pm",
+      ],
     },
   ];
 
