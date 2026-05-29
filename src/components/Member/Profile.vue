@@ -41,7 +41,7 @@
               </button>
 
               <!-- Buy Membership Link -->
-              <!-- <router-link
+              <router-link
                 v-if="!hasMembership"
                 to="/member/membership"
                 class="bg-white text-[#1a3a35] hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 shadow-lg animate-pulse"
@@ -60,7 +60,7 @@
                   ></path>
                 </svg>
                 Buy a Membership
-              </router-link> -->
+              </router-link>
             </div>
             <!-- <button
             class="absolute border border-secondary top-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -152,7 +152,7 @@
                 <p class="text-white/60 text-xs uppercase tracking-wider">
                   Membership
                 </p>
-                <!-- <p class="text-white font-semibold">
+                <p class="text-white font-semibold">
                   <span v-if="user.membership">{{ user.membership }}</span>
                   <router-link
                     v-else
@@ -174,7 +174,7 @@
                     </svg>
                     Buy
                   </router-link>
-                </p> -->
+                </p>
               </div>
             </div>
           </div>

@@ -34,22 +34,24 @@
       </button>
 
       <!-- logo & brand -->
-      <div class="flex items-center space-x-3">
-        <div class="logo">
-          <img
-            src="@/assets/logo.webp"
-            alt=""
-            class="w-[50px] h-[50px]"
-          />
+      <a href="https://elitecricketcentre.com.au  ">
+        <div class="flex items-center space-x-3">
+          <div class="logo">
+            <img
+              src="@/assets/logo.webp"
+              alt=""
+              class="w-[50px] h-[50px]"
+            />
+          </div>
+          <div class="web-name">
+            <span
+              class="text-white text-[13px] font-medium font-times tracking-wide"
+            >
+              ELITE CRICKET CENTRE
+            </span>
+          </div>
         </div>
-        <div class="web-name">
-          <span
-            class="text-white text-[13px] font-medium font-times tracking-wide"
-          >
-            ELITE CRICKET CENTRE
-          </span>
-        </div>
-      </div>
+      </a>
 
       <!-- account -->
       <router-link :to="profileRoute">
@@ -233,7 +235,7 @@
     },
     {
       label: "Membership",
-      href: "#",
+      href: "/membership/public",
       icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
     },
     {
