@@ -295,7 +295,7 @@
 
             <!-- Resource columns -->
             <div
-              v-for="resource in dayResources"
+              v-for="(resource, rIdx) in dayResources"
               :key="resource.id"
               class="flex-1 min-w-0 border-r border-gray-100 last:border-r-0"
             >
@@ -332,30 +332,307 @@
                   :style="{
                     top: blockTopPx(apt) + 'px',
                     height: blockHeightPx(apt) + 'px',
+                    left: 'calc(' + apt._col * (100 / apt._cols) + '% + 2px)',
+                    width: 'calc(' + 100 / apt._cols + '% - 4px)',
                   }"
                   :class="[
-                    'absolute left-0.5 right-0.5 rounded-md border-l-4 p-1 text-[10px] overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow',
+                    'absolute rounded-md border-l-4 p-1 text-[10px] shadow-sm cursor-pointer hover:shadow-md transition-all hover:z-40 group',
                     getBookingBlockColor(apt),
                   ]"
                 >
-                  <p class="font-bold text-gray-900">
-                    {{ formatTime12(apt.startTime)
-                    }}<span v-if="apt.endTime">
-                      - {{ formatTime12(apt.endTime) }}</span
+                  <!-- Text content wrapper with clipping if the block is small -->
+                  <div
+                    class="w-full h-full overflow-hidden pointer-events-none"
+                  >
+                    <p class="font-bold text-gray-900">
+                      {{ formatTime12(apt.startTime)
+                      }}<span v-if="apt.endTime">
+                        - {{ formatTime12(apt.endTime) }}</span
+                      >
+                    </p>
+                    <p
+                      v-if="apt.resourceName && apt.resourceName !== '-'"
+                      class="text-gray-800 truncate"
                     >
-                  </p>
-                  <p
-                    v-if="apt.resourceName && apt.resourceName !== '-'"
-                    class="text-gray-800 truncate"
+                      {{ apt.resourceName }}
+                    </p>
+                    <p
+                      v-if="apt.name && apt.name !== '-'"
+                      class="text-gray-700 truncate"
+                    >
+                      {{ apt.name }}
+                    </p>
+                  </div>
+
+                  <!-- Hover Tooltip -->
+                  <div
+                    :class="[
+                      'invisible group-hover:visible absolute w-72 z-50 pointer-events-auto transition-all duration-200 opacity-0 group-hover:opacity-100 transform font-montserrat',
+                      // Top clipping prevention: show tooltip below if card is near the top of the calendar grid
+                      blockTopPx(apt) < 160
+                        ? 'top-full pt-1.5 bottom-auto translate-y-2 group-hover:translate-y-0'
+                        : 'bottom-full pb-1.5 top-auto -translate-y-2 group-hover:translate-y-0',
+                      // Right/Left clipping prevention: adjust horizontal alignment based on column position
+                      dayResources.length > 1
+                        ? rIdx === 0
+                          ? 'left-0 right-auto translate-x-0'
+                          : rIdx === dayResources.length - 1
+                            ? 'right-0 left-auto translate-x-0'
+                            : 'left-1/2 -translate-x-1/2'
+                        : 'left-1/2 -translate-x-1/2',
+                    ]"
                   >
-                    {{ apt.resourceName }}
-                  </p>
-                  <p
-                    v-if="apt.name && apt.name !== '-'"
-                    class="text-gray-700 truncate"
-                  >
-                    {{ apt.name }}
-                  </p>
+                    <!-- Inner Styled Tooltip Card -->
+                    <div
+                      class="bg-gray-900/95 backdrop-blur-sm text-white rounded-lg shadow-2xl border border-gray-800 p-3.5 text-xs select-text"
+                    >
+                      <!-- Header: Booking ID & Status -->
+                      <div
+                        class="flex items-center justify-between border-b border-gray-800 pb-2 mb-2"
+                      >
+                        <div class="flex items-center gap-1.5 min-w-0">
+                          <span class="font-bold text-gray-300 truncate"
+                            >ID: {{ apt.bookingId || apt._id || "N/A" }}</span
+                          >
+                          <button
+                            v-if="apt.bookingId || apt._id"
+                            @click.stop="
+                              copyText(apt.bookingId || apt._id, 'id-' + apt.id)
+                            "
+                            class="text-gray-500 hover:text-secondary p-0.5 rounded transition-colors focus:outline-none flex-shrink-0 flex items-center gap-1"
+                            title="Copy ID"
+                          >
+                            <span
+                              v-if="copiedField === 'id-' + apt.id"
+                              class="text-[9px] text-green-400 font-bold bg-green-500/10 px-1 py-0.2 rounded border border-green-500/20"
+                              >Copied!</span
+                            >
+                            <svg
+                              v-else
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              class="w-3.5 h-3.5"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-3a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <span
+                          :class="[
+                            'px-2 py-0.5 rounded text-[10px] font-bold uppercase flex-shrink-0',
+                            apt.status === 'Confirmed' ||
+                            apt.status === 'CONFIRMED'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : apt.status === 'Cancelled' ||
+                                  apt.status === 'CANCELLED'
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+                          ]"
+                        >
+                          {{ apt.status }}
+                        </span>
+                      </div>
+
+                      <!-- Service & Resource -->
+                      <div class="space-y-1.5 mb-2 text-left">
+                        <div>
+                          <span
+                            class="text-gray-400 block text-[9px] uppercase tracking-wider"
+                            >Service</span
+                          >
+                          <span class="font-semibold text-white">{{
+                            apt.service || "-"
+                          }}</span>
+                        </div>
+                        <div>
+                          <span
+                            class="text-gray-400 block text-[9px] uppercase tracking-wider"
+                            >Resource / Lane</span
+                          >
+                          <span class="text-gray-200">{{
+                            apt.resourceName || "-"
+                          }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Date & Time Info -->
+                      <div
+                        class="bg-gray-800/50 rounded p-2 mb-2 space-y-1 text-left"
+                      >
+                        <div
+                          class="flex justify-between items-center text-gray-300"
+                        >
+                          <span class="font-semibold text-white">
+                            {{ formatTime12(apt.startTime)
+                            }}<span v-if="apt.endTime">
+                              - {{ formatTime12(apt.endTime) }}</span
+                            >
+                          </span>
+                          <span
+                            class="text-[10px] bg-gray-700 px-1.5 py-0.5 rounded text-gray-300 font-medium flex-shrink-0"
+                          >
+                            {{ formatDurationMinutes(getDurationMinutes(apt)) }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Customer Info -->
+                      <div
+                        class="border-t border-gray-800 pt-2 mb-2 space-y-1.5 text-left"
+                      >
+                        <div>
+                          <span
+                            class="text-gray-400 block text-[9px] uppercase tracking-wider"
+                            >Customer</span
+                          >
+                          <span class="font-semibold text-white">{{
+                            apt.name || "-"
+                          }}</span>
+                        </div>
+                        <div
+                          class="flex justify-between text-gray-300 gap-2 items-center min-w-0"
+                        >
+                          <div class="flex items-center gap-1 min-w-0">
+                            <span class="truncate">{{ apt.phone || "-" }}</span>
+                            <button
+                              v-if="apt.phone && apt.phone !== '-'"
+                              @click.stop="
+                                copyText(apt.phone, 'phone-' + apt.id)
+                              "
+                              class="text-gray-500 hover:text-secondary p-0.5 rounded transition-colors focus:outline-none flex-shrink-0"
+                              title="Copy Phone"
+                            >
+                              <span
+                                v-if="copiedField === 'phone-' + apt.id"
+                                class="text-[9px] text-green-400 font-bold bg-green-500/10 px-1 py-0.2 rounded border border-green-500/20"
+                                >Copied!</span
+                              >
+                              <svg
+                                v-else
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                class="w-3 h-3"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-3a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                          <div class="flex items-center gap-1 min-w-0">
+                            <span class="truncate max-w-[120px]">{{
+                              apt.email || "-"
+                            }}</span>
+                            <button
+                              v-if="apt.email && apt.email !== '-'"
+                              @click.stop="
+                                copyText(apt.email, 'email-' + apt.id)
+                              "
+                              class="text-gray-500 hover:text-secondary p-0.5 rounded transition-colors focus:outline-none flex-shrink-0"
+                              title="Copy Email"
+                            >
+                              <span
+                                v-if="copiedField === 'email-' + apt.id"
+                                class="text-[9px] text-green-400 font-bold bg-green-500/10 px-1 py-0.2 rounded border border-green-500/20"
+                                >Copied!</span
+                              >
+                              <svg
+                                v-else
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                class="w-3 h-3"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-3a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        <!-- Nested User Details if available -->
+                        <div
+                          v-if="apt.user"
+                          class="text-[10px] text-gray-400 bg-gray-800/30 p-1.5 rounded mt-1.5 flex items-center justify-between min-w-0 gap-1.5"
+                        >
+                          <p class="truncate min-w-0">
+                            <span class="text-gray-500 font-semibold"
+                              >User ID:</span
+                            >
+                            {{ apt.user._id }}
+                          </p>
+                          <button
+                            @click.stop="
+                              copyText(apt.user._id, 'uid-' + apt.id)
+                            "
+                            class="text-gray-500 hover:text-secondary p-0.5 rounded transition-colors focus:outline-none flex-shrink-0"
+                            title="Copy User ID"
+                          >
+                            <span
+                              v-if="copiedField === 'uid-' + apt.id"
+                              class="text-[9px] text-green-400 font-bold bg-green-500/10 px-1 py-0.2 rounded border border-green-500/20"
+                              >Copied!</span
+                            >
+                            <svg
+                              v-else
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="2"
+                              stroke="currentColor"
+                              class="w-3 h-3"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-3a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Financial & Payment Details -->
+                      <div
+                        class="border-t border-gray-800 pt-2 flex justify-between items-center text-left"
+                      >
+                        <div>
+                          <span
+                            class="text-gray-400 block text-[9px] uppercase tracking-wider"
+                            >Payment Method</span
+                          >
+                          <span class="font-medium text-gray-200 capitalize">{{
+                            apt.paymentMethod || "local"
+                          }}</span>
+                        </div>
+                        <div class="text-right">
+                          <span
+                            class="text-gray-400 block text-[9px] uppercase tracking-wider"
+                            >Amount</span
+                          >
+                          <span class="font-bold text-secondary text-sm"
+                            >${{ parseFloat(apt.amount || 0).toFixed(2) }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Now line (only if today) -->
@@ -491,24 +768,78 @@
         <!-- Step 2: Select Service -->
         <div v-if="selectedUser">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Step 2: Select Service <span class="text-red-500">*</span>
+            Step 2: Search & Select Service
+            <span class="text-red-500">*</span>
           </label>
-          <select
-            v-model="bookingForm.categoryId"
-            @change="onServiceChange"
-            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+          <div
+            v-if="selectedServiceObj"
+            class="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between"
           >
-            <option value="">Select a service...</option>
-            <option
-              v-for="service in services"
-              :key="service._id"
-              :value="service._id"
+            <div>
+              <p class="font-semibold text-gray-900">
+                {{ selectedServiceObj.title }}
+              </p>
+              <p class="text-sm text-gray-600">
+                {{ selectedServiceObj.categoryName }}
+                <span v-if="selectedServiceObj.duration">
+                  · {{ selectedServiceObj.duration }}</span
+                >
+                <span v-if="selectedServiceObj.price != null">
+                  · ${{ selectedServiceObj.price }}</span
+                >
+              </p>
+            </div>
+            <button
+              @click="clearSelectedService"
+              class="text-red-500 hover:text-red-700"
             >
-              {{ service.title }} ({{ service.duration }}) - ${{
-                service.price
-              }}
-            </option>
-          </select>
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            v-else
+            class="relative"
+          >
+            <input
+              v-model="serviceSearchQuery"
+              @input="searchServices"
+              type="text"
+              placeholder="Search service by name..."
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+            />
+            <div
+              v-if="serviceSearchResults.length > 0"
+              class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            >
+              <div
+                v-for="service in serviceSearchResults"
+                :key="service._id"
+                @click="selectService(service)"
+                class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              >
+                <p class="font-medium text-gray-900">{{ service.title }}</p>
+                <p class="text-sm text-gray-500">
+                  {{ service.categoryName }}
+                  <span v-if="service.duration"> · {{ service.duration }}</span>
+                  <span v-if="service.price != null">
+                    · ${{ service.price }}</span
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div
             v-if="bookingForm.categoryId"
@@ -674,6 +1005,20 @@
           <p class="text-yellow-800 text-sm">
             No available slots for this date. Please select another date.
           </p>
+        </div>
+
+        <!-- Payment Method -->
+        <div v-if="bookingForm.startTime">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Payment Method <span class="text-red-500">*</span>
+          </label>
+          <select
+            v-model="bookingForm.paymentMethod"
+            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+          >
+            <option value="local card">Local Card</option>
+            <option value="local cash">Local Cash</option>
+          </select>
         </div>
 
         <!-- Step 6: Notes (Optional) -->
@@ -852,16 +1197,25 @@
             </p>
             <p class="text-sm font-semibold text-gray-900">
               {{
+                bookingDetails.service?.title ||
+                bookingDetails.service?.categoryName ||
                 bookingDetails.categoryId?.categoryName ||
                 bookingDetails.type ||
                 "-"
               }}
             </p>
             <p
-              v-if="bookingDetails.categoryId?.categoryID"
+              v-if="
+                bookingDetails.service?.serviceID ||
+                bookingDetails.categoryId?.categoryID
+              "
               class="text-xs text-gray-500"
             >
-              Code: {{ bookingDetails.categoryId.categoryID }}
+              Code:
+              {{
+                bookingDetails.service?.serviceID ||
+                bookingDetails.categoryId?.categoryID
+              }}
             </p>
           </div>
 
@@ -908,6 +1262,24 @@
               <p class="text-xs text-gray-500">End Time</p>
               <p class="text-sm font-semibold text-gray-900">
                 {{ bookingDetails.endTime }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Price</p>
+              <p class="text-sm font-semibold text-gray-900">
+                ${{
+                  bookingDetails.payment?.amount ?? bookingDetails.price ?? 0
+                }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Payment Method</p>
+              <p class="text-sm font-semibold text-gray-900 capitalize">
+                {{
+                  bookingDetails.payment?.paymentMethod ||
+                  bookingDetails.paymentMethod ||
+                  "-"
+                }}
               </p>
             </div>
             <div class="col-span-2">
@@ -985,19 +1357,66 @@
               <label class="block text-xs font-semibold text-gray-700 mb-1"
                 >Service</label
               >
-              <select
-                v-model="editForm.categoryId"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+              <div
+                v-if="editSelectedService"
+                class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between"
               >
-                <option value="">Select service...</option>
-                <option
-                  v-for="svc in editServices"
-                  :key="svc._id"
-                  :value="svc._id"
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ editSelectedService.title }}
+                  </p>
+                  <p class="text-xs text-gray-600">
+                    {{ editSelectedService.categoryName }}
+                    <span v-if="editSelectedService.duration">
+                      · {{ editSelectedService.duration }}</span
+                    >
+                    <span v-if="editSelectedService.price != null">
+                      · ${{ editSelectedService.price }}</span
+                    >
+                  </p>
+                </div>
+                <button
+                  @click="
+                    editSelectedService = null;
+                    editForm.categoryId = '';
+                  "
+                  class="text-red-500 hover:text-red-700 text-xs"
                 >
-                  {{ svc.title }} ({{ svc.duration }}) - ${{ svc.price }}
-                </option>
-              </select>
+                  Change
+                </button>
+              </div>
+              <div
+                v-else
+                class="relative"
+              >
+                <input
+                  v-model="editServiceSearch"
+                  @input="searchEditServices"
+                  type="text"
+                  placeholder="Search service by name..."
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+                />
+                <div
+                  v-if="editServiceResults.length > 0"
+                  class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
+                >
+                  <div
+                    v-for="svc in editServiceResults"
+                    :key="svc._id"
+                    @click="selectEditService(svc)"
+                    class="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <p class="text-sm font-medium text-gray-900">
+                      {{ svc.title }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ svc.categoryName }}
+                      <span v-if="svc.duration"> · {{ svc.duration }}</span>
+                      <span v-if="svc.price != null"> · ${{ svc.price }}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Edit Resource -->
@@ -1088,6 +1507,30 @@
                   <option value="PAID">PAID</option>
                   <option value="REFUNDED">REFUNDED</option>
                   <option value="FAILED">FAILED</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1"
+                  >Price ($)</label
+                >
+                <input
+                  v-model.number="editForm.price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1"
+                  >Payment Method</label
+                >
+                <select
+                  v-model="editForm.paymentMethod"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+                >
+                  <option value="local card">Local Card</option>
+                  <option value="local cash">Local Cash</option>
                 </select>
               </div>
             </div>
@@ -1520,8 +1963,13 @@
       phone: booking.phoneNumber || "-",
       email: booking.email || "",
       service: booking.serviceName || "-",
+      categoryName: booking.categoryName || booking.service?.categoryName || "",
       status: statusMap[booking.status] || booking.status || "Pending",
       paymentStatus: booking.paymentStatus || "",
+      amount: booking.amount !== undefined ? booking.amount : 0,
+      paymentMethod: booking.paymentMethod || "local",
+      user: booking.user || null,
+      rawBooking: booking,
     };
   }
 
@@ -1721,11 +2169,65 @@
 
   function getBookingsForResourceColumn(resource) {
     const dStr = formatDateLocal(selectedDayDate.value);
-    return appointments.value.filter((a) => {
+    const items = appointments.value.filter((a) => {
       if (a.date !== dStr) return false;
       if (a.resourceId) return a.resourceId === resource.id;
       return a.lane === resource.label;
     });
+    return layoutOverlappingBookings(items);
+  }
+
+  // Splits overlapping bookings into side-by-side columns (like a day calendar).
+  // Adds `_col` (column index) and `_cols` (total columns in the overlap cluster).
+  function layoutOverlappingBookings(items) {
+    const events = items.map((apt) => {
+      const start = timeToMinutes(apt.startTime || apt.time);
+      let dur = apt.duration;
+      if ((!dur || dur <= 0) && apt.endTime && apt.startTime) {
+        dur = timeToMinutes(apt.endTime) - timeToMinutes(apt.startTime);
+      }
+      if (!dur || dur <= 0) dur = 60;
+      return { apt, start, end: start + dur, col: 0 };
+    });
+    events.sort((a, b) => a.start - b.start || a.end - b.end);
+
+    const result = [];
+    let cluster = [];
+    let clusterEnd = -1;
+
+    const flushCluster = () => {
+      if (!cluster.length) return;
+      const columnEnds = [];
+      cluster.forEach((ev) => {
+        let placed = false;
+        for (let i = 0; i < columnEnds.length; i++) {
+          if (ev.start >= columnEnds[i]) {
+            columnEnds[i] = ev.end;
+            ev.col = i;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          ev.col = columnEnds.length;
+          columnEnds.push(ev.end);
+        }
+      });
+      const total = columnEnds.length;
+      cluster.forEach((ev) => {
+        result.push({ ...ev.apt, _col: ev.col, _cols: total });
+      });
+      cluster = [];
+      clusterEnd = -1;
+    };
+
+    events.forEach((ev) => {
+      if (cluster.length && ev.start >= clusterEnd) flushCluster();
+      cluster.push(ev);
+      clusterEnd = Math.max(clusterEnd, ev.end);
+    });
+    flushCluster();
+    return result;
   }
 
   function blockTopPx(apt) {
@@ -1743,6 +2245,29 @@
     return Math.max(durMin * PIXELS_PER_MINUTE, 28);
   }
 
+  function getDurationMinutes(apt) {
+    let durMin = apt.duration;
+    if (!durMin && apt.endTime && apt.startTime) {
+      durMin = timeToMinutes(apt.endTime) - timeToMinutes(apt.startTime);
+    }
+    return durMin || 60;
+  }
+
+  const copiedField = ref("");
+
+  function copyText(text, field) {
+    if (!text || text === "-") return;
+    try {
+      navigator.clipboard.writeText(text);
+      copiedField.value = field;
+      setTimeout(() => {
+        copiedField.value = "";
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  }
+
   function getBookingBlockColor(apt) {
     // Priority 1: Staff user (purple)
     if (apt.email === "staff@ecc.com") {
@@ -1752,8 +2277,18 @@
     if (apt.status === "Cancelled") {
       return "bg-red-100/80 border-red-500";
     }
-    // Priority 3: Payment status
-    if (apt.paymentStatus === "PAID") {
+    const isMember = apt.categoryName === "Member";
+    const isPaid = apt.paymentStatus === "PAID";
+    // Priority 3: Paid Member (orange)
+    if (isMember && isPaid) {
+      return "bg-orange-100/90 border-orange-500";
+    }
+    // Priority 4: Unpaid Member (yellow)
+    if (isMember) {
+      return "bg-yellow-100/90 border-yellow-500";
+    }
+    // Priority 5: Paid non-member (green)
+    if (isPaid) {
       return "bg-green-100/90 border-green-500";
     }
     // Default: UNPAID / PENDING (blue)
@@ -1782,6 +2317,9 @@
   const userSearchResults = ref([]);
   const selectedUser = ref(null);
   const services = ref([]);
+  const serviceSearchQuery = ref("");
+  const serviceSearchResults = ref([]);
+  const selectedServiceObj = ref(null);
   const availableSlots = ref([]);
   const loadingSlots = ref(false);
   const isCreatingBooking = ref(false);
@@ -1818,12 +2356,17 @@
     categoryId: "",
     resourceId: "",
     userId: "",
+    price: 0,
+    paymentMethod: "local card",
   });
   const editServices = ref([]);
   const editResources = ref([]);
   const editUserSearch = ref("");
   const editUserResults = ref([]);
   const editSelectedUser = ref(null);
+  const editServiceSearch = ref("");
+  const editServiceResults = ref([]);
+  const editSelectedService = ref(null);
 
   function formatDateTimeDate(d) {
     if (!d) return "-";
@@ -1875,13 +2418,23 @@
           status: v.status || "",
           paymentStatus: v.paymentStatus || "",
           note: v.note || "",
-          categoryId: v.categoryId?._id || v.categoryId || "",
+          categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
           resourceId: v.resourceId?._id || v.resourceId || "",
           userId: v.userId?._id || v.userId || "",
+          price: v.payment?.amount ?? v.price ?? 0,
+          paymentMethod:
+            v.payment?.paymentMethod || v.paymentMethod || "local card",
         };
         if (v.userId && typeof v.userId === "object") {
           editSelectedUser.value = v.userId;
         }
+        editSelectedService.value =
+          v.service ||
+          (v.categoryId && typeof v.categoryId === "object"
+            ? v.categoryId
+            : null);
+        editServiceSearch.value = "";
+        editServiceResults.value = [];
       } else {
         detailsError.value =
           response.userMessage || "Failed to load booking details.";
@@ -1936,6 +2489,28 @@
     editUserResults.value = [];
   }
 
+  function searchEditServices() {
+    const q = editServiceSearch.value.trim().toLowerCase();
+    if (!q) {
+      editServiceResults.value = [];
+      return;
+    }
+    editServiceResults.value = editServices.value
+      .filter(
+        (s) =>
+          (s.title || "").toLowerCase().includes(q) ||
+          (s.categoryName || "").toLowerCase().includes(q),
+      )
+      .slice(0, 10);
+  }
+
+  function selectEditService(svc) {
+    editSelectedService.value = svc;
+    editForm.value.categoryId = svc._id;
+    editServiceSearch.value = "";
+    editServiceResults.value = [];
+  }
+
   function cancelEditBooking() {
     isEditingBooking.value = false;
     const v = bookingDetails.value || {};
@@ -1947,13 +2522,21 @@
       status: v.status || "",
       paymentStatus: v.paymentStatus || "",
       note: v.note || "",
-      categoryId: v.categoryId?._id || v.categoryId || "",
+      categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
       resourceId: v.resourceId?._id || v.resourceId || "",
       userId: v.userId?._id || v.userId || "",
+      price: v.payment?.amount ?? v.price ?? 0,
+      paymentMethod:
+        v.payment?.paymentMethod || v.paymentMethod || "local card",
     };
     if (v.userId && typeof v.userId === "object") {
       editSelectedUser.value = v.userId;
     }
+    editSelectedService.value =
+      v.service ||
+      (v.categoryId && typeof v.categoryId === "object" ? v.categoryId : null);
+    editServiceSearch.value = "";
+    editServiceResults.value = [];
   }
 
   async function saveBookingUpdate() {
@@ -1972,6 +2555,8 @@
         categoryId: editForm.value.categoryId,
         resourceId: editForm.value.resourceId,
         userId: editForm.value.userId,
+        price: Number(editForm.value.price) || 0,
+        paymentMethod: editForm.value.paymentMethod || "local",
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
@@ -2027,7 +2612,7 @@
     date: "",
     startTime: "",
     note: "",
-    paymentMethod: "local",
+    paymentMethod: "local card",
   });
   const customDurationMinutes = ref(0);
   const customPrice = ref(0);
@@ -2069,6 +2654,9 @@
     userSearchQuery.value = "";
     userSearchResults.value = [];
     selectedUser.value = null;
+    serviceSearchQuery.value = "";
+    serviceSearchResults.value = [];
+    selectedServiceObj.value = null;
     bookingForm.value = {
       userId: "",
       categoryId: "",
@@ -2076,7 +2664,7 @@
       date: "",
       startTime: "",
       note: "",
-      paymentMethod: "local",
+      paymentMethod: "local card",
     };
     availableSlots.value = [];
     customDurationMinutes.value = 0;
@@ -2130,6 +2718,39 @@
     userSearchResults.value = [];
   }
 
+  function searchServices() {
+    const q = serviceSearchQuery.value.trim().toLowerCase();
+    if (!q) {
+      serviceSearchResults.value = [];
+      return;
+    }
+    serviceSearchResults.value = services.value
+      .filter(
+        (s) =>
+          (s.title || "").toLowerCase().includes(q) ||
+          (s.categoryName || "").toLowerCase().includes(q),
+      )
+      .slice(0, 10);
+  }
+
+  function selectService(svc) {
+    selectedServiceObj.value = svc;
+    bookingForm.value.categoryId = svc._id;
+    serviceSearchQuery.value = "";
+    serviceSearchResults.value = [];
+    onServiceChange();
+  }
+
+  function clearSelectedService() {
+    selectedServiceObj.value = null;
+    bookingForm.value.categoryId = "";
+    bookingForm.value.resourceId = "";
+    bookingForm.value.startTime = "";
+    availableSlots.value = [];
+    customDurationMinutes.value = 0;
+    customPrice.value = 0;
+  }
+
   async function onServiceChange() {
     bookingForm.value.resourceId = "";
     bookingForm.value.startTime = "";
@@ -2139,11 +2760,8 @@
       (s) => s._id === bookingForm.value.categoryId,
     );
     if (selectedService) {
-      let durationMinutes = 0;
-      const dur = String(selectedService.duration || "");
-      if (dur.includes("m")) durationMinutes = parseInt(dur);
-      else if (dur.includes("h")) durationMinutes = parseInt(dur) * 60;
-      customDurationMinutes.value = Math.max(durationMinutes, 30);
+      // Default duration is always 1 hour; user can adjust in 30-min steps.
+      customDurationMinutes.value = 60;
       customPrice.value = calculatePrice();
     }
 
@@ -2257,7 +2875,7 @@
         duration: durationMinutes,
         price: customPrice.value || calculatePrice(),
         note: bookingForm.value.note || "",
-        paymentMethod: "local",
+        paymentMethod: bookingForm.value.paymentMethod || "local",
       };
       const response = await CreateBookingDashboard(payload);
       if (response.isSuccess) {
