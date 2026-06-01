@@ -313,7 +313,9 @@
                     class="aspect-square flex items-center justify-center text-sm rounded transition-all"
                     :class="getDateClass(date)"
                   >
-                    {{ date.day }}
+                    <template v-if="isInBookingWindow(date)">{{
+                      date.day
+                    }}</template>
                   </button>
                 </div>
               </div>
@@ -595,9 +597,8 @@
     timeZone: "Australia/Sydney",
   });
   const ausNow = new Date(ausNowStr);
-  // Default selected date = today + 3 days (today + 2 buffer days)
+  // Default selected date = today (within the 3-day booking window).
   const ausDefault = new Date(ausNow);
-  ausDefault.setDate(ausDefault.getDate() + 3);
   const currentDate = ref(new Date(ausNow));
   const selectedDate = ref(new Date(ausDefault));
 
@@ -862,18 +863,27 @@
     // Previous month padding
     const prevMonthDays = new Date(year, month, 0).getDate();
     for (let i = firstDayIndex - 1; i >= 0; i--) {
-      days.push({ day: prevMonthDays - i, currentMonth: false });
+      const day = prevMonthDays - i;
+      days.push({
+        day,
+        currentMonth: false,
+        date: new Date(year, month - 1, day),
+      });
     }
 
     // Current month
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push({ day: i, currentMonth: true });
+      days.push({ day: i, currentMonth: true, date: new Date(year, month, i) });
     }
 
     // Next month padding
     const remaining = 42 - days.length;
     for (let i = 1; i <= remaining; i++) {
-      days.push({ day: i, currentMonth: false });
+      days.push({
+        day: i,
+        currentMonth: false,
+        date: new Date(year, month + 1, i),
+      });
     }
 
     return days;
@@ -1138,35 +1148,28 @@
     );
   }
 
-  // Returns true when the calendar cell is before "today" in Australia/Sydney.
-  // 3-day buffer: today is 19th → 19, 20, 21 disabled → 22nd is first selectable.
-  const BOOKING_BUFFER_DAYS = 3;
-
-  function isPastDate(date) {
-    if (!date.currentMonth) return true;
-    const candidate = new Date(
-      currentDate.value.getFullYear(),
-      currentDate.value.getMonth(),
-      date.day,
-    );
+  function getTodayAus() {
     const todayAus = new Date(
       new Date().toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
     );
     todayAus.setHours(0, 0, 0, 0);
-    // Add buffer: earliest allowed date = today + BOOKING_BUFFER_DAYS
-    const earliest = new Date(todayAus);
-    earliest.setDate(earliest.getDate() + BOOKING_BUFFER_DAYS);
-    return candidate < earliest;
+    return todayAus;
+  }
+
+  // Booking window: today, today+1, today+2 are selectable; everything else is hidden.
+  function isInBookingWindow(date) {
+    if (!date.date) return false;
+    const candidate = new Date(date.date);
+    candidate.setHours(0, 0, 0, 0);
+    const today = getTodayAus();
+    const end = new Date(today);
+    end.setDate(end.getDate() + 2);
+    return candidate >= today && candidate <= end;
   }
 
   function selectDate(date) {
-    if (!date.currentMonth) return;
-    if (isPastDate(date)) return; // block past-date clicks
-    selectedDate.value = new Date(
-      currentDate.value.getFullYear(),
-      currentDate.value.getMonth(),
-      date.day,
-    );
+    if (!isInBookingWindow(date)) return;
+    selectedDate.value = new Date(date.date);
     booking.value.date = formatDateInput(selectedDate.value);
   }
 
@@ -1174,33 +1177,33 @@
     booking.value.selectedTime = slot.time;
   }
 
-  function getDateClass(date) {
-    const isSelected =
-      date.currentMonth &&
-      selectedDate.value.getDate() === date.day &&
-      selectedDate.value.getMonth() === currentDate.value.getMonth();
+  function isSameDay(a, b) {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
+  }
 
-    if (isSelected) {
+  function getDateClass(date) {
+    // Hide any date outside the 3-day booking window (keeps grid alignment).
+    if (!isInBookingWindow(date)) {
+      return "invisible pointer-events-none";
+    }
+    if (date.date && isSameDay(selectedDate.value, date.date)) {
       return "bg-white text-[#1a3a35] font-bold";
     }
-    if (date.currentMonth) {
-      if (isPastDate(date)) {
-        return "text-white/30 cursor-not-allowed line-through";
-      }
-      return "text-white hover:bg-white/20";
-    }
-    return "text-white/40";
+    return "text-white hover:bg-white/20";
   }
 
   function resetBooking() {
     currentStep.value = 0;
-    // Recalculate Australian date with 3-day buffer
+    // Default selected date = today (Australia/Sydney), within the booking window.
     const nowStr = new Date().toLocaleString("en-US", {
       timeZone: "Australia/Sydney",
     });
     const nowAus = new Date(nowStr);
     const defaultDate = new Date(nowAus);
-    defaultDate.setDate(defaultDate.getDate() + BOOKING_BUFFER_DAYS);
 
     const prevType = booking.value.type;
     const prevService = booking.value.service;
