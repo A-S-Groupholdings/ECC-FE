@@ -45,7 +45,7 @@ const router = createRouter({
       name: "home",
       component: HomeView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Booking"}
 
     },
      {
@@ -53,7 +53,7 @@ const router = createRouter({
       name: "login",
       component: LoginView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Login"}
 
     },
     {
@@ -61,7 +61,7 @@ const router = createRouter({
       name: "dashhome",
       component: DashboardView,
       meta: {
-        title: "ECC" , requiresRole: "admin"}
+        title: "Elite Cricket Centre - Dashboard", requiresRole: "admin"}
       
     },
     {
@@ -69,84 +69,84 @@ const router = createRouter({
       name: "livesession",
       component: LiveSessionView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Live Session"}
     },
     {
       path: "/dashboard/appoinment",
       name: "appoinment",
       component: appoinment,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Appointments", requiresRole: "admin"}
     },
     {
       path: "/dashboard/available",
       name: "availableslots",
       component: AvailableSlotsView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Available Slots", requiresRole: "admin"}
     },
      {
       path: "/dashboard/service",
       name: "service",
       component: ServiceView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Services", requiresRole: "admin"}
     },
     {
       path: "/dashboard/customer",
       name: "customer",
       component: CustomerView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Customers", requiresRole: "admin"}
     },
     {
       path: "/dashboard/calender",
       name: "calender",
       component: CalenderView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Calendar", requiresRole: "admin"}
     },
     {
       path: "/dashboard/payment",
       name: "payment",
       component: PaymentView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Payments", requiresRole: "admin"}
     },
     {
       path: "/dashboard/resource",
       name: "resource",
       component: ResourceView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Resources", requiresRole: "admin"}
     },
     {
       path: "/dashboard/category",
       name: "category",
       component: CategoryView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Categories", requiresRole: "admin"}
     },
     {
       path: "/dashboard/membership",
       name: "membership",
       component: MembershipView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Memberships", requiresRole: "admin"}
     },
     {
       path: "/dashboard/membership/create",
       name: "membershipcreate",
       component: MembershipCreateView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Create Membership", requiresRole: "admin"}
     },  
     {
       path: "/dashboard/subscription",
       name: "subscription",
       component: SubscriptionView,
       meta: {
-        title: "ECC", requiresRole: "admin"}
+        title: "Elite Cricket Centre - Subscriptions", requiresRole: "admin"}
     },
     // {
     //   path: "/membership/register",
@@ -160,112 +160,112 @@ const router = createRouter({
       name: "bookingcancel",
       component: BookingCancel,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Cancel Booking"}
     },
     {
       path: "/booking/success",
       name: "bookingsuccess",
       component: BookingSuccess,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Success"}
     },
     {
       path: "/member/payment",
       name: "memberpayment",
       component: MemberPayment,
       meta: {
-        title: "ECC", requiresMember: true}
+        title: "Elite Cricket Centre - Payment", requiresMember: true}
     },
     {
       path: "/ecc/profile",
       name: "memberprofile",
       component: MemberProfileView,
       meta: {
-        title: "ECC", requiresMember: true}
+        title: "Elite Cricket Centre - Profile", requiresMember: true}
     },
     {
       path: "/admin/otp",
       name: "adminotp",
       component: AdminOtp,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Admin OTP"}
     },
     {
       path: "/member/otp",
       name: "memberotp",
       component: MemberOtp,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Member OTP"}
     },
     {
       path: "/coach/otp",
       name: "coachotp",
       component: CoachOtp,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Coach OTP"}
     },
      {
       path: "/member/register",
       name: "memberregister",
       component: MemberRegisterView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Register"}
     },
      {
       path: "/member/membership",
       name: "memberships",
       component: MembershipsView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Memberships"}
     },
     {
       path: "/member/booking",
       name: "memberbooking",
       component: MemberBookingView,
       meta: {
-        title: "ECC", requiresMember: true}
+        title: "Elite Cricket Centre - Bookings", requiresMember: true}
     },
     {
       path: "/member/login",
       name: "memberlogin",
       component: MemberLoginView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Login"}
     },
     {
       path: "/coach/login",
       name: "coachlogin",
       component: CoachLoginView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Login"}
     },
     {
       path: "/coach/profile",
       name: "coachprofile",
       component: CoachProfileView,
       meta: {
-        title: "ECC", requiresCategory: "Coach"}
+        title: "Elite Cricket Centre - Profile", requiresCategory: "Coach"}
     },
     {
       path: "/member/payment",
       name: "memberpayment",
       component: MemberPaymentView,
       meta: {
-        title: "ECC", requiresMember: true}
+        title: "Elite Cricket Centre - Payment", requiresMember: true}
     },
     {
       path: "/coach/booking",
       name: "coachbooking",
       component: CoachBookingView,
       meta: {
-        title: "ECC", requiresCategory: "Coach"}
+        title: "Elite Cricket Centre - Bookings", requiresCategory: "Coach"}
     },
     {
       path: "/live-on-ecc",
       name: "livesession",
       component: PublicLiveSessionView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Live Session"}
     },
     // {
     //   path: "/ecc/membership/new",
@@ -279,28 +279,28 @@ const router = createRouter({
       name: "membershippublic",
       component: PublicMembershipView,
       meta: {
-        title: "ECC"}
+        title: "Elite Cricket Centre - Membership"}
     },
     {
       path: "/membership/success",
       name: "membershipsuccess",
       component: MembershipSuccessView,
       meta: {
-        title: "Membership Payment Success"}
+        title: "Elite Cricket Centre - Membership Success"}
     },
     {
       path: "/membership/cancel",
       name: "membershipcancel",
       component: MembershipCancelView,
       meta: {
-        title: "Membership Payment Cancelled"}
+        title: "Elite Cricket Centre - Membership Cancelled"}
     },
     {
       path: "/dashboard/membership/payment",
       name: "membershipcancel",
       component: MembershipPaymentView,
       meta: {
-        title: "Membership Payment View"}
+        title: "Elite Cricket Centre - Membership Payment"}
     },
     
     {

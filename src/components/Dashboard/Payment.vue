@@ -437,6 +437,7 @@
                 <td class="px-4 py-4 whitespace-nowrap text-center">
                   <div class="flex items-center justify-center gap-2">
                     <button
+                      @click="openDetails(payment)"
                       class="flex items-center gap-1 bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors"
                     >
                       <svg
@@ -518,13 +519,285 @@
         </div>
       </div>
     </div>
+
+    <!-- Details Drawer -->
+    <transition name="drawer-fade">
+      <div
+        v-if="showDetails"
+        class="fixed inset-0 z-50"
+        @click="closeDetails"
+      >
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <transition name="drawer-slide">
+          <aside
+            v-if="showDetails"
+            class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
+            @click.stop
+          >
+            <!-- Drawer Header -->
+            <div
+              class="bg-gradient-to-r from-[#1a3a35] to-[#2a4a45] px-6 py-4 flex items-center justify-between"
+            >
+              <div>
+                <p class="text-xs text-white/70 uppercase tracking-wider">
+                  {{ selectedPayment?.membershipId ? "Membership" : "Booking" }}
+                  Details
+                </p>
+                <h3 class="text-lg font-bold text-white">
+                  {{ details?.bookingId || selectedPayment?._id || "—" }}
+                </h3>
+              </div>
+              <button
+                @click="closeDetails"
+                class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Drawer Body -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-5">
+              <div
+                v-if="detailsLoading"
+                class="text-center py-10"
+              >
+                <div
+                  class="inline-block w-8 h-8 border-2 border-[#1a3a35] border-t-transparent rounded-full animate-spin"
+                ></div>
+                <p class="text-sm text-gray-500 mt-3">Loading details...</p>
+              </div>
+
+              <div
+                v-else-if="detailsError"
+                class="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"
+              >
+                {{ detailsError }}
+              </div>
+
+              <template v-else>
+                <!-- Status badges -->
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-if="details?.status"
+                    :class="[
+                      'text-xs px-3 py-1 rounded-full font-medium',
+                      details.status === 'CONFIRMED'
+                        ? 'bg-green-100 text-green-700'
+                        : details.status === 'CANCELLED'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700',
+                    ]"
+                    >{{ details.status }}</span
+                  >
+                  <span
+                    v-if="details?.paymentStatus"
+                    :class="[
+                      'text-xs px-3 py-1 rounded-full font-medium',
+                      details.paymentStatus === 'PAID'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-orange-100 text-orange-700',
+                    ]"
+                    >{{ details.paymentStatus }}</span
+                  >
+                </div>
+
+                <!-- Customer -->
+                <div class="p-4 bg-gray-50 rounded-lg">
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-2">
+                    Customer
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ customer?.name || "—" }}
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    {{ customer?.email || "—" }}
+                  </p>
+                  <p
+                    v-if="customer?.phoneNumber"
+                    class="text-sm text-gray-600"
+                  >
+                    {{ customer.phoneNumber }}
+                  </p>
+                </div>
+
+                <!-- Service -->
+                <div
+                  v-if="details?.service || details?.categoryId"
+                  class="p-4 bg-gray-50 rounded-lg"
+                >
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-2">
+                    Service
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{
+                      details.service?.title ||
+                      details.categoryId?.categoryName ||
+                      details.type ||
+                      "—"
+                    }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ details.categoryId?.categoryName }}
+                    <span v-if="details.service?.serviceID">
+                      · {{ details.service.serviceID }}</span
+                    >
+                  </p>
+                </div>
+
+                <!-- Resource -->
+                <div
+                  v-if="details?.resourceId"
+                  class="p-4 bg-gray-50 rounded-lg"
+                >
+                  <p class="text-xs font-semibold text-gray-500 uppercase mb-2">
+                    Resource
+                  </p>
+                  <p class="text-sm font-semibold text-gray-900">
+                    {{ details.resourceId?.title || "—" }}
+                  </p>
+                  <p
+                    v-if="details.resourceId?.resourceID"
+                    class="text-xs text-gray-500"
+                  >
+                    Code: {{ details.resourceId.resourceID }}
+                  </p>
+                </div>
+
+                <!-- Schedule -->
+                <div
+                  v-if="details"
+                  class="grid grid-cols-2 gap-4"
+                >
+                  <div>
+                    <p class="text-xs text-gray-500">Date</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                      {{ formatDate(details.date) }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Duration</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                      {{ details.duration ? details.duration + " min" : "—" }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Start Time</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                      {{ details.startTime || "—" }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">End Time</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                      {{ details.endTime || "—" }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Payment -->
+                <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                  <p class="text-xs font-semibold text-gray-500 uppercase">
+                    Payment
+                  </p>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Method</span>
+                    <span
+                      class="text-sm font-semibold text-gray-900 capitalize"
+                    >
+                      {{ paymentInfo?.paymentMethod || "—" }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Status</span>
+                    <span
+                      class="text-sm font-semibold text-gray-900 capitalize"
+                    >
+                      {{ mapStatus(paymentInfo?.status) || "—" }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="paymentInfo?.paidAt"
+                    class="flex items-center justify-between"
+                  >
+                    <span class="text-sm text-gray-600">Paid At</span>
+                    <span class="text-sm font-semibold text-gray-900">
+                      {{ formatDate(paymentInfo.paidAt) }}
+                    </span>
+                  </div>
+
+                  <!-- Breakdown -->
+                  <div
+                    v-if="paymentInfo?.paymentBreakdown?.length"
+                    class="border-t border-gray-200 pt-3 space-y-1"
+                  >
+                    <p class="text-xs font-semibold text-gray-500 mb-1">
+                      Breakdown
+                    </p>
+                    <div
+                      v-for="(b, i) in paymentInfo.paymentBreakdown"
+                      :key="i"
+                      class="flex items-center justify-between text-sm"
+                    >
+                      <span class="text-gray-600 capitalize">{{
+                        b.method
+                      }}</span>
+                      <span class="font-semibold text-gray-900">{{
+                        formatCurrency(b.amount)
+                      }}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="flex items-center justify-between border-t border-gray-200 pt-3"
+                  >
+                    <span class="text-sm font-semibold text-gray-700"
+                      >Total</span
+                    >
+                    <span class="text-base font-bold text-gray-900">{{
+                      formatCurrency(
+                        paymentInfo?.amount ?? selectedPayment?.amount ?? 0,
+                      )
+                    }}</span>
+                  </div>
+                </div>
+
+                <!-- Note -->
+                <div v-if="details?.note">
+                  <p class="text-xs text-gray-500">Note</p>
+                  <p class="text-sm text-gray-700">{{ details.note }}</p>
+                </div>
+              </template>
+            </div>
+          </aside>
+        </transition>
+      </div>
+    </transition>
   </main>
 </template>
 
 <script setup>
   import { ref, computed, onMounted, watch } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
-  import { GetPayments } from "@/services/apiService.js";
+  import { GetPayments, GetBookingById } from "@/services/apiService.js";
+
+  // ─── Details drawer state ─────────────────────────────────────────────────
+  const showDetails = ref(false);
+  const detailsLoading = ref(false);
+  const detailsError = ref("");
+  const bookingDetails = ref(null);
+  const selectedPayment = ref(null);
 
   const selectedDate = ref("");
   const searchQuery = ref("");
@@ -591,6 +864,53 @@
       return paymentMethod === "stripe" ? "Stripe" : "Local";
     }
     return paymentMethod === "stripe" ? "Stripe" : "Local";
+  };
+
+  // ─── Details drawer logic ─────────────────────────────────────────────────
+  // Fetched booking takes priority; fall back to the populated payment row.
+  const details = computed(
+    () => bookingDetails.value || selectedPayment.value?.bookingId || null,
+  );
+  const customer = computed(
+    () => details.value?.userId || selectedPayment.value?.userId || null,
+  );
+  const paymentInfo = computed(
+    () => details.value?.payment || selectedPayment.value || null,
+  );
+
+  const openDetails = async (payment) => {
+    selectedPayment.value = payment;
+    bookingDetails.value = null;
+    detailsError.value = "";
+    showDetails.value = true;
+
+    const booking = payment?.bookingId;
+    const bookingRef =
+      (booking && (booking.bookingId || booking._id)) ||
+      (typeof booking === "string" ? booking : null);
+    if (!bookingRef) return; // membership or no booking — show payment-only info
+
+    detailsLoading.value = true;
+    try {
+      const res = await GetBookingById(bookingRef);
+      if (res?.isSuccess) {
+        bookingDetails.value = res.value || null;
+      } else {
+        detailsError.value = res?.userMessage || "Failed to load details.";
+      }
+    } catch (err) {
+      console.error("Error loading booking details:", err);
+      detailsError.value = "Failed to load details. Please try again.";
+    } finally {
+      detailsLoading.value = false;
+    }
+  };
+
+  const closeDetails = () => {
+    showDetails.value = false;
+    selectedPayment.value = null;
+    bookingDetails.value = null;
+    detailsError.value = "";
   };
 
   // Fetch payments from API
@@ -703,3 +1023,23 @@
     fetchPayments();
   });
 </script>
+
+<style scoped>
+  .drawer-fade-enter-active,
+  .drawer-fade-leave-active {
+    transition: opacity 0.25s ease;
+  }
+  .drawer-fade-enter-from,
+  .drawer-fade-leave-to {
+    opacity: 0;
+  }
+
+  .drawer-slide-enter-active,
+  .drawer-slide-leave-active {
+    transition: transform 0.3s ease;
+  }
+  .drawer-slide-enter-from,
+  .drawer-slide-leave-to {
+    transform: translateX(100%);
+  }
+</style>
