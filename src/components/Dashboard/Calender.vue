@@ -1274,7 +1274,22 @@
             </div>
             <div>
               <p class="text-xs text-gray-500">Payment Method</p>
-              <p class="text-sm font-semibold text-gray-900 capitalize">
+              <div
+                v-if="bookingDetails.payment?.paymentBreakdown?.length"
+                class="space-y-0.5"
+              >
+                <p
+                  v-for="(p, i) in bookingDetails.payment.paymentBreakdown"
+                  :key="i"
+                  class="text-sm font-semibold text-gray-900 capitalize"
+                >
+                  {{ p.method }} · ${{ p.amount }}
+                </p>
+              </div>
+              <p
+                v-else
+                class="text-sm font-semibold text-gray-900 capitalize"
+              >
                 {{
                   bookingDetails.payment?.paymentMethod ||
                   bookingDetails.paymentMethod ||
@@ -1509,29 +1524,78 @@
                   <option value="FAILED">FAILED</option>
                 </select>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1"
-                  >Price ($)</label
+            </div>
+
+            <!-- Payment Breakdown -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-semibold text-gray-700">
+                  Payment Breakdown
+                </label>
+                <button
+                  type="button"
+                  @click="addPaymentRow"
+                  class="text-xs font-medium text-[#1a3a35] hover:underline"
                 >
-                <input
-                  v-model.number="editForm.price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
-                />
+                  + Add Method
+                </button>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1"
-                  >Payment Method</label
+              <div class="space-y-2">
+                <div
+                  v-for="(row, index) in editForm.paymentBreakdown"
+                  :key="index"
+                  class="flex items-center gap-2"
                 >
-                <select
-                  v-model="editForm.paymentMethod"
-                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+                  <select
+                    v-model="row.method"
+                    class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+                  >
+                    <option value="local card">Local Card</option>
+                    <option value="local cash">Local Cash</option>
+                  </select>
+                  <div class="relative w-32">
+                    <span
+                      class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"
+                      >$</span
+                    >
+                    <input
+                      v-model.number="row.amount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      class="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    @click="removePaymentRow(index)"
+                    :disabled="editForm.paymentBreakdown.length <= 1"
+                    class="text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed p-1"
+                    title="Remove"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100"
+              >
+                <span class="text-sm font-semibold text-gray-700">Total</span>
+                <span class="text-base font-bold text-gray-900"
+                  >${{ editPaymentTotal }}</span
                 >
-                  <option value="local card">Local Card</option>
-                  <option value="local cash">Local Cash</option>
-                </select>
               </div>
             </div>
             <div>
@@ -2358,6 +2422,7 @@
     userId: "",
     price: 0,
     paymentMethod: "local card",
+    paymentBreakdown: [],
   });
   const editServices = ref([]);
   const editResources = ref([]);
@@ -2384,6 +2449,39 @@
     const s = String(d);
     if (s.includes("T")) return s.split("T")[0];
     return s;
+  }
+
+  // Build the editable payment breakdown from a booking. Falls back to a single
+  // row derived from the legacy single method + amount when no breakdown exists.
+  function buildPaymentBreakdown(v) {
+    const pb = v.payment?.paymentBreakdown;
+    if (Array.isArray(pb) && pb.length) {
+      return pb.map((p) => ({
+        method: p.method || "local card",
+        amount: Number(p.amount) || 0,
+      }));
+    }
+    const amount = v.payment?.amount ?? v.price ?? 0;
+    const method = v.payment?.paymentMethod || v.paymentMethod || "local card";
+    return [{ method, amount: Number(amount) || 0 }];
+  }
+
+  const editPaymentTotal = computed(() =>
+    (editForm.value.paymentBreakdown || []).reduce(
+      (sum, p) => sum + (Number(p.amount) || 0),
+      0,
+    ),
+  );
+
+  function addPaymentRow() {
+    if (!Array.isArray(editForm.value.paymentBreakdown)) {
+      editForm.value.paymentBreakdown = [];
+    }
+    editForm.value.paymentBreakdown.push({ method: "local cash", amount: 0 });
+  }
+
+  function removePaymentRow(index) {
+    editForm.value.paymentBreakdown.splice(index, 1);
   }
 
   async function openAppointmentDetails(apt) {
@@ -2424,6 +2522,7 @@
           price: v.payment?.amount ?? v.price ?? 0,
           paymentMethod:
             v.payment?.paymentMethod || v.paymentMethod || "local card",
+          paymentBreakdown: buildPaymentBreakdown(v),
         };
         if (v.userId && typeof v.userId === "object") {
           editSelectedUser.value = v.userId;
@@ -2528,6 +2627,7 @@
       price: v.payment?.amount ?? v.price ?? 0,
       paymentMethod:
         v.payment?.paymentMethod || v.paymentMethod || "local card",
+      paymentBreakdown: buildPaymentBreakdown(v),
     };
     if (v.userId && typeof v.userId === "object") {
       editSelectedUser.value = v.userId;
@@ -2544,6 +2644,10 @@
     if (!id) return;
     isUpdatingBooking.value = true;
     try {
+      const paymentBreakdown = (editForm.value.paymentBreakdown || [])
+        .filter((p) => p.method && Number(p.amount) > 0)
+        .map((p) => ({ method: p.method, amount: Number(p.amount) }));
+      const totalAmount = paymentBreakdown.reduce((s, p) => s + p.amount, 0);
       const payload = {
         date: editForm.value.date,
         startTime: editForm.value.startTime,
@@ -2555,8 +2659,12 @@
         categoryId: editForm.value.categoryId,
         resourceId: editForm.value.resourceId,
         userId: editForm.value.userId,
-        price: Number(editForm.value.price) || 0,
-        paymentMethod: editForm.value.paymentMethod || "local",
+        price: totalAmount,
+        paymentMethod:
+          paymentBreakdown[0]?.method ||
+          editForm.value.paymentMethod ||
+          "local card",
+        paymentBreakdown,
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
