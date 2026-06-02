@@ -65,34 +65,70 @@
         v-if="summary"
         class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
       >
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <button
+          type="button"
+          @click="selectStatus('active')"
+          :class="[
+            'text-left bg-white rounded-xl shadow-sm border p-4 transition-all hover:shadow-md',
+            statusFilter === 'active'
+              ? 'border-green-500 ring-2 ring-green-200'
+              : 'border-gray-100',
+          ]"
+        >
           <p class="text-xs text-gray-500 uppercase tracking-wider">Active</p>
           <p class="text-2xl font-bold text-green-600 mt-1">
             {{ summary.active }}
           </p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        </button>
+        <button
+          type="button"
+          @click="selectStatus('expired')"
+          :class="[
+            'text-left bg-white rounded-xl shadow-sm border p-4 transition-all hover:shadow-md',
+            statusFilter === 'expired'
+              ? 'border-yellow-500 ring-2 ring-yellow-200'
+              : 'border-gray-100',
+          ]"
+        >
           <p class="text-xs text-gray-500 uppercase tracking-wider">Expired</p>
           <p class="text-2xl font-bold text-yellow-600 mt-1">
             {{ summary.expired }}
           </p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        </button>
+        <button
+          type="button"
+          @click="selectStatus('cancelled')"
+          :class="[
+            'text-left bg-white rounded-xl shadow-sm border p-4 transition-all hover:shadow-md',
+            statusFilter === 'cancelled'
+              ? 'border-red-500 ring-2 ring-red-200'
+              : 'border-gray-100',
+          ]"
+        >
           <p class="text-xs text-gray-500 uppercase tracking-wider">
             Cancelled
           </p>
           <p class="text-2xl font-bold text-red-600 mt-1">
             {{ summary.cancelled }}
           </p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        </button>
+        <button
+          type="button"
+          @click="selectStatus('noTracking')"
+          :class="[
+            'text-left bg-white rounded-xl shadow-sm border p-4 transition-all hover:shadow-md',
+            statusFilter === 'noTracking'
+              ? 'border-gray-500 ring-2 ring-gray-200'
+              : 'border-gray-100',
+          ]"
+        >
           <p class="text-xs text-gray-500 uppercase tracking-wider">
             No Tracking
           </p>
           <p class="text-2xl font-bold text-gray-600 mt-1">
             {{ summary.noTracking }}
           </p>
-        </div>
+        </button>
       </div>
 
       <!-- Subscriptions Table -->
@@ -161,9 +197,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-              <tr
-                v-if="loading"
-              >
+              <tr v-if="loading">
                 <td
                   colspan="11"
                   class="px-6 py-12 text-center text-sm text-gray-500"
@@ -171,9 +205,7 @@
                   Loading subscriptions...
                 </td>
               </tr>
-              <tr
-                v-else-if="errorMessage"
-              >
+              <tr v-else-if="errorMessage">
                 <td
                   colspan="11"
                   class="px-6 py-12 text-center text-sm text-red-500"
@@ -181,9 +213,7 @@
                   {{ errorMessage }}
                 </td>
               </tr>
-              <tr
-                v-else-if="filteredSubscriptions.length === 0"
-              >
+              <tr v-else-if="filteredSubscriptions.length === 0">
                 <td
                   colspan="11"
                   class="px-6 py-12 text-center text-sm text-gray-500"
@@ -345,6 +375,7 @@
   const searchQuery = ref("");
   const subscriptions = ref([]);
   const summary = ref(null);
+  const statusFilter = ref("active");
 
   const page = ref(1);
   const limit = ref(10);
@@ -399,6 +430,7 @@
       const res = await GetMembershipByUsers({
         page: page.value,
         limit: limit.value,
+        status: statusFilter.value,
       });
       if (currentRequestId !== requestId) return;
       applyResponse(res);
@@ -422,7 +454,8 @@
     } catch (err) {
       if (currentRequestId !== requestId) return;
       console.error("Failed to search subscriptions:", err);
-      errorMessage.value = "Something went wrong while searching subscriptions.";
+      errorMessage.value =
+        "Something went wrong while searching subscriptions.";
     } finally {
       if (currentRequestId === requestId) loading.value = false;
     }
@@ -437,10 +470,22 @@
     page.value = 1;
   };
 
+  const selectStatus = (status) => {
+    if (statusFilter.value === status) return;
+    statusFilter.value = status;
+    page.value = 1;
+    // Clear active search so the status filter applies to the paginated list
+    if (isSearching.value || searchQuery.value) {
+      searchQuery.value = "";
+      isSearching.value = false;
+    }
+    fetchSubscriptions();
+  };
+
   const onDeactivate = async (subscription) => {
     if (!subscription?.userId) return;
     const confirmed = window.confirm(
-      `Deactivate membership for ${subscription.name || subscription.email || "this user"}?`
+      `Deactivate membership for ${subscription.name || subscription.email || "this user"}?`,
     );
     if (!confirmed) return;
 
