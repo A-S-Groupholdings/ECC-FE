@@ -37,7 +37,8 @@ export default {
         "secondary":'#ceb46a',
       }, 
       backgroundImage: {
-        "hero-img": "url('/src/assets/Lane-booking.webp')",
+        "hero-img": "url('/src/assets/Lane-booking.png')",
+        "hero-img-mob": "url('/src/assets/Lane-booking-mobile.png')",
         "ecc-img": "url('/src/assets/eccbg.webp')"
 
       },
