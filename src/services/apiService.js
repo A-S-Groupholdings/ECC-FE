@@ -784,10 +784,12 @@ export const AdminLogin = async (email, otp) => {
 
 
   // GetMembershipByUsers (paginated)
-  export const GetMembershipByUsers = async ({ page = 1, limit = 10 } = {}) => {
+  export const GetMembershipByUsers = async ({ page = 1, limit = 10, status } = {}) => {
     try {
+      const params = { page, limit };
+      if (status) params.status = status;
       const { data } = await apiService.get('/memberships/membershipByUsers', {
-        params: { page, limit },
+        params,
       });
       return data;
     } catch (error) {
