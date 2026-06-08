@@ -877,6 +877,21 @@ export const AdminLogin = async (email, otp) => {
   };
 
 
+  // SubscribeNewsletter: POST /services/newsletter
+  export const SubscribeNewsletter = async (payload) => {
+    try {
+      const response = await apiService.post('/services/newsletter', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+
 
 
 export default apiService;

@@ -134,18 +134,45 @@
           <h4 class="text-white font-bold tracking-wider mb-6">
             NEWSLETTER SIGNUP
           </h4>
-          <div class="flex justify-center md:justify-start">
-            <input
-              type="email"
-              placeholder="Email Address"
-              class="flex-1 bg-primary text-white px-4 py-3 text-sm placeholder-gray-400 focus:outline-none rounded-l-lg border-l border-t border-b"
-            />
-            <button
-              class="bg-secondary text-[#0f1f2a] px-6 py-3 font-semibold text-sm tracking-wider hover:bg-[#d4b972] transition-colors rounded-r-lg border-r border-t border-b"
-            >
-              SUBSCRIBE
-            </button>
-          </div>
+          <form
+            @submit.prevent="handleSubscribe"
+            class="flex flex-col gap-2"
+          >
+            <div class="flex justify-center md:justify-start">
+              <input
+                v-model="email"
+                type="email"
+                placeholder="Email Address"
+                :disabled="loading"
+                required
+                class="flex-1 min-w-0 bg-primary text-white px-4 py-3 text-sm placeholder-gray-400 focus:outline-none rounded-l-lg border-l border-t border-b border-gray-600 disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                :disabled="loading"
+                class="bg-secondary text-[#0f1f2a] px-6 py-3 font-semibold text-sm tracking-wider hover:bg-[#d4b972] transition-colors rounded-r-lg border-r border-t border-b border-secondary disabled:opacity-50 flex items-center justify-center min-w-[110px]"
+              >
+                <span v-if="loading">...</span>
+                <span v-else>SUBSCRIBE</span>
+              </button>
+            </div>
+
+            <!-- Feedback Messages -->
+            <transition name="fade">
+              <p
+                v-if="success"
+                class="text-green-400 text-xs mt-1 font-medium"
+              >
+                Successfully subscribed to newsletter!
+              </p>
+              <p
+                v-else-if="error"
+                class="text-red-400 text-xs mt-1 font-medium"
+              >
+                {{ error }}
+              </p>
+            </transition>
+          </form>
         </div>
       </div>
     </div>
@@ -184,6 +211,54 @@
 </template>
 
 <script setup>
+  import { ref } from "vue";
+  import { SubscribeNewsletter } from "@/services/apiService.js";
+
+  const email = ref("");
+  const loading = ref(false);
+  const success = ref(false);
+  const error = ref("");
+
+  const handleSubscribe = async () => {
+    if (!email.value || !email.value.trim()) {
+      error.value = "Please enter a valid email address.";
+      return;
+    }
+
+    loading.value = true;
+    error.value = "";
+    success.value = false;
+
+    try {
+      const payload = {
+        email: email.value.trim(),
+        subject: "NEWSLETTER - ELITE CRICKET CENTRE",
+        heading: "NEWSLETTER",
+        message: "Hi there,\n\nThank you for subscribing to our newsletter!",
+      };
+
+      const res = await SubscribeNewsletter(payload);
+      if (res?.isSuccess) {
+        success.value = true;
+        email.value = "";
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          success.value = false;
+        }, 5000);
+      } else {
+        error.value =
+          res?.userMessage || res?.errorMessage || "Failed to subscribe.";
+      }
+    } catch (err) {
+      console.error("Newsletter subscription failed:", err);
+      error.value =
+        err.response?.data?.userMessage ||
+        "Something went wrong. Please try again.";
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
