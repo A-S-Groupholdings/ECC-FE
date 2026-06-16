@@ -2204,11 +2204,11 @@
     });
     if (minStart >= maxEnd) {
       // Fallback range when no schedule found
-      return { startHour: 9, endHour: 22 };
+      return { startHour: 8, endHour: 22 };
     }
     return {
-      startHour: Math.floor(minStart / 60),
-      endHour: Math.ceil(maxEnd / 60),
+      startHour: Math.min(8, Math.floor(minStart / 60)),
+      endHour: Math.max(22, Math.ceil(maxEnd / 60)),
     };
   });
 
