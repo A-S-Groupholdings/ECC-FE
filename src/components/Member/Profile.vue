@@ -136,18 +136,7 @@
                 </p>
                 <p class="text-white font-semibold">{{ user.memberSince }}</p>
               </div>
-              <div class="text-center sm:text-left">
-                <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Last Booking
-                </p>
-                <p class="text-white font-semibold">{{ user.lastBooking }}</p>
-              </div>
-              <div class="text-center sm:text-left">
-                <p class="text-white/60 text-xs uppercase tracking-wider">
-                  Total Bookings
-                </p>
-                <p class="text-white font-semibold">{{ user.totalBookings }}</p>
-              </div>
+              <!-- membership start date end date -->
               <div class="text-center sm:text-left">
                 <p class="text-white/60 text-xs uppercase tracking-wider">
                   Membership
@@ -174,6 +163,29 @@
                     </svg>
                     Buy
                   </router-link>
+                </p>
+              </div>
+              <!-- membership start date end date -->
+              <div
+                v-if="user.membershipStartDate"
+                class="text-center sm:text-left"
+              >
+                <p class="text-white/60 text-xs uppercase tracking-wider">
+                  Membership Start
+                </p>
+                <p class="text-white font-semibold">
+                  {{ user.membershipStartDate }}
+                </p>
+              </div>
+              <div
+                v-if="user.membershipEndDate"
+                class="text-center sm:text-left"
+              >
+                <p class="text-white/60 text-xs uppercase tracking-wider">
+                  Membership End
+                </p>
+                <p class="text-white font-semibold">
+                  {{ user.membershipEndDate }}
                 </p>
               </div>
             </div>
@@ -1167,6 +1179,8 @@
     membershipId: null,
     _id: "",
     categoryName: "",
+    membershipStartDate: "",
+    membershipEndDate: "",
   });
 
   const userInitials = computed(() => {
@@ -1216,6 +1230,18 @@
                 month: "short",
                 day: "numeric",
               })
+            : "",
+          membershipStartDate: data.membershipTracking?.startDate
+            ? new Date(data.membershipTracking.startDate).toLocaleDateString(
+                "en-US",
+                { year: "numeric", month: "short", day: "numeric" },
+              )
+            : "",
+          membershipEndDate: data.membershipTracking?.endDate
+            ? new Date(data.membershipTracking.endDate).toLocaleDateString(
+                "en-US",
+                { year: "numeric", month: "short", day: "numeric" },
+              )
             : "",
         };
 
