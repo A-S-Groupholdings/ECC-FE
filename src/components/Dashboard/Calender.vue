@@ -338,8 +338,27 @@
                   :class="[
                     'absolute rounded-md border-l-4 p-1 text-[10px] shadow-sm cursor-pointer hover:shadow-md transition-all hover:z-40 group',
                     getBookingBlockColor(apt),
+                    apt.noteHighlight
+                      ? 'ring-2 ring-amber-400 ring-offset-1 ring-offset-white shadow-md shadow-amber-300/60'
+                      : '',
                   ]"
                 >
+                  <!-- Highlighted note indicator -->
+                  <span
+                    v-if="apt.noteHighlight"
+                    class="absolute -top-1.5 -right-1.5 z-10 flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 text-white shadow ring-2 ring-white pointer-events-none"
+                    title="Highlighted note"
+                  >
+                    <svg
+                      class="w-2.5 h-2.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 00-.363-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"
+                      />
+                    </svg>
+                  </span>
                   <!-- Text content wrapper with clipping if the block is small -->
                   <div
                     class="w-full h-full overflow-hidden pointer-events-none"
@@ -349,6 +368,12 @@
                       }}<span v-if="apt.endTime">
                         - {{ formatTime12(apt.endTime) }}</span
                       >
+                    </p>
+                    <p
+                      v-if="apt.noteHighlight && apt.note"
+                      class="text-amber-800 font-semibold truncate bg-amber-200/60 rounded px-1 mt-0.5"
+                    >
+                      {{ apt.note }}
                     </p>
                     <p
                       v-if="apt.resourceName && apt.resourceName !== '-'"
@@ -438,6 +463,42 @@
                         >
                           {{ apt.status }}
                         </span>
+                      </div>
+
+                      <!-- Note (near top) -->
+                      <div
+                        v-if="apt.note"
+                        :class="[
+                          'rounded-md p-2 mb-2 text-left border',
+                          apt.noteHighlight
+                            ? 'bg-amber-400/15 border-amber-400/40'
+                            : 'bg-gray-800/50 border-gray-800',
+                        ]"
+                      >
+                        <div class="flex items-center gap-1.5 mb-0.5">
+                          <svg
+                            v-if="apt.noteHighlight"
+                            class="w-3 h-3 text-amber-400 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 00-.363-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"
+                            />
+                          </svg>
+                          <span
+                            :class="[
+                              'block text-[9px] uppercase tracking-wider font-semibold',
+                              apt.noteHighlight
+                                ? 'text-amber-400'
+                                : 'text-gray-400',
+                            ]"
+                            >Note</span
+                          >
+                        </div>
+                        <p class="text-white text-[11px] leading-snug">
+                          {{ apt.note }}
+                        </p>
                       </div>
 
                       <!-- Service & Resource -->
@@ -666,7 +727,6 @@
   <div
     v-if="showNewAppointmentModal"
     class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    @click="closeNewAppointmentModal"
   >
     <div
       class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
@@ -1032,6 +1092,32 @@
             placeholder="Add any notes for this appointment..."
             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] resize-none"
           ></textarea>
+          <label
+            class="mt-3 flex items-center gap-3 cursor-pointer select-none w-fit"
+          >
+            <input
+              v-model="bookingForm.noteHighlight"
+              type="checkbox"
+              class="peer sr-only"
+            />
+            <span
+              class="relative w-11 h-6 rounded-full bg-gray-200 transition-colors peer-checked:bg-amber-400 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:shadow after:transition-transform peer-checked:after:translate-x-5"
+            ></span>
+            <span
+              class="flex items-center gap-1.5 text-sm font-medium text-gray-700"
+            >
+              <svg
+                class="w-4 h-4 text-amber-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 00-.363-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"
+                />
+              </svg>
+              Highlight this note on calendar
+            </span>
+          </label>
         </div>
       </div>
 
@@ -1077,7 +1163,6 @@
   <div
     v-if="showDetailsModal"
     class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-    @click="closeDetailsModal"
   >
     <div
       class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -1298,8 +1383,32 @@
               </p>
             </div>
             <div class="col-span-2">
-              <p class="text-xs text-gray-500">Note</p>
-              <p class="text-sm text-gray-700">
+              <p class="text-xs text-gray-500 flex items-center gap-1">
+                Note
+                <span
+                  v-if="bookingDetails.noteHighlight"
+                  class="inline-flex items-center gap-1 text-amber-600 font-semibold"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 00-.363-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"
+                    />
+                  </svg>
+                  Highlighted
+                </span>
+              </p>
+              <p
+                :class="[
+                  'text-sm',
+                  bookingDetails.noteHighlight
+                    ? 'text-amber-800 font-medium bg-amber-100 border border-amber-200 rounded-md px-2 py-1 mt-1'
+                    : 'text-gray-700',
+                ]"
+              >
                 {{ bookingDetails.note || "-" }}
               </p>
             </div>
@@ -1607,6 +1716,32 @@
                 rows="3"
                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
               ></textarea>
+              <label
+                class="mt-3 flex items-center gap-3 cursor-pointer select-none w-fit"
+              >
+                <input
+                  v-model="editForm.noteHighlight"
+                  type="checkbox"
+                  class="peer sr-only"
+                />
+                <span
+                  class="relative w-11 h-6 rounded-full bg-gray-200 transition-colors peer-checked:bg-amber-400 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:shadow after:transition-transform peer-checked:after:translate-x-5"
+                ></span>
+                <span
+                  class="flex items-center gap-1.5 text-sm font-medium text-gray-700"
+                >
+                  <svg
+                    class="w-4 h-4 text-amber-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.784.57-1.838-.196-1.539-1.118l1.286-3.957a1 1 0 00-.363-1.118L2.075 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"
+                    />
+                  </svg>
+                  Highlight this note on calendar
+                </span>
+              </label>
             </div>
           </div>
         </div>
@@ -1712,7 +1847,6 @@
   <div
     v-if="showSuccessPopup"
     class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
-    @click="closeSuccessPopup"
   >
     <div
       class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center"
@@ -2032,6 +2166,8 @@
       paymentStatus: booking.paymentStatus || "",
       amount: booking.amount !== undefined ? booking.amount : 0,
       paymentMethod: booking.paymentMethod || "local",
+      note: booking.note || "",
+      noteHighlight: booking.noteHighlight || false,
       user: booking.user || null,
       rawBooking: booking,
     };
@@ -2423,6 +2559,7 @@
     price: 0,
     paymentMethod: "local card",
     paymentBreakdown: [],
+    noteHighlight: false,
   });
   const editServices = ref([]);
   const editResources = ref([]);
@@ -2523,6 +2660,7 @@
           paymentMethod:
             v.payment?.paymentMethod || v.paymentMethod || "local card",
           paymentBreakdown: buildPaymentBreakdown(v),
+          noteHighlight: v.noteHighlight || false,
         };
         if (v.userId && typeof v.userId === "object") {
           editSelectedUser.value = v.userId;
@@ -2628,6 +2766,7 @@
       paymentMethod:
         v.payment?.paymentMethod || v.paymentMethod || "local card",
       paymentBreakdown: buildPaymentBreakdown(v),
+      noteHighlight: v.noteHighlight || false,
     };
     if (v.userId && typeof v.userId === "object") {
       editSelectedUser.value = v.userId;
@@ -2665,6 +2804,7 @@
           editForm.value.paymentMethod ||
           "local card",
         paymentBreakdown,
+        noteHighlight: editForm.value.noteHighlight || false,
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
@@ -2721,6 +2861,7 @@
     startTime: "",
     note: "",
     paymentMethod: "local card",
+    noteHighlight: false,
   });
   const customDurationMinutes = ref(0);
   const customPrice = ref(0);
@@ -2773,6 +2914,7 @@
       startTime: "",
       note: "",
       paymentMethod: "local card",
+      noteHighlight: false,
     };
     availableSlots.value = [];
     customDurationMinutes.value = 0;
@@ -2984,6 +3126,7 @@
         price: customPrice.value || calculatePrice(),
         note: bookingForm.value.note || "",
         paymentMethod: bookingForm.value.paymentMethod || "local",
+        noteHighlight: bookingForm.value.noteHighlight || false,
       };
       const response = await CreateBookingDashboard(payload);
       if (response.isSuccess) {
