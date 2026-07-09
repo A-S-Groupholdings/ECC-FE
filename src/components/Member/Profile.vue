@@ -119,6 +119,7 @@
               >
                 <h1 class="text-2xl font-bold text-white">{{ user.name }}</h1>
                 <span
+                  v-if="hasMembership"
                   class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
                 >
                   <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
@@ -438,7 +439,6 @@
                   <select
                     class="bg-white border border-r-0 border-gray-200 rounded-l-lg px-4 py-3 text-gray-700 focus:outline-none"
                   >
-                    <option>🇱🇰 +94</option>
                     <option>🇦🇺 +61</option>
                   </select>
                   <input
