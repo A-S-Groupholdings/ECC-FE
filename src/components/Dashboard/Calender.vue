@@ -122,6 +122,30 @@
             {{ view.label }}
           </button>
         </div>
+
+        <!-- Refresh Button -->
+        <button
+          @click="refreshCalendarData(0)"
+          :disabled="isRefreshing"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 font-medium disabled:opacity-50"
+          title="Refresh calendar"
+        >
+          <svg
+            class="w-4 h-4"
+            :class="isRefreshing ? 'animate-spin' : ''"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          {{ isRefreshing ? "Refreshing..." : "Refresh" }}
+        </button>
       </div>
 
       <!-- MONTH VIEW -->
@@ -2197,6 +2221,7 @@
       const payload = {
         view: currentView.value,
         date: dateStr,
+        _t: Date.now(),
       };
       if (selectedResource.value !== "all") {
         payload.resourceId = selectedResource.value;
@@ -2220,6 +2245,15 @@
     } finally {
       isLoadingCalendar.value = false;
     }
+  }
+
+  const isRefreshing = ref(false);
+
+  async function refreshCalendarData(delay = 500) {
+    isRefreshing.value = true;
+    if (delay > 0) await new Promise((r) => setTimeout(r, delay));
+    await fetchCalendarData();
+    isRefreshing.value = false;
   }
 
   function getAppointmentsForDay(day) {
@@ -2477,17 +2511,21 @@
     if (apt.status === "Cancelled") {
       return "bg-red-100/80 border-red-500";
     }
+    // Priority 3: Null/missing amount (Online Block Card color) (coral #F88379)
+    if (apt.amount == null || apt.amount === "" || apt.amount === 0) {
+      return "bg-[#F88379]/20 border-[#F88379]";
+    }
     const isMember = apt.categoryName === "Member";
     const isPaid = apt.paymentStatus === "PAID";
-    // Priority 3: Paid Member (orange)
+    // Priority 4: Paid Member (orange)
     if (isMember && isPaid) {
       return "bg-orange-100/90 border-orange-500";
     }
-    // Priority 4: Unpaid Member (yellow)
+    // Priority 5: Unpaid Member (yellow)
     if (isMember) {
       return "bg-yellow-100/90 border-yellow-500";
     }
-    // Priority 5: Paid non-member (green)
+    // Priority 6: Paid non-member (green)
     if (isPaid) {
       return "bg-green-100/90 border-green-500";
     }
@@ -2809,7 +2847,7 @@
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
         showDetailsModal.value = false;
-        fetchCalendarData();
+        refreshCalendarData();
       } else {
         errorMessage.value =
           response.userMessage ||
@@ -2838,7 +2876,7 @@
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
         bookingDetails.value[field] = value;
-        fetchCalendarData();
+        refreshCalendarData();
       } else {
         errorMessage.value =
           response.userMessage || response.errorMessage || "Failed to update.";
@@ -3132,7 +3170,7 @@
       if (response.isSuccess) {
         isCreatingBooking.value = false;
         closeNewAppointmentModal();
-        fetchCalendarData();
+        refreshCalendarData();
       } else {
         errorMessage.value =
           response.userMessage ||
@@ -3175,16 +3213,24 @@
   }
 
   // ─── Fetch data on mount and when dependencies change ────────────────────────
+  function handleVisibilityChange() {
+    if (!document.hidden) {
+      refreshCalendarData(0);
+    }
+  }
+
   onMounted(() => {
     fetchResources();
     fetchCalendarData();
     nowInterval = setInterval(() => {
       nowTick.value = Date.now();
     }, 60 * 1000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
   });
 
   onBeforeUnmount(() => {
     if (nowInterval) clearInterval(nowInterval);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
   });
 
   watch(
