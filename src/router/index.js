@@ -177,7 +177,7 @@ const router = createRouter({
         title: "Elite Cricket Centre - Payment", requiresMember: true}
     },
     {
-      path: "/ecc/member/profile",
+      path: "/member/profile",
       name: "memberprofile",
       component: MemberProfileView,
       meta: {
