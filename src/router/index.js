@@ -18,7 +18,7 @@ import MembershipRegister from "../views/Landing/MembershipRegister.vue";
 import MemberPayment from "../views/Dashboard/MemberPaymentView.vue";
 import BookingCancel from "../views/Landing/BookingCancelView.vue";
 import BookingSuccess from "../views/Landing/BookingSuccessView.vue";
-import MemberProfileView from "../views/Member/MemberProfileView.vue";
+import MemberProfileView from "../views/Member/NewMemberProfile.vue";
 import AdminOtp from "../views/Dashboard/AdminOtp.vue";
 import MemberOtp from "../views/Member/MemberOTP.vue";
 import MemberRegisterView from "../views/Member/MemberRegisterView.vue";
@@ -177,7 +177,7 @@ const router = createRouter({
         title: "Elite Cricket Centre - Payment", requiresMember: true}
     },
     {
-      path: "/ecc/profile",
+      path: "/ecc/member/profile",
       name: "memberprofile",
       component: MemberProfileView,
       meta: {

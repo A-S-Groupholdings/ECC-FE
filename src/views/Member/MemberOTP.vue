@@ -233,10 +233,10 @@
           authStore.setTokens(data.accessToken, data.refreshToken);
 
           // Redirect to member profile
-          router.push("/ecc/profile");
+          router.push("/ecc/member/profile");
         } else {
           // Default redirect if no user data
-          router.push("/ecc/profile");
+          router.push("/ecc/member/profile");
         }
       } else {
         errorMessage.value =

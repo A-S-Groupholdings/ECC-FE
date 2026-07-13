@@ -22,7 +22,9 @@
         </div>
       </div>
       <!-- main-menu -->
-      <div class="main-menu flex items-center space-x-6 font-montserrat text-[19px] font-light">
+      <div
+        class="main-menu flex items-center space-x-6 font-montserrat text-[19px] font-light"
+      >
         <a
           href="/"
           class="text-white hover:text-secondary transition-colors duration-200"
@@ -132,18 +134,20 @@
     if (!isLoggedIn.value) {
       return "/member/login";
     }
-    return userCategory.value === "Coach" ? "/coach/profile" : "/ecc/profile";
+    return userCategory.value === "Coach"
+      ? "/coach/profile"
+      : "/ecc/member/profile";
   });
 </script>
 
 <style scoped>
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
+  .dropdown-enter-active,
+  .dropdown-leave-active {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .dropdown-enter-from,
+  .dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 </style>
