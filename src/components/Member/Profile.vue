@@ -124,10 +124,17 @@
                     'px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1',
                     user.membershipStatus === 'on_hold'
                       ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-green-500/20 text-green-400'
+                      : 'bg-green-500/20 text-green-400',
                   ]"
                 >
-                  <span :class="['w-1.5 h-1.5 rounded-full', user.membershipStatus === 'on_hold' ? 'bg-yellow-400' : 'bg-green-400']"></span>
+                  <span
+                    :class="[
+                      'w-1.5 h-1.5 rounded-full',
+                      user.membershipStatus === 'on_hold'
+                        ? 'bg-yellow-400'
+                        : 'bg-green-400',
+                    ]"
+                  ></span>
                   {{ user.subscriptionStatus }}
                 </span>
               </div>
@@ -202,7 +209,7 @@
                   Days Remaining
                 </p>
                 <p class="text-white font-semibold">
-                  {{ daysRemaining }} {{ daysRemaining === 1 ? 'day' : 'days' }}
+                  {{ daysRemaining }} {{ daysRemaining === 1 ? "day" : "days" }}
                 </p>
               </div>
             </div>
@@ -478,7 +485,10 @@
                 <div class="flex flex-wrap gap-3">
                   <!-- Hold Button -->
                   <button
-                    v-if="user.stripeSubscriptionId && user.membershipStatus !== 'on_hold'"
+                    v-if="
+                      user.stripeSubscriptionId &&
+                      user.membershipStatus !== 'on_hold'
+                    "
                     @click="handleHoldSubscription"
                     class="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm cursor-pointer"
                   >
@@ -486,7 +496,10 @@
                   </button>
                   <!-- Resume Button -->
                   <button
-                    v-if="user.stripeSubscriptionId && user.membershipStatus === 'on_hold'"
+                    v-if="
+                      user.stripeSubscriptionId &&
+                      user.membershipStatus === 'on_hold'
+                    "
                     @click="handleResumeSubscription"
                     class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm cursor-pointer"
                   >
@@ -504,7 +517,7 @@
                     @click="fetchProfile"
                     class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
-                    Cancel
+                    Exit
                   </button>
                   <button
                     @click="saveProfile"
@@ -1159,14 +1172,29 @@
       >
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
           <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div
+              class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-7 h-7 text-orange-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Hold Subscription?</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">
+              Hold Subscription?
+            </h3>
             <p class="text-gray-500 text-sm">
-              This will temporarily pause your billing collection and place your membership on hold starting from today.
+              This will temporarily pause your billing collection and place your
+              membership on hold starting from today.
             </p>
           </div>
 
@@ -1182,8 +1210,19 @@
               :disabled="isHolding"
               class="flex-1 px-4 py-3 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <svg v-if="isHolding" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                v-if="isHolding"
+                class="w-4 h-4 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               {{ isHolding ? "Holding..." : "Confirm Hold" }}
             </button>
@@ -1198,15 +1237,35 @@
       >
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
           <div class="text-center mb-6">
-            <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div
+              class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-7 h-7 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Resume Subscription?</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">
+              Resume Subscription?
+            </h3>
             <p class="text-gray-500 text-sm">
-              This will resume your billing collection and restore your membership access starting from today.
+              This will resume your billing collection and restore your
+              membership access starting from today.
             </p>
           </div>
 
@@ -1222,8 +1281,19 @@
               :disabled="isResuming"
               class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              <svg v-if="isResuming" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              <svg
+                v-if="isResuming"
+                class="w-4 h-4 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               {{ isResuming ? "Resuming..." : "Confirm Resume" }}
             </button>
@@ -1236,14 +1306,30 @@
         v-if="showHoldSuccessModal"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       >
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        <div
+          class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        >
           <div class="p-8 text-center">
-            <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div
+              class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <svg
+                class="w-10 h-10 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">Subscription Held!</h3>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">
+              Subscription Held!
+            </h3>
             <p class="text-gray-600 mb-6">
               Your subscription has been placed on hold successfully.
             </p>
@@ -1262,14 +1348,30 @@
         v-if="showResumeSuccessModal"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       >
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        <div
+          class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        >
           <div class="p-8 text-center">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div
+              class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <svg
+                class="w-10 h-10 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">Subscription Resumed!</h3>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">
+              Subscription Resumed!
+            </h3>
             <p class="text-gray-600 mb-6">
               Your subscription has been resumed successfully.
             </p>
@@ -1282,7 +1384,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -1370,7 +1471,11 @@
   });
 
   const daysRemaining = computed(() => {
-    if (user.value.membershipStatus === "on_hold" && user.value.remainingDays !== null && user.value.remainingDays !== undefined) {
+    if (
+      user.value.membershipStatus === "on_hold" &&
+      user.value.remainingDays !== null &&
+      user.value.remainingDays !== undefined
+    ) {
       return user.value.remainingDays;
     }
     if (!user.value.membershipEndDate) return null;
@@ -1400,9 +1505,12 @@
           lastName: nameParts.slice(1).join(" ") || "",
           email: data.email || "",
           phone: data.phoneNumber || "",
-          subscriptionStatus: data.membershipTracking?.status === "on_hold" 
-            ? "On Hold" 
-            : (data.isActive ? "Active" : "Inactive"),
+          subscriptionStatus:
+            data.membershipTracking?.status === "on_hold"
+              ? "On Hold"
+              : data.isActive
+                ? "Active"
+                : "Inactive",
           memberSince: data.createdAt
             ? new Date(data.createdAt).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -1435,7 +1543,8 @@
               )
             : "",
           membershipStatus: data.membershipTracking?.status || "",
-          stripeSubscriptionId: data.membershipTracking?.stripeSubscriptionId || null,
+          stripeSubscriptionId:
+            data.membershipTracking?.stripeSubscriptionId || null,
           remainingDays: data.membershipTracking?.remainingDays ?? null,
         };
 
@@ -1607,13 +1716,16 @@
         showHoldSuccessModal.value = true;
         await fetchProfile();
       } else {
-        alert(response.userMessage || "Failed to hold subscription. Please try again.");
+        alert(
+          response.userMessage ||
+            "Failed to hold subscription. Please try again.",
+        );
       }
     } catch (error) {
       console.error("[HOLD SUBSCRIPTION] Error:", error);
       alert(
         error.response?.data?.userMessage ||
-          "Failed to hold subscription. Please try again."
+          "Failed to hold subscription. Please try again.",
       );
     } finally {
       isHolding.value = false;
@@ -1645,13 +1757,16 @@
         showResumeSuccessModal.value = true;
         await fetchProfile();
       } else {
-        alert(response.userMessage || "Failed to resume subscription. Please try again.");
+        alert(
+          response.userMessage ||
+            "Failed to resume subscription. Please try again.",
+        );
       }
     } catch (error) {
       console.error("[RESUME SUBSCRIPTION] Error:", error);
       alert(
         error.response?.data?.userMessage ||
-          "Failed to resume subscription. Please try again."
+          "Failed to resume subscription. Please try again.",
       );
     } finally {
       isResuming.value = false;
