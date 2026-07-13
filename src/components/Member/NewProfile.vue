@@ -492,7 +492,7 @@
                     @click="handleHoldSubscription"
                     class="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm cursor-pointer"
                   >
-                    New Hold Subscription
+                    Hold Subscription
                   </button>
                   <!-- Resume Button -->
                   <button
@@ -503,7 +503,7 @@
                     @click="handleResumeSubscription"
                     class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm cursor-pointer"
                   >
-                    New Resume Subscription
+                    Resume Subscription
                   </button>
                   <button
                     @click="openDeleteModal"
