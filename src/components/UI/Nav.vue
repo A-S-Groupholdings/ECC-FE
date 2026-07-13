@@ -136,7 +136,7 @@
     }
     return userCategory.value === "Coach"
       ? "/coach/profile"
-      : "/ecc/member/profile";
+      : "/member/profile";
   });
 </script>
 
