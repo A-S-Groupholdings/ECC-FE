@@ -216,7 +216,9 @@
     if (!isLoggedIn.value) {
       return "/member/login"; // Redirect to login if not logged in
     }
-    return userRole.value === "coach" ? "/coach/profile" : "/ecc/profile";
+    return userRole.value === "coach"
+      ? "/coach/profile"
+      : "/ecc/member/profile";
   });
 
   function toggleMenu() {
