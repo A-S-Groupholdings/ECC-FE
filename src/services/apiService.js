@@ -894,6 +894,34 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // Hold Subscription
+  export const HoldSubscription = async (payload) => {
+    try {
+      const response = await apiService.post('/stripe/hold-subscription', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error holding subscription:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // Resume Subscription
+  export const ResumeSubscription = async (payload) => {
+    try {
+      const response = await apiService.post('/stripe/resume-subscription', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error resuming subscription:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 
 
 

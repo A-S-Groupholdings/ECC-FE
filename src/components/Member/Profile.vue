@@ -120,9 +120,14 @@
                 <h1 class="text-2xl font-bold text-white">{{ user.name }}</h1>
                 <span
                   v-if="hasMembership"
-                  class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                  :class="[
+                    'px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1',
+                    user.membershipStatus === 'on_hold'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-green-500/20 text-green-400'
+                  ]"
                 >
-                  <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                  <span :class="['w-1.5 h-1.5 rounded-full', user.membershipStatus === 'on_hold' ? 'bg-yellow-400' : 'bg-green-400']"></span>
                   {{ user.subscriptionStatus }}
                 </span>
               </div>
@@ -187,6 +192,17 @@
                 </p>
                 <p class="text-white font-semibold">
                   {{ user.membershipEndDate }}
+                </p>
+              </div>
+              <div
+                v-if="daysRemaining !== null"
+                class="text-center sm:text-left"
+              >
+                <p class="text-white/60 text-xs uppercase tracking-wider">
+                  Days Remaining
+                </p>
+                <p class="text-white font-semibold">
+                  {{ daysRemaining }} {{ daysRemaining === 1 ? 'day' : 'days' }}
                 </p>
               </div>
             </div>
@@ -459,12 +475,30 @@
 
               <!-- Action Buttons -->
               <div class="flex flex-col sm:flex-row justify-between gap-3 pt-4">
-                <button
-                  @click="openDeleteModal"
-                  class="px-6 py-3 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
-                >
-                  Delete Account
-                </button>
+                <div class="flex flex-wrap gap-3">
+                  <!-- Hold Button -->
+                  <button
+                    v-if="user.stripeSubscriptionId && user.membershipStatus !== 'on_hold'"
+                    @click="handleHoldSubscription"
+                    class="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors shadow-sm cursor-pointer"
+                  >
+                    Hold Subscription
+                  </button>
+                  <!-- Resume Button -->
+                  <button
+                    v-if="user.stripeSubscriptionId && user.membershipStatus === 'on_hold'"
+                    @click="handleResumeSubscription"
+                    class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm cursor-pointer"
+                  >
+                    Resume Subscription
+                  </button>
+                  <button
+                    @click="openDeleteModal"
+                    class="px-6 py-3 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                  >
+                    Delete Account
+                  </button>
+                </div>
                 <div class="flex gap-3">
                   <button
                     @click="fetchProfile"
@@ -1117,6 +1151,138 @@
           </div>
         </div>
       </div>
+
+      <!-- Hold Confirmation Modal -->
+      <div
+        v-if="showHoldConfirmModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+          <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Hold Subscription?</h3>
+            <p class="text-gray-500 text-sm">
+              This will temporarily pause your billing collection and place your membership on hold starting from today.
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="showHoldConfirmModal = false"
+              class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmHoldSubscription"
+              :disabled="isHolding"
+              class="flex-1 px-4 py-3 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <svg v-if="isHolding" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {{ isHolding ? "Holding..." : "Confirm Hold" }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resume Confirmation Modal -->
+      <div
+        v-if="showResumeConfirmModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+          <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Resume Subscription?</h3>
+            <p class="text-gray-500 text-sm">
+              This will resume your billing collection and restore your membership access starting from today.
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="showResumeConfirmModal = false"
+              class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmResumeSubscription"
+              :disabled="isResuming"
+              class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <svg v-if="isResuming" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {{ isResuming ? "Resuming..." : "Confirm Resume" }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hold Success Modal -->
+      <div
+        v-if="showHoldSuccessModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+          <div class="p-8 text-center">
+            <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Subscription Held!</h3>
+            <p class="text-gray-600 mb-6">
+              Your subscription has been placed on hold successfully.
+            </p>
+            <button
+              @click="showHoldSuccessModal = false"
+              class="w-full px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resume Success Modal -->
+      <div
+        v-if="showResumeSuccessModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      >
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+          <div class="p-8 text-center">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Subscription Resumed!</h3>
+            <p class="text-gray-600 mb-6">
+              Your subscription has been resumed successfully.
+            </p>
+            <button
+              @click="showResumeSuccessModal = false"
+              class="w-full px-6 py-3 bg-[#1a3a35] text-white rounded-lg font-medium hover:bg-[#2a4a45] transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -1132,6 +1298,8 @@
     CancelMembership,
     GetBookingHistory,
     GetPaymentHistory,
+    HoldSubscription,
+    ResumeSubscription,
   } from "@/services/apiService.js";
 
   const router = useRouter();
@@ -1144,6 +1312,10 @@
   const showDeleteModal = ref(false);
   const showCancellationModal = ref(false);
   const showSuccessModal = ref(false);
+  const showHoldConfirmModal = ref(false);
+  const showResumeConfirmModal = ref(false);
+  const showHoldSuccessModal = ref(false);
+  const showResumeSuccessModal = ref(false);
   const updateError = ref("");
   const deleteError = ref("");
 
@@ -1181,6 +1353,9 @@
     categoryName: "",
     membershipStartDate: "",
     membershipEndDate: "",
+    membershipStatus: "",
+    stripeSubscriptionId: null,
+    remainingDays: null,
   });
 
   const userInitials = computed(() => {
@@ -1192,6 +1367,20 @@
 
   const hasMembership = computed(() => {
     return !!user.value.membershipId;
+  });
+
+  const daysRemaining = computed(() => {
+    if (user.value.membershipStatus === "on_hold" && user.value.remainingDays !== null && user.value.remainingDays !== undefined) {
+      return user.value.remainingDays;
+    }
+    if (!user.value.membershipEndDate) return null;
+    const end = new Date(user.value.membershipEndDate);
+    const today = new Date();
+    end.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
   });
 
   async function fetchProfile() {
@@ -1211,7 +1400,9 @@
           lastName: nameParts.slice(1).join(" ") || "",
           email: data.email || "",
           phone: data.phoneNumber || "",
-          subscriptionStatus: data.isActive ? "Active" : "Inactive",
+          subscriptionStatus: data.membershipTracking?.status === "on_hold" 
+            ? "On Hold" 
+            : (data.isActive ? "Active" : "Inactive"),
           memberSince: data.createdAt
             ? new Date(data.createdAt).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -1243,6 +1434,9 @@
                 { year: "numeric", month: "short", day: "numeric" },
               )
             : "",
+          membershipStatus: data.membershipTracking?.status || "",
+          stripeSubscriptionId: data.membershipTracking?.stripeSubscriptionId || null,
+          remainingDays: data.membershipTracking?.remainingDays ?? null,
         };
 
         // Fetch booking history and payment history after user data is loaded
@@ -1382,6 +1576,85 @@
       console.error("Delete error:", error);
     } finally {
       isDeleting.value = false;
+    }
+  }
+
+  const isHolding = ref(false);
+  const isResuming = ref(false);
+
+  function handleHoldSubscription() {
+    if (!user.value.stripeSubscriptionId) return;
+    showHoldConfirmModal.value = true;
+  }
+
+  async function confirmHoldSubscription() {
+    isHolding.value = true;
+    try {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const holdDateStr = `${yyyy}-${mm}-${dd}`;
+
+      const payload = {
+        subscriptionId: user.value.stripeSubscriptionId,
+        holdDate: holdDateStr,
+      };
+
+      const response = await HoldSubscription(payload);
+      if (response.isSuccess) {
+        showHoldConfirmModal.value = false;
+        showHoldSuccessModal.value = true;
+        await fetchProfile();
+      } else {
+        alert(response.userMessage || "Failed to hold subscription. Please try again.");
+      }
+    } catch (error) {
+      console.error("[HOLD SUBSCRIPTION] Error:", error);
+      alert(
+        error.response?.data?.userMessage ||
+          "Failed to hold subscription. Please try again."
+      );
+    } finally {
+      isHolding.value = false;
+    }
+  }
+
+  function handleResumeSubscription() {
+    if (!user.value.stripeSubscriptionId) return;
+    showResumeConfirmModal.value = true;
+  }
+
+  async function confirmResumeSubscription() {
+    isResuming.value = true;
+    try {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const resumeDateStr = `${yyyy}-${mm}-${dd}`;
+
+      const payload = {
+        subscriptionId: user.value.stripeSubscriptionId,
+        resumeDate: resumeDateStr,
+      };
+
+      const response = await ResumeSubscription(payload);
+      if (response.isSuccess) {
+        showResumeConfirmModal.value = false;
+        showResumeSuccessModal.value = true;
+        await fetchProfile();
+      } else {
+        alert(response.userMessage || "Failed to resume subscription. Please try again.");
+      }
+    } catch (error) {
+      console.error("[RESUME SUBSCRIPTION] Error:", error);
+      alert(
+        error.response?.data?.userMessage ||
+          "Failed to resume subscription. Please try again."
+      );
+    } finally {
+      isResuming.value = false;
     }
   }
 
