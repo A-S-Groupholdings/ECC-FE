@@ -51,8 +51,8 @@ apiService.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If 401 and not already retrying and not flagged to skip auth refresh
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.skipAuthRefresh) {
+    // If 401 and not already retrying
+    if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         // Wait for refresh and retry
         return new Promise((resolve) => {
@@ -261,11 +261,11 @@ export const AdminLogin = async (email, otp) => {
   // GetCenters: GET /services/center
   export const GetCenters = async () => {
     try {
-      const response = await apiService.get('/services/center', { skipAuthRefresh: true });
+      const response = await apiService.get('/services/center');
       return response.data;
     } catch (error) {
       console.error('Error fetching centers:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      throw error;
     }
   };
 
@@ -296,11 +296,11 @@ export const AdminLogin = async (email, otp) => {
 
   export const GetVisibleServices = async () => {
     try {
-      const response = await apiService.get('/services/visible', { skipAuthRefresh: true });
+      const response = await apiService.get('/services/visible');
       return response.data;
     } catch (error) {
       console.error('Error fetching visible services:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      throw error;
     }
   };
 
@@ -371,11 +371,11 @@ export const AdminLogin = async (email, otp) => {
       const response = await apiService.post('/bookings/bookingSlot', {
         date,
         resourceId,
-      }, { skipAuthRefresh: true });
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching booking slots:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      throw error;
     }
   };
 
@@ -394,21 +394,27 @@ export const AdminLogin = async (email, otp) => {
 
   export const RegisterBookingUser = async (payload) => {
     try {
-      const response = await apiService.post('/bookings/bookingUser', payload, { skipAuthRefresh: true });
+      const response = await apiService.post('/bookings/bookingUser', payload);
       return response.data;
     } catch (error) {
       console.error('Error registering booking user:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
     }
   };
 
   export const CreateBooking = async (payload) => {
     try {
-      const response = await apiService.post('/bookings', payload, { skipAuthRefresh: true });
+      const response = await apiService.post('/bookings', payload);
       return response.data;
     } catch (error) {
       console.error('Error creating booking:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
     }
   };
 
@@ -719,11 +725,14 @@ export const AdminLogin = async (email, otp) => {
 
   export const CreateStripeSession = async (payload) => {
     try {
-      const response = await apiService.post('/stripe/create-checkout-session', payload, { skipAuthRefresh: true });
+      const response = await apiService.post('/stripe/create-checkout-session', payload);
       return response.data;
     } catch (error) {
       console.error('Error creating stripe session:', error);
-      return error.response ? error.response.data : { isSuccess: false, message: error.message };
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
     }
   };
 
