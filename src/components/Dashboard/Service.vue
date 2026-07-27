@@ -140,6 +140,11 @@
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
+                  Center
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
                   Tag
                 </th>
                 <th
@@ -182,7 +187,7 @@
             <tbody class="divide-y divide-gray-100">
               <tr v-if="isLoading">
                 <td
-                  colspan="11"
+                  colspan="12"
                   class="px-6 py-12 text-center"
                 >
                   <div class="flex items-center justify-center gap-2">
@@ -229,6 +234,9 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {{ service.categoryID?.categoryName || "-" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {{ getCenterNames(service.centerIds) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
@@ -523,6 +531,53 @@
                   :value="cat._id"
                 >
                   {{ cat.categoryName }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Center (single select) -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-semibold text-gray-700"
+                >Center
+              </label>
+              <div
+                v-if="isLoadingCenters"
+                class="text-sm text-gray-500"
+              >
+                <svg
+                  class="w-4 h-4 animate-spin inline mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Loading centers...
+              </div>
+              <select
+                v-else
+                v-model="newService.centerId"
+                @change="onCreateCenterChange"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] transition-all"
+              >
+                <option value="">Select Center</option>
+                <option
+                  v-for="center in centers"
+                  :key="center._id"
+                  :value="center._id"
+                >
+                  {{ center.name || center.title }}
                 </option>
               </select>
             </div>
@@ -1029,6 +1084,53 @@
                 </select>
               </div>
 
+              <!-- Center (single select) -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700"
+                  >Center
+                </label>
+                <div
+                  v-if="isLoadingCenters"
+                  class="text-sm text-gray-500"
+                >
+                  <svg
+                    class="w-4 h-4 animate-spin inline mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Loading centers...
+                </div>
+                <select
+                  v-else
+                  v-model="editingService.centerId"
+                  @change="onEditCenterChange"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] transition-all"
+                >
+                  <option value="">Select Center</option>
+                  <option
+                    v-for="center in centers"
+                    :key="center._id"
+                    :value="center._id"
+                  >
+                    {{ center.name || center.title }}
+                  </option>
+                </select>
+              </div>
+
               <!-- Resources Multi-select -->
               <div class="md:col-span-4">
                 <label class="block text-sm font-semibold text-gray-700 mb-2"
@@ -1382,6 +1484,7 @@
     DeleteService,
     GetCategories,
     GetResources,
+    GetCenters,
   } from "@/services/apiService.js";
 
   const searchQuery = ref("");
@@ -1534,14 +1637,20 @@
     isLoadingEdit.value = true;
     try {
       if (categories.value.length === 0) await fetchCategories();
-      if (apiResources.value.length === 0) await fetchApiResources();
+      if (centers.value.length === 0) await fetchCenters();
 
       const response = await GetServiceById(id);
       if (response.isSuccess) {
         const data = response.value;
+        const existingCenterId = Array.isArray(data.centerIds)
+          ? (typeof data.centerIds[0] === "object"
+              ? data.centerIds[0]?._id
+              : data.centerIds[0]) || ""
+          : data.centerId?._id || data.centerId || "";
         editingService.value = {
           ...data,
           categoryID: data.categoryID?._id || data.categoryID,
+          centerId: existingCenterId,
           appointmentLimit: data.appointmentLimit || {
             enabled: false,
             limit: null,
@@ -1551,6 +1660,7 @@
           minTimeBeforeCanceling: data.minTimeBeforeCanceling || null,
           limitDuration: data.limitDuration || "",
         };
+        await fetchApiResources(existingCenterId);
         editSelectedResourceIds.value = (data.resourceIDs || []).map((r) =>
           typeof r === "object" ? r._id : r,
         );
@@ -1577,6 +1687,9 @@
       const payload = {
         title: editingService.value.title.trim(),
         categoryID: editingService.value.categoryID,
+        centerIds: editingService.value.centerId
+          ? [editingService.value.centerId]
+          : [],
         tag: editingService.value.tag || "All",
         resourceIDs: editSelectedResourceIds.value,
         price: parseFloat(editingService.value.price) || 0,
@@ -1626,10 +1739,10 @@
   const apiResources = ref([]);
   const isLoadingResources = ref(false);
 
-  async function fetchApiResources() {
+  async function fetchApiResources(centerId) {
     isLoadingResources.value = true;
     try {
-      const response = await GetResources();
+      const response = await GetResources(centerId || undefined);
       if (response.isSuccess) {
         apiResources.value = response.value || [];
       }
@@ -1645,10 +1758,53 @@
     return res ? res.title : id;
   }
 
+  function getCenterNames(centerIds) {
+    if (!centerIds || centerIds.length === 0) return "-";
+    return centerIds
+      .map((c) => {
+        if (typeof c === "object") return c.name || c.title || "-";
+        const found = centers.value.find((center) => center._id === c);
+        return found?.name || found?.title || "-";
+      })
+      .join(", ");
+  }
+
+  // Centers from API
+  const centers = ref([]);
+  const isLoadingCenters = ref(false);
+
+  async function fetchCenters() {
+    isLoadingCenters.value = true;
+    try {
+      const response = await GetCenters();
+      if (response.isSuccess) {
+        centers.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching centers:", error);
+    } finally {
+      isLoadingCenters.value = false;
+    }
+  }
+
+  // When the (single) center selection changes, reload resources scoped to that center
+  async function onCreateCenterChange() {
+    selectedResourceIds.value = [];
+    selectAllResources.value = false;
+    await fetchApiResources(newService.value.centerId);
+  }
+
+  async function onEditCenterChange() {
+    editSelectedResourceIds.value = [];
+    editSelectAllResources.value = false;
+    await fetchApiResources(editingService.value.centerId);
+  }
+
   // New service form
   const newService = ref({
     title: "",
     categoryID: "",
+    centerId: "",
     tag: "All",
     price: "",
     isVisible: true,
@@ -1701,6 +1857,7 @@
       const payload = {
         title: newService.value.title.trim(),
         categoryID: newService.value.categoryID,
+        centerIds: newService.value.centerId ? [newService.value.centerId] : [],
         tag: newService.value.tag || "All",
         resourceIDs: selectedResourceIds.value,
         price: parseFloat(newService.value.price) || 0,
@@ -1720,6 +1877,7 @@
         newService.value = {
           title: "",
           categoryID: "",
+          centerId: "",
           tag: "All",
           price: "",
           isVisible: true,
@@ -1750,5 +1908,6 @@
     fetchServices();
     fetchCategories();
     fetchApiResources();
+    fetchCenters();
   });
 </script>

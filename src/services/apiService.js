@@ -193,12 +193,78 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
-  export const GetResources = async () => {
+  export const GetResources = async (centerId) => {
     try {
-      const response = await apiService.get('/resources');
+      const response = await apiService.get('/resources', {
+        params: centerId ? { centerId } : {},
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching resources:', error);
+      throw error;
+    }
+  };
+
+  // CreateResource: POST /resources (title, isActive, centerId, schedule)
+  export const CreateResource = async (payload) => {
+    try {
+      const response = await apiService.post('/resources', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating resource:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // UpdateResource: PUT /resources/:id (title, isActive, centerId, schedule)
+  export const UpdateResource = async (id, payload) => {
+    try {
+      const response = await apiService.put(`/resources/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating resource:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // DeleteResource: DELETE /resources/:id
+  export const DeleteResource = async (id) => {
+    try {
+      const response = await apiService.delete(`/resources/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting resource:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // GetResourceById: GET /resources/:id
+  export const GetResourceById = async (id) => {
+    try {
+      const response = await apiService.get(`/resources/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching resource:', error);
+      throw error;
+    }
+  };
+
+  // GetCenters: GET /services/center
+  export const GetCenters = async () => {
+    try {
+      const response = await apiService.get('/services/center');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching centers:', error);
       throw error;
     }
   };

@@ -5,6 +5,23 @@
     <Nav />
 
     <div class="pr-0 md:pr-6 mt-5">
+      <!-- Center Selector -->
+      <div class="mb-4 flex items-center gap-2">
+        <label class="text-sm font-semibold text-gray-700">Center</label>
+        <select
+          v-model="selectedCenter"
+          class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+        >
+          <option
+            v-for="center in centers"
+            :key="center._id"
+            :value="center._id"
+          >
+            {{ center.name || center.title }}
+          </option>
+        </select>
+      </div>
+
       <!-- Resource Selector (scrollable row) -->
       <div class="mb-4 overflow-x-auto pb-2">
         <div class="flex gap-2 min-w-max">
@@ -1955,7 +1972,30 @@
     CreateBookingDashboard,
     GetBookingById,
     UpdateBooking,
+    GetCenters,
   } from "@/services/apiService.js";
+
+  // ─── Centers ────────────────────────────────────────────────────────────────
+  const centers = ref([]);
+  const selectedCenter = ref("");
+  const isLoadingCenters = ref(false);
+
+  async function fetchCenters() {
+    isLoadingCenters.value = true;
+    try {
+      const response = await GetCenters();
+      if (response.isSuccess) {
+        centers.value = response.value || [];
+        if (!selectedCenter.value && centers.value.length > 0) {
+          selectedCenter.value = centers.value[0]._id;
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching centers:", error);
+    } finally {
+      isLoadingCenters.value = false;
+    }
+  }
 
   // ─── Resources ──────────────────────────────────────────────────────────────
   const selectedResource = ref("all");
@@ -1967,7 +2007,7 @@
   async function fetchResources() {
     isLoadingResources.value = true;
     try {
-      const response = await GetResources();
+      const response = await GetResources(selectedCenter.value || undefined);
       if (response.isSuccess) {
         const apiResources = (response.value || []).map((r) => ({
           id: r._id,
@@ -2225,6 +2265,9 @@
       };
       if (selectedResource.value !== "all") {
         payload.resourceId = selectedResource.value;
+      }
+      if (selectedCenter.value) {
+        payload.centerId = selectedCenter.value;
       }
 
       const response = await GetCalendarData(payload);
@@ -3154,6 +3197,7 @@
 
       const payload = {
         userId: selectedUser.value._id,
+        centerId: selectedCenter.value,
         serviceId: selectedService ? selectedService._id : undefined,
         categoryId: bookingForm.value.categoryId || undefined,
         resourceId: bookingForm.value.resourceId,
@@ -3219,7 +3263,8 @@
     }
   }
 
-  onMounted(() => {
+  onMounted(async () => {
+    await fetchCenters();
     fetchResources();
     fetchCalendarData();
     nowInterval = setInterval(() => {
@@ -3231,6 +3276,12 @@
   onBeforeUnmount(() => {
     if (nowInterval) clearInterval(nowInterval);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  });
+
+  watch(selectedCenter, () => {
+    selectedResource.value = "all";
+    fetchResources();
+    fetchCalendarData();
   });
 
   watch(

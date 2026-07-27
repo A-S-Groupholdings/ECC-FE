@@ -31,9 +31,9 @@
         </button>
       </div>
 
-      <!-- Quick Search -->
-      <div class="mb-6">
-        <div class="relative max-w-sm">
+      <!-- Quick Search + Center Filter -->
+      <div class="mb-6 flex flex-col sm:flex-row gap-3">
+        <div class="relative max-w-sm w-full">
           <div
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
           >
@@ -58,6 +58,21 @@
             class="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent shadow-sm"
           />
         </div>
+
+        <select
+          v-model="selectedCenterId"
+          @change="onCenterFilterChange"
+          class="w-full sm:w-56 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent shadow-sm"
+        >
+          <option value="">All Centers</option>
+          <option
+            v-for="center in centers"
+            :key="center._id"
+            :value="center._id"
+          >
+            {{ center.name || center.title }}
+          </option>
+        </select>
       </div>
 
       <!-- Error Message -->
@@ -136,6 +151,11 @@
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                 >
+                  Center
+                </th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
+                >
                   <div class="flex items-center gap-1">
                     Created At
                     <svg
@@ -184,7 +204,7 @@
             <tbody class="divide-y divide-gray-100">
               <tr v-if="isLoading">
                 <td
-                  colspan="7"
+                  colspan="8"
                   class="px-6 py-12 text-center"
                 >
                   <div class="flex items-center justify-center gap-2">
@@ -233,6 +253,9 @@
                   <span class="text-sm font-semibold text-gray-900">{{
                     resource.title
                   }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {{ centerName(resource.centerId) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {{ formatDate(resource.createdAt) }}
@@ -406,6 +429,26 @@
               placeholder="e.g. Lane 1"
               class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
             />
+          </div>
+
+          <!-- Center -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5"
+              >Center</label
+            >
+            <select
+              v-model="newResource.centerId"
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
+            >
+              <option value="">Select a center...</option>
+              <option
+                v-for="center in centers"
+                :key="center._id"
+                :value="center._id"
+              >
+                {{ center.name || center.title }}
+              </option>
+            </select>
           </div>
 
           <!-- Active Toggle -->
@@ -608,6 +651,26 @@
               />
             </div>
 
+            <!-- Center -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5"
+                >Center</label
+              >
+              <select
+                v-model="editingResource.centerId"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
+              >
+                <option value="">Select a center...</option>
+                <option
+                  v-for="center in centers"
+                  :key="center._id"
+                  :value="center._id"
+                >
+                  {{ center.name || center.title }}
+                </option>
+              </select>
+            </div>
+
             <!-- Active Toggle -->
             <div class="flex items-center justify-between">
               <label class="text-sm font-medium text-gray-700"
@@ -739,12 +802,38 @@
 <script setup>
   import { ref, computed, onMounted } from "vue";
   import Nav from "../Dashboard/UI/SecondNav.vue";
-  import apiService, { GetResources } from "@/services/apiService.js";
+  import {
+    GetResources,
+    CreateResource,
+    UpdateResource,
+    DeleteResource,
+    GetResourceById,
+    GetCenters,
+  } from "@/services/apiService.js";
 
   const searchQuery = ref("");
   const resources = ref([]);
   const isLoading = ref(false);
   const errorMessage = ref("");
+
+  // Centers
+  const centers = ref([]);
+  const isLoadingCenters = ref(false);
+  const selectedCenterId = ref("");
+
+  async function fetchCenters() {
+    isLoadingCenters.value = true;
+    try {
+      const response = await GetCenters();
+      if (response.isSuccess) {
+        centers.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching centers:", error);
+    } finally {
+      isLoadingCenters.value = false;
+    }
+  }
 
   // Fetch resources from API
   async function fetchResources() {
@@ -752,7 +841,7 @@
     errorMessage.value = "";
 
     try {
-      const response = await GetResources();
+      const response = await GetResources(selectedCenterId.value || undefined);
 
       if (response.isSuccess) {
         resources.value = response.value || [];
@@ -767,6 +856,22 @@
     } finally {
       isLoading.value = false;
     }
+  }
+
+  function onCenterFilterChange() {
+    fetchResources();
+  }
+
+  function centerName(centerId) {
+    if (!centerId) return "-";
+    const id = typeof centerId === "object" ? centerId._id : centerId;
+    const found = centers.value.find((c) => c._id === id);
+    return (
+      found?.name ||
+      found?.title ||
+      (typeof centerId === "object" ? centerId.name || centerId.title : "-") ||
+      "-"
+    );
   }
 
   const filteredResources = computed(() => {
@@ -801,6 +906,7 @@
   const newResource = ref({
     title: "",
     isActive: true,
+    centerId: "",
     schedule: {
       monday: { enabled: true, start: "09:00", end: "17:00" },
       tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -817,9 +923,9 @@
 
     isCreating.value = true;
     try {
-      const response = await apiService.post("/resources", newResource.value);
+      const response = await CreateResource(newResource.value);
 
-      if (response.data.isSuccess) {
+      if (response.isSuccess) {
         // Close modal and refresh list
         showCreateModal.value = false;
         await fetchResources();
@@ -828,6 +934,7 @@
         newResource.value = {
           title: "",
           isActive: true,
+          centerId: "",
           schedule: {
             monday: { enabled: true, start: "09:00", end: "17:00" },
             tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -839,7 +946,7 @@
           },
         };
       } else {
-        alert(response.data.userMessage || "Failed to create resource.");
+        alert(response.userMessage || "Failed to create resource.");
       }
     } catch (error) {
       console.error("Error creating resource:", error);
@@ -857,6 +964,7 @@
   const editingResource = ref({
     title: "",
     isActive: true,
+    centerId: "",
     schedule: {
       monday: { enabled: true, start: "09:00", end: "17:00" },
       tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -874,17 +982,18 @@
     isLoadingEdit.value = true;
 
     try {
-      const response = await apiService.get(`/resources/${id}`);
+      const response = await GetResourceById(id);
 
-      if (response.data.isSuccess) {
-        const data = response.data.value;
+      if (response.isSuccess) {
+        const data = response.value;
         editingResource.value = {
           title: data.title || "",
           isActive: data.isActive ?? true,
+          centerId: data.centerId?._id || data.centerId || "",
           schedule: normalizeSchedule(data.schedule),
         };
       } else {
-        alert(response.data.userMessage || "Failed to load resource.");
+        alert(response.userMessage || "Failed to load resource.");
         showEditModal.value = false;
       }
     } catch (error) {
@@ -941,16 +1050,16 @@
 
     isUpdating.value = true;
     try {
-      const response = await apiService.put(
-        `/resources/${editingResourceId.value}`,
+      const response = await UpdateResource(
+        editingResourceId.value,
         editingResource.value,
       );
 
-      if (response.data.isSuccess) {
+      if (response.isSuccess) {
         showEditModal.value = false;
         await fetchResources();
       } else {
-        alert(response.data.userMessage || "Failed to update resource.");
+        alert(response.userMessage || "Failed to update resource.");
       }
     } catch (error) {
       console.error("Error updating resource:", error);
@@ -968,12 +1077,12 @@
 
     isDeleting.value = id;
     try {
-      const response = await apiService.delete(`/resources/${id}`);
+      const response = await DeleteResource(id);
 
-      if (response.data.isSuccess) {
+      if (response.isSuccess) {
         await fetchResources();
       } else {
-        alert(response.data.userMessage || "Failed to delete resource.");
+        alert(response.userMessage || "Failed to delete resource.");
       }
     } catch (error) {
       console.error("Error deleting resource:", error);
@@ -984,6 +1093,7 @@
   }
 
   onMounted(() => {
+    fetchCenters();
     fetchResources();
   });
 </script>

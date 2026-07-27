@@ -126,8 +126,32 @@
           <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
           >
-            <!-- Type -->
+            <!-- Center -->
             <div>
+              <label class="block text-[#1a3a35] font-semibold mb-2"
+                >Center</label
+              >
+              <select
+                v-model="booking.center"
+                @change="
+                  booking.type = '';
+                  booking.service = '';
+                  booking.lane = '';
+                "
+                class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+              >
+                <option value="">Select a center</option>
+                <option
+                  v-for="center in centers"
+                  :key="center._id"
+                  :value="center._id"
+                >
+                  {{ center.name || center.title }}
+                </option>
+              </select>
+            </div>
+            <!-- Type (only after Center) -->
+            <div v-if="booking.center">
               <label class="block text-[#1a3a35] font-semibold mb-2"
                 >Type</label
               >
@@ -765,6 +789,7 @@
     RegisterBookingUser,
     CreateBooking,
     CreateStripeSession,
+    GetCenters,
   } from "@/services/apiService.js";
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
@@ -781,6 +806,7 @@
   const isLoadingServices = ref(false);
 
   const booking = ref({
+    center: "",
     type: "",
     service: "",
     lane: "",
@@ -791,6 +817,24 @@
     email: "",
     notes: "",
   });
+
+  // Centers from API
+  const centers = ref([]);
+  const isLoadingCenters = ref(false);
+
+  async function fetchCenters() {
+    isLoadingCenters.value = true;
+    try {
+      const response = await GetCenters();
+      if (response.isSuccess) {
+        centers.value = response.value || [];
+      }
+    } catch (error) {
+      console.error("Error fetching centers:", error);
+    } finally {
+      isLoadingCenters.value = false;
+    }
+  }
 
   function formatDateInput(date) {
     const y = date.getFullYear();
@@ -817,25 +861,11 @@
 
   onMounted(() => {
     fetchVisibleServices();
+    fetchCenters();
   });
 
-  // Unique categories from visible services
-  const categories = computed(() => {
-    const map = new Map();
-    visibleServices.value.forEach((s) => {
-      const cat = s.categoryID;
-      if (cat && !map.has(cat._id)) {
-        const name = cat.categoryName?.toLowerCase() || "";
-        if (name !== "member" && name !== "coach") {
-          map.set(cat._id, cat);
-        }
-      }
-    });
-    return Array.from(map.values());
-  });
-
-  // Services filtered by selected category
-  const filteredServices = computed(() => {
+  // Services filtered by selected center only (used to derive available categories)
+  const servicesForCenter = computed(() => {
     let list = visibleServices.value;
     // Only show services where isVisible is true (or not set, default true)
     list = list.filter((s) => s.isVisible !== false);
@@ -844,6 +874,31 @@
       const catName = s.categoryID?.categoryName?.toLowerCase() || "";
       return catName !== "member" && catName !== "coach";
     });
+    if (!booking.value.center) return list;
+    return list.filter((s) =>
+      (s.centerIds || []).some((c) =>
+        typeof c === "object"
+          ? c._id === booking.value.center
+          : c === booking.value.center,
+      ),
+    );
+  });
+
+  // Unique categories from services available at the selected center
+  const categories = computed(() => {
+    const map = new Map();
+    servicesForCenter.value.forEach((s) => {
+      const cat = s.categoryID;
+      if (cat && !map.has(cat._id)) {
+        map.set(cat._id, cat);
+      }
+    });
+    return Array.from(map.values());
+  });
+
+  // Services filtered by selected center and category
+  const filteredServices = computed(() => {
+    const list = servicesForCenter.value;
     if (!booking.value.type) return list;
     return list.filter((s) => s.categoryID?._id === booking.value.type);
   });
@@ -898,6 +953,11 @@
     return selectedService.value?.title || booking.value.service;
   });
 
+  const selectedCenterName = computed(() => {
+    const center = centers.value.find((c) => c._id === booking.value.center);
+    return center?.name || center?.title || booking.value.center;
+  });
+
   const selectedResourceTitle = computed(() => {
     const res = serviceResources.value.find(
       (r) => r._id === booking.value.lane,
@@ -923,6 +983,7 @@
 
   const isStep1Valid = computed(() => {
     return (
+      booking.value.center &&
       booking.value.type &&
       booking.value.service &&
       booking.value.lane &&
@@ -1144,6 +1205,7 @@
         // Step 1: Create booking with pending payment status
         const response = await CreateBooking({
           userId: registeredUserId.value,
+          centerId: booking.value.center,
           categoryId: booking.value.type,
           resourceId: booking.value.lane,
           serviceId: booking.value.service,
@@ -1195,6 +1257,7 @@
           metadata: {
             bookingId,
             userId: registeredUserId.value,
+            centerName: selectedCenterName.value,
           },
         });
 
@@ -1210,6 +1273,7 @@
         // ── PAY LATER FLOW ───────────────────────────────────────────────
         const response = await CreateBooking({
           userId: registeredUserId.value,
+          centerId: booking.value.center,
           categoryId: booking.value.type,
           resourceId: booking.value.lane,
           serviceId: booking.value.service,
@@ -1329,6 +1393,7 @@
   function resetBooking() {
     currentStep.value = 0;
     booking.value = {
+      center: "",
       type: "",
       service: "",
       lane: "",
