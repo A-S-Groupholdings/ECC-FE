@@ -636,6 +636,10 @@
             <div class="bg-gray-50 rounded-lg p-6 mb-6">
               <h4 class="font-semibold text-gray-700 mb-4">Order Summary</h4>
               <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Center</span>
+                <span class="font-medium">{{ selectedCenterName }}</span>
+              </div>
+              <div class="flex justify-between mb-2">
                 <span class="text-gray-600">{{ selectedServiceTitle }}</span>
                 <span class="font-medium">A${{ totalPrice.toFixed(2) }}</span>
               </div>
@@ -1252,7 +1256,7 @@
           amount: Math.round(totalPrice.value * 100), // cents
           currency: "aud",
           productName: selectedServiceTitle.value,
-          successUrl: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}`,
+          successUrl: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${bookingId}&centerName=${encodeURIComponent(selectedCenterName.value)}`,
           cancelUrl: `${baseUrl}/booking/cancel`,
           metadata: {
             bookingId,

@@ -105,6 +105,10 @@
 
         <div class="bg-gray-50 rounded-lg p-6 mb-8 text-left">
           <div class="flex justify-between mb-2">
+            <span class="text-gray-600">Center:</span>
+            <span class="font-semibold">{{ centerName }}</span>
+          </div>
+          <div class="flex justify-between mb-2">
             <span class="text-gray-600">Booking Reference:</span>
             <span class="font-semibold">#ECC-{{ bookingRef }}</span>
           </div>
@@ -134,6 +138,7 @@
   const bookingRef = ref(Math.floor(Math.random() * 10000));
   const isConfirming = ref(true);
   const confirmError = ref("");
+  const centerName = ref("");
 
   onMounted(async () => {
     // Get session ID and booking ID from URL params
@@ -147,6 +152,11 @@
 
     if (ref) {
       bookingRef.value = ref;
+    }
+
+    const center = params.get("centerName");
+    if (center) {
+      centerName.value = decodeURIComponent(center);
     }
 
     // If we have a session ID, confirm the payment

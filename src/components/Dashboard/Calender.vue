@@ -802,8 +802,28 @@
 
       <!-- Modal Body -->
       <div class="p-6 space-y-6">
-        <!-- Step 1: User Search -->
+        <!-- Step 0: Select Center -->
         <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Step 0: Select Center <span class="text-red-500">*</span>
+          </label>
+          <select
+            v-model="bookingForm.centerId"
+            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+          >
+            <option value="">Select a center...</option>
+            <option
+              v-for="center in centers"
+              :key="center._id"
+              :value="center._id"
+            >
+              {{ center.name || center.title }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Step 1: User Search -->
+        <div v-if="bookingForm.centerId">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Step 1: Search & Select User <span class="text-red-500">*</span>
           </label>
@@ -2936,6 +2956,7 @@
 
   const bookingForm = ref({
     userId: "",
+    centerId: "",
     categoryId: "",
     resourceId: "",
     date: "",
@@ -2966,6 +2987,7 @@
   const canCreateBooking = computed(() => {
     return (
       selectedUser.value &&
+      bookingForm.value.centerId &&
       bookingForm.value.resourceId &&
       bookingForm.value.date &&
       bookingForm.value.startTime
@@ -2989,6 +3011,7 @@
     selectedServiceObj.value = null;
     bookingForm.value = {
       userId: "",
+      centerId: "",
       categoryId: "",
       resourceId: "",
       date: "",
@@ -3005,6 +3028,7 @@
   async function openNewAppointmentModal(prefill) {
     showNewAppointmentModal.value = true;
     resetBookingForm();
+    bookingForm.value.centerId = selectedCenter.value;
     prefilledSlot.value = prefill || null;
     if (prefill?.date) bookingForm.value.date = prefill.date;
     try {
@@ -3197,7 +3221,7 @@
 
       const payload = {
         userId: selectedUser.value._id,
-        centerId: selectedCenter.value,
+        centerId: bookingForm.value.centerId,
         serviceId: selectedService ? selectedService._id : undefined,
         categoryId: bookingForm.value.categoryId || undefined,
         resourceId: bookingForm.value.resourceId,
