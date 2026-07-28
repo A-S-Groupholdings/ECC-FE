@@ -292,13 +292,58 @@
           v-if="currentStep === 1"
           class="animate-fadeIn"
         >
-          <p class="text-gray-700 mb-6">
+          <p class="text-gray-700 mb-4">
             Below you can find a list of available time slots for
             <span class="font-semibold">{{ selectedServiceTitle }}</span>
-            by <span class="font-semibold">{{ selectedResourceTitle }}</span
+            by <span class="font-semibold">{{ selectedResourceTitle }}</span> at
+            <span class="font-semibold">{{ selectedCenterName }}</span
             >.<br />
-            Click on a time slot to proceed with booking.
+            Click on a time slot to proceed with booking. If a time is already
+            booked, use <span class="font-semibold">Other centres</span> to see
+            where it's still free.
           </p>
+
+          <!-- Centre switch confirmation -->
+          <div
+            v-if="centerSwitchNotice"
+            class="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6 animate-fadeIn"
+          >
+            <svg
+              class="w-5 h-5 text-green-600 shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p class="text-sm text-green-800 flex-1">
+              {{ centerSwitchNotice }}
+            </p>
+            <button
+              @click="centerSwitchNotice = ''"
+              class="text-green-600 hover:text-green-800 shrink-0"
+              aria-label="Dismiss"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Calendar -->
@@ -428,48 +473,246 @@
                 >
                   No available slots for this date.
                 </div>
-                <button
+
+                <div
                   v-for="slot in displayTimeSlots"
                   :key="slot.time"
-                  @click="slot.available ? selectTimeSlot(slot) : null"
-                  :disabled="!slot.available"
-                  class="w-full flex items-center justify-center gap-3 p-4 border-b border-gray-100 transition-colors"
-                  :class="[
-                    booking.selectedTime === slot.time
-                      ? 'bg-green-100 border-[#1a3a35]'
-                      : '',
-                    slot.available
-                      ? 'hover:bg-green-50 cursor-pointer'
-                      : 'bg-gray-50 cursor-not-allowed opacity-60',
-                  ]"
+                  class="border-b border-gray-100 last:border-b-0"
                 >
+                  <!-- Slot row -->
                   <div
-                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                    :class="
+                    class="flex items-center gap-3 px-4 py-3.5 transition-colors"
+                    :class="[
                       booking.selectedTime === slot.time
-                        ? 'border-[#1a3a35] bg-[#1a3a35]'
+                        ? 'bg-green-100'
                         : slot.available
-                          ? 'border-gray-300'
-                          : 'border-gray-200 bg-gray-100'
-                    "
+                          ? 'hover:bg-green-50'
+                          : 'bg-gray-50/70',
+                    ]"
                   >
-                    <div
-                      v-if="booking.selectedTime === slot.time"
-                      class="w-2 h-2 bg-white rounded-full"
-                    ></div>
-                  </div>
-                  <span
-                    class="font-medium"
-                    :class="slot.available ? 'text-gray-700' : 'text-gray-400'"
-                  >
-                    {{ slot.time }}
-                    <span
-                      v-if="!slot.available"
-                      class="text-xs ml-1"
-                      >(Unavailable)</span
+                    <!-- Radio + time (clickable when available) -->
+                    <button
+                      @click="slot.available ? selectTimeSlot(slot) : null"
+                      :disabled="!slot.available"
+                      class="flex items-center gap-3 flex-1 text-left"
+                      :class="
+                        slot.available ? 'cursor-pointer' : 'cursor-not-allowed'
+                      "
                     >
-                  </span>
-                </button>
+                      <div
+                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0"
+                        :class="
+                          booking.selectedTime === slot.time
+                            ? 'border-[#1a3a35] bg-[#1a3a35]'
+                            : slot.available
+                              ? 'border-gray-300'
+                              : 'border-gray-200 bg-gray-100'
+                        "
+                      >
+                        <div
+                          v-if="booking.selectedTime === slot.time"
+                          class="w-2 h-2 bg-white rounded-full"
+                        ></div>
+                      </div>
+                      <span
+                        class="font-medium"
+                        :class="
+                          slot.available ? 'text-gray-700' : 'text-gray-400'
+                        "
+                      >
+                        {{ slot.time }}
+                      </span>
+                      <span
+                        v-if="!slot.available"
+                        class="text-xs text-gray-400"
+                        >Booked at {{ selectedCenterName }}</span
+                      >
+                    </button>
+
+                    <!-- Find another centre -->
+                    <button
+                      v-if="!slot.available && otherCenters.length"
+                      @click="openCenterSwitch(slot)"
+                      class="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors"
+                      :class="
+                        switchTargetSlot?.time === slot.time && showCenterSwitch
+                          ? 'bg-[#1a3a35] text-white border-[#1a3a35]'
+                          : 'text-[#1a3a35] border-[#1a3a35]/30 hover:bg-[#1a3a35] hover:text-white hover:border-[#1a3a35]'
+                      "
+                    >
+                      <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      Other centres
+                    </button>
+                  </div>
+
+                  <!-- Inline centre availability panel -->
+                  <div
+                    v-if="
+                      showCenterSwitch && switchTargetSlot?.time === slot.time
+                    "
+                    class="bg-[#f5f3ef] border-t border-gray-200 px-4 py-3 animate-fadeIn"
+                  >
+                    <div class="flex items-start justify-between gap-2 mb-3">
+                      <p class="text-xs text-gray-600 leading-relaxed">
+                        <span class="font-semibold text-[#1a3a35]">{{
+                          slot.time
+                        }}</span>
+                        is taken at
+                        <span class="font-semibold">{{
+                          selectedCenterName
+                        }}</span
+                        >. Here's where it's free:
+                      </p>
+                      <button
+                        @click="closeCenterSwitch"
+                        class="text-gray-400 hover:text-gray-600 shrink-0"
+                        aria-label="Close"
+                      >
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div class="space-y-2">
+                      <button
+                        v-for="entry in centerAvailability"
+                        :key="entry.center._id"
+                        @click="applyCenterSwitch(entry)"
+                        :disabled="entry.status !== 'available'"
+                        class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border text-left transition-all"
+                        :class="
+                          entry.status === 'available'
+                            ? 'bg-white border-green-300 hover:border-[#1a3a35] hover:shadow-sm cursor-pointer'
+                            : 'bg-white/50 border-gray-200 cursor-not-allowed'
+                        "
+                      >
+                        <div class="min-w-0">
+                          <p
+                            class="text-sm font-semibold truncate"
+                            :class="
+                              entry.status === 'available'
+                                ? 'text-[#1a3a35]'
+                                : 'text-gray-400'
+                            "
+                          >
+                            {{ entry.center.name }}
+                          </p>
+                          <p
+                            v-if="entry.status === 'available'"
+                            class="text-xs text-gray-500 truncate"
+                          >
+                            {{ entry.resourceTitle }}
+                            <span v-if="entry.serviceTitle">
+                              · {{ entry.serviceTitle }}</span
+                            >
+                            <span v-if="entry.price != null">
+                              · A${{ entry.price }}</span
+                            >
+                          </p>
+                          <p
+                            v-else-if="entry.status === 'unavailable'"
+                            class="text-xs text-gray-400"
+                          >
+                            No lanes free at this time
+                          </p>
+                        </div>
+
+                        <!-- Status indicator -->
+                        <span
+                          v-if="entry.status === 'checking'"
+                          class="shrink-0"
+                        >
+                          <svg
+                            class="w-4 h-4 animate-spin text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              class="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              stroke-width="4"
+                            ></circle>
+                            <path
+                              class="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            ></path>
+                          </svg>
+                        </span>
+                        <span
+                          v-else-if="entry.status === 'available'"
+                          class="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-white bg-[#1a3a35] px-3 py-1.5 rounded-full"
+                        >
+                          Switch
+                          <svg
+                            class="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2.5"
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </span>
+                        <span
+                          v-else
+                          class="shrink-0 text-xs font-medium text-gray-400"
+                          >Full</span
+                        >
+                      </button>
+                    </div>
+
+                    <p
+                      v-if="
+                        !isCheckingCenters &&
+                        centerAvailability.length &&
+                        centerAvailability.every(
+                          (e) => e.status === 'unavailable',
+                        )
+                      "
+                      class="text-xs text-gray-500 mt-3 text-center"
+                    >
+                      This time is fully booked everywhere. Try a different time
+                      or date.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1099,6 +1342,145 @@
     }
   }
 
+  // ── CENTER SWITCH FOR UNAVAILABLE SLOTS ──────────────────────────────
+  const showCenterSwitch = ref(false);
+  const switchTargetSlot = ref(null);
+  const centerAvailability = ref([]);
+  const isCheckingCenters = ref(false);
+  const centerSwitchNotice = ref("");
+
+  // Cache slot lookups so re-checks are instant: key = `date|resourceId`
+  const slotCache = new Map();
+
+  async function getSlotsFor(date, resourceId) {
+    const key = `${date}|${resourceId}`;
+    if (slotCache.has(key)) return slotCache.get(key);
+    try {
+      const response = await GetBookingSlots(date, resourceId);
+      const slots = response.isSuccess ? response.value || [] : [];
+      slotCache.set(key, slots);
+      return slots;
+    } catch (error) {
+      console.error("Error checking slots for resource:", resourceId, error);
+      slotCache.set(key, []);
+      return [];
+    }
+  }
+
+  // Services at a given center that match the currently selected category.
+  // Services with the same title as the current selection are ranked first.
+  function candidateServicesForCenter(centerId) {
+    const currentTitle = (selectedService.value?.title || "").toLowerCase();
+    const list = visibleServices.value.filter((s) => {
+      if (s.isVisible === false) return false;
+      if (booking.value.type && s.categoryID?._id !== booking.value.type)
+        return false;
+      return (s.centerIds || []).some((c) =>
+        typeof c === "object" ? c._id === centerId : c === centerId,
+      );
+    });
+    return list.sort((a, b) => {
+      const aMatch = (a.title || "").toLowerCase() === currentTitle ? 0 : 1;
+      const bMatch = (b.title || "").toLowerCase() === currentTitle ? 0 : 1;
+      return aMatch - bMatch;
+    });
+  }
+
+  const otherCenters = computed(() =>
+    centers.value.filter((c) => c._id !== booking.value.center),
+  );
+
+  function openCenterSwitch(slot) {
+    switchTargetSlot.value = slot;
+    showCenterSwitch.value = true;
+    checkOtherCenters();
+  }
+
+  function closeCenterSwitch() {
+    showCenterSwitch.value = false;
+    switchTargetSlot.value = null;
+    centerAvailability.value = [];
+  }
+
+  async function checkOtherCenters() {
+    const targetTime = switchTargetSlot.value?.time;
+    const date = booking.value.date;
+    if (!targetTime || !date) return;
+
+    isCheckingCenters.value = true;
+    // Seed the list so every centre renders immediately in a "checking" state
+    centerAvailability.value = otherCenters.value.map((center) => ({
+      center,
+      status: "checking",
+      serviceId: "",
+      serviceTitle: "",
+      resourceId: "",
+      resourceTitle: "",
+      price: null,
+    }));
+
+    await Promise.all(
+      centerAvailability.value.map(async (entry) => {
+        const services = candidateServicesForCenter(entry.center._id);
+        for (const svc of services) {
+          const resources = (svc.resourceIDs || []).filter(
+            (r) => r.isActive !== false,
+          );
+          for (const res of resources) {
+            const slots = await getSlotsFor(date, res._id);
+            const match = slots.find((s) => s.time === targetTime);
+            if (match?.available) {
+              entry.status = "available";
+              entry.serviceId = svc._id;
+              entry.serviceTitle = svc.title;
+              entry.resourceId = res._id;
+              entry.resourceTitle = res.title;
+              entry.price = svc.price ?? null;
+              return;
+            }
+          }
+        }
+        entry.status = "unavailable";
+      }),
+    );
+
+    isCheckingCenters.value = false;
+  }
+
+  // Move the booking to the chosen centre / service / lane and lock in the time.
+  async function applyCenterSwitch(entry) {
+    if (entry.status !== "available") return;
+    const previousCenterName = selectedCenterName.value;
+    const targetTime = switchTargetSlot.value?.time;
+
+    booking.value.center = entry.center._id;
+    booking.value.service = entry.serviceId;
+    booking.value.lane = entry.resourceId;
+
+    closeCenterSwitch();
+
+    // Reload the slot list for the new lane, then re-select the requested time.
+    await fetchBookingSlots();
+    const stillFree = timeSlots.value.find(
+      (s) => s.time === targetTime && s.available,
+    );
+    if (stillFree) {
+      booking.value.selectedTime = targetTime;
+      centerSwitchNotice.value = `Switched from ${previousCenterName} to ${entry.center.name} — ${targetTime} on ${entry.resourceTitle} is reserved for you.`;
+    } else {
+      booking.value.selectedTime = null;
+      centerSwitchNotice.value = `Switched to ${entry.center.name}, but ${targetTime} was just taken. Please pick another time.`;
+    }
+  }
+
+  // Any change the user makes to centre/service/lane clears the switch banner.
+  watch(
+    () => [booking.value.center, booking.value.service, booking.value.lane],
+    () => {
+      slotCache.clear();
+    },
+  );
+
   // Fetch slots whenever user enters Step 2
   watch(currentStep, (step) => {
     if (step === 1) {
@@ -1112,6 +1494,8 @@
     () => {
       if (currentStep.value === 1 && booking.value.lane) {
         booking.value.selectedTime = null;
+        centerSwitchNotice.value = "";
+        closeCenterSwitch();
         fetchBookingSlots();
       }
     },
@@ -1413,6 +1797,9 @@
     registrationError.value = "";
     bookingError.value = "";
     timeSlots.value = [];
+    centerSwitchNotice.value = "";
+    slotCache.clear();
+    closeCenterSwitch();
   }
 </script>
 

@@ -1336,6 +1336,24 @@
             </p>
           </div>
 
+          <!-- Center Info -->
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">
+              Center
+            </p>
+            <p class="text-sm font-semibold text-gray-900">
+              {{
+                bookingDetails.center?.name || bookingDetails.centerName || "-"
+              }}
+            </p>
+            <p
+              v-if="bookingDetails.center?.code"
+              class="text-xs text-gray-500"
+            >
+              Code: {{ bookingDetails.center.code }}
+            </p>
+          </div>
+
           <!-- Service Info -->
           <div class="p-4 bg-gray-50 rounded-lg">
             <p class="text-xs font-semibold text-gray-500 uppercase mb-2">
