@@ -44,13 +44,13 @@
           </li>
         </router-link>
         <router-link
-          to="/live-on-ecc"
+          to="/dashboard/livesession"
           class="block"
         >
           <li
             :class="[
               'w-full h-10 rounded-l-md lg:ml-[50px] md:ml-[20px] flex items-center gap-2 pl-2 cursor-pointer',
-              isActive('/live-on-ecc')
+              isActive('/dashboard/livesession')
                 ? 'bg-secondary text-black'
                 : 'bg-primary hover:bg-gradient-to-r hover:bg-secondary text-white ',
             ]"

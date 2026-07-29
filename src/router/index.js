@@ -30,7 +30,8 @@ import CoachProfileView from "../views/Coach/CoachProfileView.vue";
 import CoachOtp from "../views/Coach/CoachOTP.vue";
 import MemberPaymentView from "../views/Member/PaymentView.vue";
 import CoachBookingView from "../views/Coach/CoachBookingView.vue";
-import PublicLiveSessionView from "../views/LiveSession.vue";
+import PublicLiveSessionHallmView from "../views/LiveSessionHallam.vue";
+import PublicLiveSessionCranbournView from "../views/LiveSessionCranbourn.vue";
 import PublicMembershipView from "../views/Landing/MembershipView.vue";
 import MembershipSuccessView from "../views/Landing/MembershipSuccessView.vue";
 import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
@@ -261,9 +262,16 @@ const router = createRouter({
         title: "Elite Cricket Centre - Bookings", requiresCategory: "Coach"}
     },
     {
-      path: "/live-on-ecc",
-      name: "livesession",
-      component: PublicLiveSessionView,
+      path: "/live-on-ecc-hallam",
+      name: "livesessionhallam",
+      component: PublicLiveSessionHallmView,
+      meta: {
+        title: "Elite Cricket Centre - Live Session"}
+    },
+    {
+      path: "/live-on-ecc-cranbourn",
+      name: "livesessioncranbourn",
+      component: PublicLiveSessionCranbournView,
       meta: {
         title: "Elite Cricket Centre - Live Session"}
     },

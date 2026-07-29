@@ -684,9 +684,11 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
-  export const GetSessionDashboard = async () => {
+  export const GetSessionDashboard = async (centerId) => {
     try {
-      const response = await apiService.get('/bookings/sessionDashboard');
+      const response = await apiService.get('/bookings/sessionDashboard', {
+        params: centerId ? { centerId } : {},
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching session dashboard:', error);

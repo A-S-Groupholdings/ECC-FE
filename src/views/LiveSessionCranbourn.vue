@@ -87,7 +87,7 @@
             <p
               class="text-sm text-emerald-400/70 font-bold uppercase tracking-widest"
             >
-              Live Session Dashboard
+              Live Session Dashboard Cranbourn
             </p>
           </div>
         </div>
@@ -442,6 +442,8 @@
   import { ref, computed, onMounted, onUnmounted } from "vue";
   import { GetSessionDashboard } from "@/services/apiService.js";
 
+  const CENTER_ID = "CRN";
+
   const mainRef = ref(null);
   const isFullscreen = ref(false);
   const isLoading = ref(false);
@@ -503,7 +505,7 @@
     isLoading.value = true;
     errorMessage.value = "";
     try {
-      const response = await GetSessionDashboard();
+      const response = await GetSessionDashboard(CENTER_ID);
       if (response.isSuccess) {
         dashboardData.value = response.value;
         resources.value = response.value?.resources || [];

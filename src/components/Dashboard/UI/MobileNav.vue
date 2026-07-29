@@ -51,14 +51,14 @@
             </li>
           </router-link>
           <router-link
-            to="/live-on-ecc"
+            to="/dashboard/livesession"
             @click="toggleMenu"
             class="block"
           >
             <li
               :class="[
                 'w-full h-12 rounded-md flex items-center gap-3 pl-4',
-                isActive('/live-on-ecc')
+                isActive('/dashboard/livesession')
                   ? 'bg-secondary text-black'
                   : 'bg-primary hover:bg-secondary/20 text-white',
               ]"
