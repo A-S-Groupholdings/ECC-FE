@@ -1555,6 +1555,27 @@
               </div>
             </div>
 
+            <!-- Edit Center -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1"
+                >Center</label
+              >
+              <select
+                v-model="editForm.centerId"
+                @change="onEditCenterChange"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+              >
+                <option value="">Select center...</option>
+                <option
+                  v-for="c in centers"
+                  :key="c._id"
+                  :value="c._id"
+                >
+                  {{ c.name }}
+                </option>
+              </select>
+            </div>
+
             <!-- Edit Service -->
             <div>
               <label class="block text-xs font-semibold text-gray-700 mb-1"
@@ -2672,6 +2693,7 @@
     status: "",
     paymentStatus: "",
     note: "",
+    centerId: "",
     categoryId: "",
     resourceId: "",
     userId: "",
@@ -2750,20 +2772,22 @@
     bookingDetails.value = null;
     editSelectedUser.value = null;
     try {
-      const [response, servicesRes, resourcesRes] = await Promise.all([
-        GetBookingById(id),
-        GetServices(),
-        GetResources(),
-      ]);
-      if (servicesRes.isSuccess) editServices.value = servicesRes.value || [];
-      if (resourcesRes.isSuccess)
-        editResources.value = (resourcesRes.value || []).filter(
-          (r) => r.isActive !== false,
-        );
+      const response = await GetBookingById(id);
       if (response.isSuccess) {
         bookingDetails.value = response.value || null;
-        // Initialize edit form
         const v = response.value || {};
+        const bookingCenterId = v.centerId?._id || v.centerId || "";
+        // Load services and resources for the booking's centre
+        const [servicesRes, resourcesRes] = await Promise.all([
+          GetServices(),
+          GetResources(bookingCenterId || undefined),
+        ]);
+        if (servicesRes.isSuccess) editServices.value = servicesRes.value || [];
+        if (resourcesRes.isSuccess)
+          editResources.value = (resourcesRes.value || []).filter(
+            (r) => r.isActive !== false,
+          );
+        // Initialize edit form
         editForm.value = {
           date: isoDateOnly(v.date),
           startTime: v.startTime || "",
@@ -2772,6 +2796,7 @@
           status: v.status || "",
           paymentStatus: v.paymentStatus || "",
           note: v.note || "",
+          centerId: bookingCenterId,
           categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
           resourceId: v.resourceId?._id || v.resourceId || "",
           userId: v.userId?._id || v.userId || "",
@@ -2851,7 +2876,16 @@
       editServiceResults.value = [];
       return;
     }
-    editServiceResults.value = editServices.value
+    const filtered = editForm.value.centerId
+      ? editServices.value.filter((s) =>
+          (s.centerIds || []).some((c) =>
+            typeof c === "object"
+              ? c._id === editForm.value.centerId
+              : c === editForm.value.centerId,
+          ),
+        )
+      : editServices.value;
+    editServiceResults.value = filtered
       .filter(
         (s) =>
           (s.title || "").toLowerCase().includes(q) ||
@@ -2867,6 +2901,32 @@
     editServiceResults.value = [];
   }
 
+  async function onEditCenterChange() {
+    // Reset service and resource selections when center changes
+    editSelectedService.value = null;
+    editServiceSearch.value = "";
+    editServiceResults.value = [];
+    editForm.value.categoryId = "";
+    editForm.value.resourceId = "";
+    // Reload resources for the new centre
+    const centerId = editForm.value.centerId;
+    if (!centerId) {
+      editResources.value = [];
+      return;
+    }
+    try {
+      const response = await GetResources(centerId);
+      if (response.isSuccess) {
+        editResources.value = (response.value || []).filter(
+          (r) => r.isActive !== false,
+        );
+      }
+    } catch (error) {
+      console.error("Error loading resources for centre:", error);
+      editResources.value = [];
+    }
+  }
+
   function cancelEditBooking() {
     isEditingBooking.value = false;
     const v = bookingDetails.value || {};
@@ -2878,6 +2938,7 @@
       status: v.status || "",
       paymentStatus: v.paymentStatus || "",
       note: v.note || "",
+      centerId: v.centerId?._id || v.centerId || "",
       categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
       resourceId: v.resourceId?._id || v.resourceId || "",
       userId: v.userId?._id || v.userId || "",
@@ -2914,6 +2975,7 @@
         status: editForm.value.status,
         paymentStatus: editForm.value.paymentStatus,
         note: editForm.value.note,
+        centerId: editForm.value.centerId,
         categoryId: editForm.value.categoryId,
         resourceId: editForm.value.resourceId,
         userId: editForm.value.userId,
@@ -2995,8 +3057,25 @@
   });
 
   const allFilteredResources = computed(() => {
-    if (bookingForm.value.categoryId) return filteredResources.value;
-    // When no service selected, show all active resources
+    if (bookingForm.value.categoryId) {
+      // When a service is selected, show only that service's resources
+      // that also belong to the selected centre
+      const svc = services.value.find(
+        (s) => s._id === bookingForm.value.categoryId,
+      );
+      const svcResources = svc?.resourceIDs || [];
+      if (!bookingForm.value.centerId) return svcResources;
+      const centerResourceIds = new Set(modalResources.value.map((r) => r._id));
+      return svcResources.filter((r) =>
+        centerResourceIds.has(typeof r === "object" ? r._id : r),
+      );
+    }
+    // When no service selected, show all active resources for the centre
+    if (bookingForm.value.centerId) {
+      return modalResources.value
+        .filter((r) => r.isActive !== false)
+        .map((r) => ({ _id: r._id, title: r.title }));
+    }
     return resources.value
       .filter((r) => r.id !== "all" && r.isActive !== false)
       .map((r) => ({ _id: r.id, title: r.label }));
@@ -3056,8 +3135,30 @@
       ]);
       if (usersRes.isSuccess) allUsers.value = usersRes.value || [];
       if (servicesRes.isSuccess) services.value = servicesRes.value || [];
+      // Load resources for the pre-selected centre
+      if (bookingForm.value.centerId) {
+        await loadModalResources(bookingForm.value.centerId);
+      }
     } catch (error) {
       console.error("Error loading modal data:", error);
+    }
+  }
+
+  async function loadModalResources(centerId) {
+    if (!centerId) {
+      modalResources.value = [];
+      return;
+    }
+    try {
+      const response = await GetResources(centerId);
+      if (response.isSuccess) {
+        modalResources.value = (response.value || []).filter(
+          (r) => r.isActive !== false,
+        );
+      }
+    } catch (error) {
+      console.error("Error loading resources for centre:", error);
+      modalResources.value = [];
     }
   }
 
@@ -3091,13 +3192,28 @@
     userSearchResults.value = [];
   }
 
+  // Services filtered by the selected centre in the new-booking modal
+  const centerFilteredServices = computed(() => {
+    if (!bookingForm.value.centerId) return services.value;
+    return services.value.filter((s) =>
+      (s.centerIds || []).some((c) =>
+        typeof c === "object"
+          ? c._id === bookingForm.value.centerId
+          : c === bookingForm.value.centerId,
+      ),
+    );
+  });
+
+  // Resources for the selected centre in the new-booking modal
+  const modalResources = ref([]);
+
   function searchServices() {
     const q = serviceSearchQuery.value.trim().toLowerCase();
     if (!q) {
       serviceSearchResults.value = [];
       return;
     }
-    serviceSearchResults.value = services.value
+    serviceSearchResults.value = centerFilteredServices.value
       .filter(
         (s) =>
           (s.title || "").toLowerCase().includes(q) ||
@@ -3123,6 +3239,26 @@
     customDurationMinutes.value = 0;
     customPrice.value = 0;
   }
+
+  // When the centre changes in the new-booking modal, reload resources
+  // and reset service/resource/time selections
+  watch(
+    () => bookingForm.value.centerId,
+    async (newCenterId) => {
+      // Reset downstream selections
+      selectedServiceObj.value = null;
+      serviceSearchQuery.value = "";
+      serviceSearchResults.value = [];
+      bookingForm.value.categoryId = "";
+      bookingForm.value.resourceId = "";
+      bookingForm.value.startTime = "";
+      availableSlots.value = [];
+      customDurationMinutes.value = 0;
+      customPrice.value = 0;
+      // Load resources for the new centre
+      await loadModalResources(newCenterId);
+    },
+  );
 
   async function onServiceChange() {
     bookingForm.value.resourceId = "";
