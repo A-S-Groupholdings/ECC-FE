@@ -1030,6 +1030,7 @@
 
 <script setup>
   import { ref, computed, onMounted, watch } from "vue";
+  import { useRoute } from "vue-router";
   import {
     GetVisibleServices,
     GetBookingSlots,
@@ -1038,6 +1039,8 @@
     CreateStripeSession,
     GetCenters,
   } from "@/services/apiService.js";
+
+  const route = useRoute();
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
   const currentStep = ref(0);
@@ -1075,6 +1078,23 @@
       const response = await GetCenters();
       if (response.isSuccess) {
         centers.value = response.value || [];
+        // Auto-select center based on URL path
+        const path = route.path.toLowerCase();
+        if (path.includes("cranbourne")) {
+          const crn = centers.value.find(
+            (c) =>
+              (c.name || "").toLowerCase().includes("cranbourne") ||
+              (c.code || "").toLowerCase() === "crn",
+          );
+          if (crn) booking.value.center = crn._id;
+        } else if (path.includes("hallam")) {
+          const hal = centers.value.find(
+            (c) =>
+              (c.name || "").toLowerCase().includes("hallam") ||
+              (c.code || "").toLowerCase() === "hal",
+          );
+          if (hal) booking.value.center = hal._id;
+        }
       }
     } catch (error) {
       console.error("Error fetching centers:", error);

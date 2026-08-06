@@ -49,6 +49,22 @@ const router = createRouter({
         title: "Elite Cricket Centre - Booking"}
 
     },
+    {
+      path: "/cranbourne",
+      name: "home-cranbourne",
+      component: HomeView,
+      meta: {
+        title: "Elite Cricket Centre - Cranbourne"}
+
+    },
+    {
+      path: "/hallam",
+      name: "home-hallam",
+      component: HomeView,
+      meta: {
+        title: "Elite Cricket Centre - Hallam"}
+
+    },
      {
       path: "/dashboard",
       name: "login",
