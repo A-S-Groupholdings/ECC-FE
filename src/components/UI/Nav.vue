@@ -30,12 +30,50 @@
           class="text-white hover:text-secondary transition-colors duration-200"
           >Lane Booking</a
         >
+        <!-- Centres with hover dropdown -->
+        <div
+          class="membership-wrapper relative py-2"
+          @mouseenter="openMenu = 'centres'"
+          @mouseleave="openMenu = null"
+        >
+          <a
+            href="/membership/public"
+            class="text-white hover:text-secondary transition-colors duration-200"
+          >
+            Centres
+          </a>
+
+          <!-- Dropdown Submenu -->
+          <transition name="dropdown">
+            <div
+              v-if="openMenu === 'centres'"
+              class="absolute top-full left-0 pt-2 w-64 z-50"
+            >
+              <div
+                class="bg-white shadow-lg border border-gray-100 py-2 text-left"
+              >
+                <a
+                  href="https://elitecricketcentre.com.au/hallam"
+                  class="block px-6 py-3 text-[16px] text-gray-500 font-montserrat font-normal hover:text-secondary hover:bg-gray-50 transition-colors duration-150"
+                >
+                  Hallam
+                </a>
+                <a
+                  href="https://elitecricketcentre.com.au/cranbourne-north"
+                  class="block px-6 py-3 text-[16px] text-gray-500 font-montserrat font-normal hover:text-secondary hover:bg-gray-50 transition-colors duration-150"
+                >
+                  Cranbourne North
+                </a>
+              </div>
+            </div>
+          </transition>
+        </div>
 
         <!-- Membership with hover dropdown -->
         <div
           class="membership-wrapper relative py-2"
-          @mouseenter="showMenu = true"
-          @mouseleave="showMenu = false"
+          @mouseenter="openMenu = 'membership'"
+          @mouseleave="openMenu = null"
         >
           <a
             href="/membership/public"
@@ -47,7 +85,7 @@
           <!-- Dropdown Submenu -->
           <transition name="dropdown">
             <div
-              v-if="showMenu"
+              v-if="openMenu === 'membership'"
               class="absolute top-full left-0 pt-2 w-64 z-50"
             >
               <div
@@ -109,7 +147,7 @@
 <script setup>
   import { ref, computed } from "vue";
 
-  const showMenu = ref(false);
+  const openMenu = ref(null);
 
   const isLoggedIn = computed(() => {
     try {

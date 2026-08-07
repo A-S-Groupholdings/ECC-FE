@@ -105,7 +105,7 @@
 
         <div class="bg-gray-50 rounded-lg p-6 mb-8 text-left">
           <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Center:</span>
+            <span class="text-gray-600">Centre:</span>
             <span class="font-semibold">{{ centerName }}</span>
           </div>
           <div class="flex justify-between mb-2">

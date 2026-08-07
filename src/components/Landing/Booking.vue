@@ -132,7 +132,7 @@
             <!-- Center -->
             <div>
               <label class="block text-[#1a3a35] font-semibold mb-2"
-                >Center</label
+                >Centre</label
               >
               <select
                 v-model="booking.center"
@@ -143,7 +143,7 @@
                 "
                 class="w-full border border-gray-300 rounded px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
               >
-                <option value="">Select a center</option>
+                <option value="">Select a Centre</option>
                 <option
                   v-for="center in centers"
                   :key="center._id"
@@ -882,7 +882,7 @@
             <div class="bg-gray-50 rounded-lg p-6 mb-6">
               <h4 class="font-semibold text-gray-700 mb-4">Order Summary</h4>
               <div class="flex justify-between mb-2">
-                <span class="text-gray-600">Center</span>
+                <span class="text-gray-600">Centre</span>
                 <span class="font-medium">{{ selectedCenterName }}</span>
               </div>
               <div class="flex justify-between mb-2">

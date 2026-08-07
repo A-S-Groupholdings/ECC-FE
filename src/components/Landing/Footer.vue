@@ -37,42 +37,42 @@
           <ul class="space-y-3 text-sm">
             <li>
               <a
-                href="#"
+                href="https://booking.elitecricketcentre.com.au"
                 class="text-[#bbb] font-semibold hover:underline"
                 >Lane Booking</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/gym"
                 class="text-[#bbb] hover:text-white"
                 >Gym</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/gallery"
                 class="text-[#bbb] hover:text-white"
                 >Gallery</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/about-us"
                 class="text-[#bbb] hover:text-white"
                 >About Us</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/contact-us"
                 class="text-[#bbb] hover:text-white"
                 >Contact Us</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://booking.elitecricketcentre.com.au/member/login"
                 class="text-[#bbb] hover:text-white"
                 >Member Login</a
               >
@@ -86,42 +86,42 @@
           <ul class="space-y-3 text-sm">
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au"
                 class="text-[#bbb] hover:text-white"
                 >Home</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/our-coaches/"
                 class="text-[#bbb] hover:text-white"
                 >Our Coaches</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/category/ecc-blogs"
                 class="text-[#bbb] hover:text-white"
                 >Blog Posts</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au/video-analysis"
                 class="text-[#bbb] hover:text-white"
                 >Video Analysis</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://elitecricketcentre.com.au"
                 class="text-[#bbb] hover:text-white"
                 >Coach booking</a
               >
             </li>
             <li>
               <a
-                href="#"
+                href="https://booking.elitecricketcentre.com.au/booking/cancel"
                 class="text-gray-300 hover:text-white"
                 >Booking Cancellation</a
               >
