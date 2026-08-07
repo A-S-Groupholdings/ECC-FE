@@ -1,5 +1,8 @@
 <template>
-  <div class="booking">
+  <div
+    ref="bookingRoot"
+    class="booking"
+  >
     <!-- Header Section -->
     <div class="bg-[#f5f3ef] py-8 px-4">
       <div class="container mx-auto text-center">
@@ -1029,7 +1032,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from "vue";
+  import { ref, computed, onMounted, watch, nextTick } from "vue";
   import { useRoute } from "vue-router";
   import {
     GetVisibleServices,
@@ -1044,6 +1047,15 @@
 
   const steps = ["Service", "Time", "Details", "Payment", "Done"];
   const currentStep = ref(0);
+  const bookingRoot = ref(null);
+
+  // Steps have very different heights (e.g. the tall calendar step vs. the short
+  // details form). Without this the scroll position stays put and the user ends up
+  // looking at the section rendered *below* this component after pressing NEXT.
+  watch(currentStep, async () => {
+    await nextTick();
+    bookingRoot.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   const durationMultiplier = ref(1);
   const maxTotalHours = 12.5; // max 12 hours 30 minutes
