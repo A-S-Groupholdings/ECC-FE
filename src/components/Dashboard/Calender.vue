@@ -1139,6 +1139,7 @@
           >
             <option value="local card">Local Card</option>
             <option value="local cash">Local Cash</option>
+            <option value="link">Link</option>
           </select>
         </div>
 
@@ -1761,6 +1762,7 @@
                   >
                     <option value="local card">Local Card</option>
                     <option value="local cash">Local Cash</option>
+                    <option value="link">Link</option>
                   </select>
                   <div class="relative w-32">
                     <span
