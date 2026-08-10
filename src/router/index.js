@@ -284,7 +284,7 @@ const router = createRouter({
         title: "Elite Cricket Centre - Live Session"}
     },
     {
-      path: "/live-on-ecc-cranbourne",
+      path: "/live-on-ecc-cranbourn",
       name: "livesessioncranbourn",
       component: PublicLiveSessionCranbournView,
       meta: {
