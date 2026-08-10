@@ -441,8 +441,11 @@
 <script setup>
   import { ref, computed, onMounted, onUnmounted } from "vue";
   import { GetSessionDashboard } from "@/services/apiService.js";
+  import { useKeepAwake } from "@/composables/useKeepAwake.js";
 
   const CENTER_ID = "CRN";
+
+  useKeepAwake();
 
   const mainRef = ref(null);
   const isFullscreen = ref(false);
