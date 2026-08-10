@@ -13,7 +13,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Cranbourne Card -->
         <router-link
-          to="/live-on-ecc-cranbourn"
+          to="/live-on-ecc-cranbourne"
           class="group relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:-translate-y-1"
         >
           <div

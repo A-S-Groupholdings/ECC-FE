@@ -87,7 +87,7 @@
             <p
               class="text-sm text-emerald-400/70 font-bold uppercase tracking-widest"
             >
-              Live Session Dashboard Cranbourn
+              Live Session Dashboard Cranbourne North
             </p>
           </div>
         </div>
@@ -195,7 +195,7 @@
       <!-- Resource Grid -->
       <div
         v-else
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5"
       >
         <div
           v-for="resource in resources"
@@ -425,15 +425,15 @@
               : 'bg-emerald-500'
           "
         ></div>
-        <p
+        <!-- <p
           class="text-xs text-emerald-400/40 font-bold uppercase tracking-wider"
         >
           {{ isLoading ? "Updating..." : `Last updated: ${lastUpdated}` }}
-        </p>
+        </p> -->
       </div>
-      <p class="text-xs text-emerald-400/30 font-bold uppercase tracking-wider">
+      <!-- <p class="text-xs text-emerald-400/30 font-bold uppercase tracking-wider">
         Auto-refresh every 30s
-      </p>
+      </p> -->
     </div>
   </main>
 </template>

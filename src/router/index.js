@@ -55,7 +55,6 @@ const router = createRouter({
       component: HomeView,
       meta: {
         title: "Elite Cricket Centre - Cranbourne"}
-
     },
     {
       path: "/hallam",
@@ -285,7 +284,7 @@ const router = createRouter({
         title: "Elite Cricket Centre - Live Session"}
     },
     {
-      path: "/live-on-ecc-cranbourn",
+      path: "/live-on-ecc-cranbourne",
       name: "livesessioncranbourn",
       component: PublicLiveSessionCranbournView,
       meta: {
