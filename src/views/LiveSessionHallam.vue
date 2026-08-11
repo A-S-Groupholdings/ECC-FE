@@ -445,7 +445,7 @@
 
   const CENTER_ID = "HAL";
 
-  useKeepAwake();
+  useKeepAwake({ pingIntervalMs: 60 * 1000 });
 
   const mainRef = ref(null);
   const isFullscreen = ref(false);
