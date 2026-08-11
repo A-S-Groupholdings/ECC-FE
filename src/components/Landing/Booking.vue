@@ -786,7 +786,7 @@
                 <input
                   v-model="booking.phone"
                   type="tel"
-                  placeholder="0390 675 696"
+                  placeholder="03 9067 5696"
                   @blur="validatePhone"
                   :class="[
                     'flex-1 border rounded-r px-4 py-3 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a3a35]',

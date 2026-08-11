@@ -11,9 +11,9 @@
             class="h-[20px] w-[20px]"
           />
           <a
-            href="tel:406499499"
+            href="tel:0390675696"
             class="text-white font-normal text-[13.5px] font-montserrat"
-            >0390 675 696</a
+            >03 9067 5696</a
           >
         </div>
         <div class="phone flex space-x-2 items-center">
