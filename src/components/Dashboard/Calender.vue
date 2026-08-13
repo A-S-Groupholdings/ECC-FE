@@ -2600,9 +2600,23 @@
           columnEnds.push(ev.end);
         }
       });
-      const total = columnEnds.length;
+      // Tighten width: each event only needs as many columns as the max
+      // column index+1 among events that directly overlap its own timespan,
+      // rather than the whole cluster's total column count. This avoids
+      // over-narrowing bookings in chained clusters (A overlaps B, B overlaps
+      // C, but A and C don't overlap each other).
       cluster.forEach((ev) => {
-        result.push({ ...ev.apt, _col: ev.col, _cols: total });
+        let maxCols = ev.col + 1;
+        cluster.forEach((other) => {
+          if (other === ev) return;
+          if (other.start < ev.end && other.end > ev.start) {
+            maxCols = Math.max(maxCols, other.col + 1);
+          }
+        });
+        ev._cols = maxCols;
+      });
+      cluster.forEach((ev) => {
+        result.push({ ...ev.apt, _col: ev.col, _cols: ev._cols });
       });
       cluster = [];
       clusterEnd = -1;
