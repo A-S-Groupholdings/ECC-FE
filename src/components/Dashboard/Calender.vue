@@ -886,10 +886,31 @@
           </div>
         </div>
 
-        <!-- Step 2: Select Service -->
+        <!-- Step 2: Select Category -->
         <div v-if="selectedUser">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Step 2: Search & Select Service
+            Step 2: Select Category <span class="text-red-500">*</span>
+          </label>
+          <select
+            v-model="selectedModalCategory"
+            @change="onModalCategoryChange"
+            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35]"
+          >
+            <option :value="null">Select a category...</option>
+            <option
+              v-for="cat in modalCategories"
+              :key="cat._id"
+              :value="cat"
+            >
+              {{ cat.categoryName }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Step 3: Select Service -->
+        <div v-if="selectedUser && selectedModalCategory">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Step 3: Search & Select Service
             <span class="text-red-500">*</span>
           </label>
           <div
@@ -1050,10 +1071,10 @@
           </div>
         </div>
 
-        <!-- Step 3: Select Resource -->
-        <div v-if="selectedUser">
+        <!-- Step 4: Select Resource -->
+        <div v-if="selectedUser && selectedModalCategory">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Step 3: Select Resource <span class="text-red-500">*</span>
+            Step 4: Select Resource <span class="text-red-500">*</span>
           </label>
           <select
             v-model="bookingForm.resourceId"
@@ -1071,10 +1092,10 @@
           </select>
         </div>
 
-        <!-- Step 4: Select Date -->
+        <!-- Step 5: Select Date -->
         <div v-if="bookingForm.resourceId">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Step 4: Select Date <span class="text-red-500">*</span>
+            Step 5: Select Date <span class="text-red-500">*</span>
           </label>
           <input
             v-model="bookingForm.date"
@@ -1085,10 +1106,10 @@
           />
         </div>
 
-        <!-- Step 5: Select Time Slot -->
+        <!-- Step 6: Select Time Slot -->
         <div v-if="bookingForm.date && availableSlots.length > 0">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Step 5: Select Time Slot <span class="text-red-500">*</span>
+            Step 6: Select Time Slot <span class="text-red-500">*</span>
           </label>
           <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
             <button
@@ -1143,7 +1164,7 @@
           </select>
         </div>
 
-        <!-- Step 6: Notes (Optional) -->
+        <!-- Step 7: Notes (Optional) -->
         <div v-if="bookingForm.startTime">
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Notes <span class="text-gray-400">(Optional)</span>
@@ -1577,6 +1598,27 @@
               </select>
             </div>
 
+            <!-- Edit Category -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1"
+                >Category</label
+              >
+              <select
+                v-model="editSelectedCategory"
+                @change="onEditCategoryChange"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+              >
+                <option :value="null">Select category...</option>
+                <option
+                  v-for="cat in editCategories"
+                  :key="cat._id"
+                  :value="cat"
+                >
+                  {{ cat.categoryName }}
+                </option>
+              </select>
+            </div>
+
             <!-- Edit Service -->
             <div>
               <label class="block text-xs font-semibold text-gray-700 mb-1"
@@ -1604,6 +1646,8 @@
                   @click="
                     editSelectedService = null;
                     editForm.categoryId = '';
+                    editForm.serviceId = '';
+                    editForm.resourceId = '';
                   "
                   class="text-red-500 hover:text-red-700 text-xs"
                 >
@@ -1618,8 +1662,13 @@
                   v-model="editServiceSearch"
                   @input="searchEditServices"
                   type="text"
-                  placeholder="Search service by name..."
-                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm"
+                  :disabled="!editSelectedCategory"
+                  :placeholder="
+                    editSelectedCategory
+                      ? 'Search service by name...'
+                      : 'Select a category first...'
+                  "
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a35] text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
                 <div
                   v-if="editServiceResults.length > 0"
@@ -2662,6 +2711,7 @@
   const serviceSearchQuery = ref("");
   const serviceSearchResults = ref([]);
   const selectedServiceObj = ref(null);
+  const selectedModalCategory = ref(null);
   const availableSlots = ref([]);
   const loadingSlots = ref(false);
   const isCreatingBooking = ref(false);
@@ -2712,6 +2762,54 @@
   const editServiceSearch = ref("");
   const editServiceResults = ref([]);
   const editSelectedService = ref(null);
+  const editSelectedCategory = ref(null);
+
+  // Unique categories derived from services filtered by the selected centre
+  const editCategories = computed(() => {
+    const centerId = editForm.value.centerId;
+    const filtered = centerId
+      ? editServices.value.filter((s) =>
+          (s.centerIds || []).some((c) =>
+            typeof c === "object" ? c._id === centerId : c === centerId,
+          ),
+        )
+      : editServices.value;
+    const map = new Map();
+    for (const s of filtered) {
+      const cat = s.categoryID;
+      if (cat && typeof cat === "object" && cat._id) {
+        if (!map.has(cat._id)) {
+          map.set(cat._id, {
+            _id: cat._id,
+            categoryName: cat.categoryName,
+            categoryID: cat.categoryID,
+          });
+        }
+      }
+    }
+    return Array.from(map.values());
+  });
+
+  // Services filtered by the selected category (and centre)
+  const editCategoryServices = computed(() => {
+    const centerId = editForm.value.centerId;
+    let filtered = centerId
+      ? editServices.value.filter((s) =>
+          (s.centerIds || []).some((c) =>
+            typeof c === "object" ? c._id === centerId : c === centerId,
+          ),
+        )
+      : editServices.value;
+    if (editSelectedCategory.value?._id) {
+      filtered = filtered.filter(
+        (s) =>
+          s.categoryID?._id === editSelectedCategory.value._id ||
+          (typeof s.categoryID === "string" &&
+            s.categoryID === editSelectedCategory.value._id),
+      );
+    }
+    return filtered;
+  });
 
   function formatDateTimeDate(d) {
     if (!d) return "-";
@@ -2773,6 +2871,7 @@
     detailsError.value = "";
     bookingDetails.value = null;
     editSelectedUser.value = null;
+    editSelectedCategory.value = null;
     try {
       const response = await GetBookingById(id);
       if (response.isSuccess) {
@@ -2799,9 +2898,17 @@
           paymentStatus: v.paymentStatus || "",
           note: v.note || "",
           centerId: bookingCenterId,
-          categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
-          resourceId: v.resourceId?._id || v.resourceId || "",
-          userId: v.userId?._id || v.userId || "",
+          categoryId:
+            v.service?.categoryID?._id ||
+            (v.service?.categoryID && typeof v.service.categoryID === "string"
+              ? v.service.categoryID
+              : "") ||
+            v.categoryId?._id ||
+            v.categoryId ||
+            "",
+          serviceId: v.service?._id || v.serviceID || "",
+          resourceId: v.resourceId?._id || v.resourceId || v.resourceID || "",
+          userId: v.userId?._id || v.userId || v.user?._id || "",
           price: v.payment?.amount ?? v.price ?? 0,
           paymentMethod:
             v.payment?.paymentMethod || v.paymentMethod || "local card",
@@ -2810,12 +2917,50 @@
         };
         if (v.userId && typeof v.userId === "object") {
           editSelectedUser.value = v.userId;
+        } else if (v.user && typeof v.user === "object") {
+          editSelectedUser.value = v.user;
         }
+        // Try to find the full service object from loaded services
+        // The booking response may have flat fields (serviceID, serviceName)
+        // rather than a fully populated service object with categoryID
+        const bookingServiceId =
+          v.service?._id || v.serviceID || v.service?.serviceID || "";
+        const bookingServiceName = v.service?.title || v.serviceName || "";
+        const fullService = bookingServiceId
+          ? editServices.value.find((s) => s._id === bookingServiceId)
+          : editServices.value.find(
+              (s) => s.title === bookingServiceName && bookingServiceName,
+            );
         editSelectedService.value =
+          fullService ||
           v.service ||
           (v.categoryId && typeof v.categoryId === "object"
             ? v.categoryId
             : null);
+        // Set category from the full service's categoryID object
+        const svcCat =
+          fullService?.categoryID ||
+          v.service?.categoryID ||
+          (v.categoryId && typeof v.categoryId === "object"
+            ? v.categoryId
+            : null);
+        if (svcCat && typeof svcCat === "object" && svcCat._id) {
+          editSelectedCategory.value = {
+            _id: svcCat._id,
+            categoryName: svcCat.categoryName,
+            categoryID: svcCat.categoryID,
+          };
+        } else if (fullService) {
+          // If fullService found but categoryID is a string, match from editCategories
+          const catObj = editCategories.value.find(
+            (c) =>
+              c._id === fullService.categoryID ||
+              c.categoryName === fullService.categoryName ||
+              c.categoryName === v.serviceCategoryName ||
+              c.categoryName === v.categoryName,
+          );
+          if (catObj) editSelectedCategory.value = catObj;
+        }
         editServiceSearch.value = "";
         editServiceResults.value = [];
       } else {
@@ -2878,16 +3023,7 @@
       editServiceResults.value = [];
       return;
     }
-    const filtered = editForm.value.centerId
-      ? editServices.value.filter((s) =>
-          (s.centerIds || []).some((c) =>
-            typeof c === "object"
-              ? c._id === editForm.value.centerId
-              : c === editForm.value.centerId,
-          ),
-        )
-      : editServices.value;
-    editServiceResults.value = filtered
+    editServiceResults.value = editCategoryServices.value
       .filter(
         (s) =>
           (s.title || "").toLowerCase().includes(q) ||
@@ -2898,17 +3034,32 @@
 
   function selectEditService(svc) {
     editSelectedService.value = svc;
-    editForm.value.categoryId = svc._id;
+    editForm.value.categoryId =
+      svc.categoryID?._id ||
+      (typeof svc.categoryID === "string" ? svc.categoryID : "") ||
+      "";
+    editForm.value.serviceId = svc._id;
     editServiceSearch.value = "";
     editServiceResults.value = [];
+    // Filter resources to only those belonging to the selected service
+    if (svc.resourceIDs && svc.resourceIDs.length > 0) {
+      const svcResourceIds = new Set(
+        svc.resourceIDs.map((r) => (typeof r === "object" ? r._id : r)),
+      );
+      editResources.value = editResources.value.filter((r) =>
+        svcResourceIds.has(r._id),
+      );
+    }
   }
 
   async function onEditCenterChange() {
-    // Reset service and resource selections when center changes
+    // Reset category, service and resource selections when center changes
+    editSelectedCategory.value = null;
     editSelectedService.value = null;
     editServiceSearch.value = "";
     editServiceResults.value = [];
     editForm.value.categoryId = "";
+    editForm.value.serviceId = "";
     editForm.value.resourceId = "";
     // Reload resources for the new centre
     const centerId = editForm.value.centerId;
@@ -2929,6 +3080,16 @@
     }
   }
 
+  function onEditCategoryChange() {
+    // Reset service and resource selections when category changes
+    editSelectedService.value = null;
+    editServiceSearch.value = "";
+    editServiceResults.value = [];
+    editForm.value.categoryId = "";
+    editForm.value.serviceId = "";
+    editForm.value.resourceId = "";
+  }
+
   function cancelEditBooking() {
     isEditingBooking.value = false;
     const v = bookingDetails.value || {};
@@ -2941,9 +3102,17 @@
       paymentStatus: v.paymentStatus || "",
       note: v.note || "",
       centerId: v.centerId?._id || v.centerId || "",
-      categoryId: v.service?._id || v.categoryId?._id || v.categoryId || "",
-      resourceId: v.resourceId?._id || v.resourceId || "",
-      userId: v.userId?._id || v.userId || "",
+      categoryId:
+        v.service?.categoryID?._id ||
+        (v.service?.categoryID && typeof v.service.categoryID === "string"
+          ? v.service.categoryID
+          : "") ||
+        v.categoryId?._id ||
+        v.categoryId ||
+        "",
+      serviceId: v.service?._id || v.serviceID || "",
+      resourceId: v.resourceId?._id || v.resourceId || v.resourceID || "",
+      userId: v.userId?._id || v.userId || v.user?._id || "",
       price: v.payment?.amount ?? v.price ?? 0,
       paymentMethod:
         v.payment?.paymentMethod || v.paymentMethod || "local card",
@@ -2952,10 +3121,46 @@
     };
     if (v.userId && typeof v.userId === "object") {
       editSelectedUser.value = v.userId;
+    } else if (v.user && typeof v.user === "object") {
+      editSelectedUser.value = v.user;
     }
+    // Find the full service object from loaded services
+    const bookingServiceId =
+      v.service?._id || v.serviceID || v.service?.serviceID || "";
+    const bookingServiceName = v.service?.title || v.serviceName || "";
+    const fullService = bookingServiceId
+      ? editServices.value.find((s) => s._id === bookingServiceId)
+      : editServices.value.find(
+          (s) => s.title === bookingServiceName && bookingServiceName,
+        );
     editSelectedService.value =
+      fullService ||
       v.service ||
       (v.categoryId && typeof v.categoryId === "object" ? v.categoryId : null);
+    // Restore category from the full service's categoryID
+    const svcCat =
+      fullService?.categoryID ||
+      v.service?.categoryID ||
+      (v.categoryId && typeof v.categoryId === "object" ? v.categoryId : null);
+    if (svcCat && typeof svcCat === "object" && svcCat._id) {
+      editSelectedCategory.value = {
+        _id: svcCat._id,
+        categoryName: svcCat.categoryName,
+        categoryID: svcCat.categoryID,
+      };
+    } else if (fullService) {
+      const catObj = editCategories.value.find(
+        (c) =>
+          c._id === fullService.categoryID ||
+          c.categoryName === fullService.categoryName ||
+          c.categoryName === v.serviceCategoryName ||
+          c.categoryName === v.categoryName,
+      );
+      if (catObj) editSelectedCategory.value = catObj;
+      else editSelectedCategory.value = null;
+    } else {
+      editSelectedCategory.value = null;
+    }
     editServiceSearch.value = "";
     editServiceResults.value = [];
   }
@@ -2978,6 +3183,7 @@
         paymentStatus: editForm.value.paymentStatus,
         note: editForm.value.note,
         centerId: editForm.value.centerId,
+        serviceId: editForm.value.serviceId,
         categoryId: editForm.value.categoryId,
         resourceId: editForm.value.resourceId,
         userId: editForm.value.userId,
@@ -3105,6 +3311,7 @@
     userSearchQuery.value = "";
     userSearchResults.value = [];
     selectedUser.value = null;
+    selectedModalCategory.value = null;
     serviceSearchQuery.value = "";
     serviceSearchResults.value = [];
     selectedServiceObj.value = null;
@@ -3206,8 +3413,50 @@
     );
   });
 
+  // Unique categories derived from services filtered by the selected centre
+  const modalCategories = computed(() => {
+    const map = new Map();
+    for (const s of centerFilteredServices.value) {
+      const cat = s.categoryID;
+      if (cat && typeof cat === "object" && cat._id) {
+        if (!map.has(cat._id)) {
+          map.set(cat._id, {
+            _id: cat._id,
+            categoryName: cat.categoryName,
+            categoryID: cat.categoryID,
+          });
+        }
+      }
+    }
+    return Array.from(map.values());
+  });
+
+  // Services filtered by the selected category (and centre)
+  const modalCategoryServices = computed(() => {
+    if (!selectedModalCategory.value?._id) return centerFilteredServices.value;
+    return centerFilteredServices.value.filter(
+      (s) =>
+        s.categoryID?._id === selectedModalCategory.value._id ||
+        (typeof s.categoryID === "string" &&
+          s.categoryID === selectedModalCategory.value._id),
+    );
+  });
+
   // Resources for the selected centre in the new-booking modal
   const modalResources = ref([]);
+
+  function onModalCategoryChange() {
+    // Reset service and resource selections when category changes
+    selectedServiceObj.value = null;
+    serviceSearchQuery.value = "";
+    serviceSearchResults.value = [];
+    bookingForm.value.categoryId = "";
+    bookingForm.value.resourceId = "";
+    bookingForm.value.startTime = "";
+    availableSlots.value = [];
+    customDurationMinutes.value = 0;
+    customPrice.value = 0;
+  }
 
   function searchServices() {
     const q = serviceSearchQuery.value.trim().toLowerCase();
@@ -3215,7 +3464,7 @@
       serviceSearchResults.value = [];
       return;
     }
-    serviceSearchResults.value = centerFilteredServices.value
+    serviceSearchResults.value = modalCategoryServices.value
       .filter(
         (s) =>
           (s.title || "").toLowerCase().includes(q) ||
@@ -3248,6 +3497,7 @@
     () => bookingForm.value.centerId,
     async (newCenterId) => {
       // Reset downstream selections
+      selectedModalCategory.value = null;
       selectedServiceObj.value = null;
       serviceSearchQuery.value = "";
       serviceSearchResults.value = [];
