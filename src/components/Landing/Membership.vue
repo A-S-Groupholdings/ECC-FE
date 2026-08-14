@@ -307,7 +307,7 @@
                 Operating Hours
               </h3>
               <p class="text-sm text-gray-600">
-                Facilities are available for members from
+                The facility is generally open from
                 <span class="font-semibold text-[#1a3a35]"
                   >9:30 AM to 11:00 PM</span
                 >, subject to lane availability and session scheduling.
