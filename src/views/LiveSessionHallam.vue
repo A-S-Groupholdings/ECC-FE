@@ -62,6 +62,42 @@
       </svg>
     </button>
 
+    <!-- Voice Alerts Toggle -->
+    <button
+      @click="toggleVoiceAlerts"
+      class="absolute top-4 right-20 z-50 bg-emerald-500/20 hover:bg-emerald-500/30 backdrop-blur-md border border-emerald-400/30 rounded-xl p-3 transition-all duration-300 hover:scale-105 group"
+      :title="voiceEnabled ? 'Mute Voice Alerts' : 'Enable Voice Alerts'"
+    >
+      <svg
+        v-if="voiceEnabled"
+        class="w-6 h-6 text-emerald-300 group-hover:text-emerald-200"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15.536 8.464a5 5 0 010 7.072M12 18.293l-4.146-4.147H4a1 1 0 01-1-1v-2.292a1 1 0 011-1h3.854L12 5.707v12.586zM18.5 6a9 9 0 010 12"
+        ></path>
+      </svg>
+      <svg
+        v-else
+        class="w-6 h-6 text-red-300 group-hover:text-red-200"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 18.293l-4.146-4.147H4a1 1 0 01-1-1v-2.292a1 1 0 011-1h3.854L12 5.707v12.586zM17 9l4 4m0-4l-4 4"
+        ></path>
+      </svg>
+    </button>
+
     <!-- Header -->
     <header class="px-6 py-5 border-b border-emerald-500/10 relative z-10">
       <div class="flex items-center justify-between">
@@ -461,6 +497,127 @@
   let clockInterval = null;
   let pollInterval = null;
 
+  // ─── Voice Alerts ────────────────────────────────────────────────────────────
+  const voiceEnabled = ref(true);
+  const alertedSessionKeys = new Set();
+  const ALERT_MINUTES_BEFORE = 15;
+  let alertCheckInterval = null;
+
+  function speak(text) {
+    if (!voiceEnabled.value) return;
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-AU";
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error("Error speaking voice alert:", error);
+    }
+  }
+
+  function toggleVoiceAlerts() {
+    voiceEnabled.value = !voiceEnabled.value;
+    if (voiceEnabled.value) {
+      // Unlock the speech synthesis engine (some browsers require a
+      // user-gesture-triggered utterance before it will speak later).
+      speak("Voice alerts enabled.");
+    } else if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  // Parses time strings like "14:30" (24h) or "2:30 PM" (12h) into minutes-of-day.
+  function parseTimeStringToMinutes(str) {
+    if (!str) return null;
+    const s = String(str).trim();
+    const ampmMatch = s.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])$/);
+    if (ampmMatch) {
+      let h = parseInt(ampmMatch[1], 10);
+      const m = parseInt(ampmMatch[2], 10);
+      const period = ampmMatch[3].toLowerCase();
+      if (period === "pm" && h !== 12) h += 12;
+      if (period === "am" && h === 12) h = 0;
+      return h * 60 + m;
+    }
+    const hhmmMatch = s.match(/^(\d{1,2}):(\d{2})$/);
+    if (hhmmMatch) {
+      return parseInt(hhmmMatch[1], 10) * 60 + parseInt(hhmmMatch[2], 10);
+    }
+    return null;
+  }
+
+  function getSydneyNowParts() {
+    const tz = dashboardData.value?.timezone || "Australia/Sydney";
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("en-AU", {
+      timeZone: tz,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    const dateStr = now.toLocaleDateString("en-AU", { timeZone: tz });
+    return { minutes: parseTimeStringToMinutes(timeStr), dateStr };
+  }
+
+  // Checks every resource's current/next session and speaks a voice alert
+  // once when a session is within ALERT_MINUTES_BEFORE minutes of ending, or
+  // once when the next session is within ALERT_MINUTES_BEFORE minutes of
+  // starting. Each session is only alerted once (tracked via alertedSessionKeys).
+  function checkSessionAlerts() {
+    if (!voiceEnabled.value) return;
+    const { minutes: nowMinutes, dateStr } = getSydneyNowParts();
+    if (nowMinutes == null) return;
+
+    resources.value.forEach((resource) => {
+      const laneName = resource.title;
+
+      // Current session ending soon
+      const current = resource.currentSession;
+      if (current?.endTime) {
+        const endMinutes = parseTimeStringToMinutes(current.endTime);
+        if (endMinutes != null) {
+          const remaining = endMinutes - nowMinutes;
+          const key = `end_${resource._id}_${dateStr}_${current.startTime}_${current.endTime}`;
+          if (
+            remaining > 0 &&
+            remaining <= ALERT_MINUTES_BEFORE &&
+            !alertedSessionKeys.has(key)
+          ) {
+            alertedSessionKeys.add(key);
+            const messages = [
+              `Attention. ${laneName} has ${remaining} minutes remaining.`,
+              `${laneName}, session ending in ${remaining} minutes.`,
+            ];
+            speak(messages[Math.floor(Math.random() * messages.length)]);
+          }
+        }
+      }
+
+      // Next session starting soon
+      const next = resource.nextSession;
+      if (next?.startTime) {
+        const startMinutes = parseTimeStringToMinutes(next.startTime);
+        if (startMinutes != null) {
+          const remaining = startMinutes - nowMinutes;
+          const key = `start_${resource._id}_${dateStr}_${next.startTime}_${next.endTime}`;
+          if (
+            remaining > 0 &&
+            remaining <= ALERT_MINUTES_BEFORE &&
+            !alertedSessionKeys.has(key)
+          ) {
+            alertedSessionKeys.add(key);
+            speak(
+              `Attention. ${laneName}, next session starting in ${remaining} minutes.`,
+            );
+          }
+        }
+      }
+    });
+  }
+
   const activeSessionCount = computed(() => {
     return resources.value.filter((r) => r.currentSession).length;
   });
@@ -519,6 +676,7 @@
           second: "2-digit",
           hour12: false,
         });
+        checkSessionAlerts();
       } else {
         errorMessage.value =
           response.errorMessage ||
@@ -593,12 +751,17 @@
     clockInterval = setInterval(updateClock, 1000);
     fetchDashboard();
     pollInterval = setInterval(fetchDashboard, 30000);
+    // Check alert thresholds more frequently than the data poll so alerts
+    // fire close to the exact minute, using the last fetched resources.
+    alertCheckInterval = setInterval(checkSessionAlerts, 15000);
     document.addEventListener("fullscreenchange", onFullscreenChange);
   });
 
   onUnmounted(() => {
     if (clockInterval) clearInterval(clockInterval);
     if (pollInterval) clearInterval(pollInterval);
+    if (alertCheckInterval) clearInterval(alertCheckInterval);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
     document.removeEventListener("fullscreenchange", onFullscreenChange);
   });
 </script>
