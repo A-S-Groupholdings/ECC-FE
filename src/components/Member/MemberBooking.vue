@@ -1297,10 +1297,12 @@
       timeSlots.value.filter((s) => s.available).map((s) => s.time),
     );
     let slots = scheduleSlots.value;
-    // For today only: filter out past times
+    // For today only: filter out past times and enforce a 1-hour booking
+    // window (e.g. at 8:00am, only slots from 9:00am onwards are shown).
     if (isToday) {
       const currentMins = getAustraliaTimeMinutes();
-      slots = slots.filter((slot) => slot._startMins >= currentMins);
+      const minBookableMins = currentMins + 60;
+      slots = slots.filter((slot) => slot._startMins >= minBookableMins);
     }
     return slots.map((slot) => ({
       ...slot,
