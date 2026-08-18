@@ -278,7 +278,7 @@
                   d="M10 6a1 1 0 011 1v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2V7a1 1 0 011-1z"
                 />
               </svg>
-              2025
+              2026
               <span class="font-semibold text-white mx-1"
                 >Elite Cricket Centre</span
               >
