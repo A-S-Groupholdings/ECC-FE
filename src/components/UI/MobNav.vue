@@ -135,29 +135,107 @@
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 py-4">
-          <a
-            v-for="(item, index) in navItems"
-            :key="index"
-            :href="item.href"
-            class="flex items-center gap-4 px-6 py-4 text-white/80 hover:text-white hover:bg-emerald-500/10 transition-all duration-200 border-l-4 border-transparent hover:border-emerald-400"
-            @click="closeMenu"
-          >
-            <svg
-              class="w-5 h-5 text-emerald-400/70"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <nav class="flex-1 py-4 overflow-y-auto">
+          <!-- Main Menu -->
+          <template v-if="!activeSubmenu">
+            <template
+              v-for="(item, index) in navItems"
+              :key="index"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                :d="item.icon"
-              ></path>
-            </svg>
-            <span class="text-[16px] font-medium">{{ item.label }}</span>
-          </a>
+              <a
+                v-if="!item.submenu"
+                :href="item.href"
+                class="flex items-center gap-4 px-6 py-4 text-white/80 hover:text-white hover:bg-emerald-500/10 transition-all duration-200 border-l-4 border-transparent hover:border-emerald-400"
+                @click="closeMenu"
+              >
+                <svg
+                  class="w-5 h-5 text-emerald-400/70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    :d="item.icon"
+                  ></path>
+                </svg>
+                <span class="text-[16px] font-medium">{{ item.label }}</span>
+              </a>
+              <button
+                v-else
+                @click="openSubmenu(item)"
+                class="w-full flex items-center gap-4 px-6 py-4 text-white/80 hover:text-white hover:bg-emerald-500/10 transition-all duration-200 border-l-4 border-transparent hover:border-emerald-400"
+              >
+                <svg
+                  class="w-5 h-5 text-emerald-400/70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    :d="item.icon"
+                  ></path>
+                </svg>
+                <span class="text-[16px] font-medium flex-1 text-left">{{
+                  item.label
+                }}</span>
+                <svg
+                  class="w-5 h-5 text-white/40"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
+                </svg>
+              </button>
+            </template>
+          </template>
+
+          <!-- Submenu Panel -->
+          <template v-else>
+            <button
+              @click="backToMenu"
+              class="w-full flex items-center gap-3 px-6 py-4 text-white/60 hover:text-white transition-colors duration-200 border-b border-emerald-500/20"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                ></path>
+              </svg>
+              <span class="text-[15px] font-semibold uppercase tracking-wide"
+                >Back to Menu</span
+              >
+            </button>
+            <a
+              v-for="(sub, sIndex) in activeSubmenu.submenu"
+              :key="sIndex"
+              :href="sub.href"
+              class="block px-6 py-4 text-white/80 hover:text-white hover:bg-emerald-500/10 transition-all duration-200 border-l-4 border-transparent hover:border-emerald-400"
+              @click="closeMenu"
+            >
+              <span class="text-[16px] font-medium uppercase tracking-wide">{{
+                sub.label
+              }}</span>
+            </a>
+          </template>
         </nav>
 
         <!-- Drawer Footer -->
@@ -225,6 +303,17 @@
 
   function closeMenu() {
     isMenuOpen.value = false;
+    activeSubmenu.value = null;
+  }
+
+  const activeSubmenu = ref(null);
+
+  function openSubmenu(item) {
+    activeSubmenu.value = item;
+  }
+
+  function backToMenu() {
+    activeSubmenu.value = null;
   }
 
   const navItems = [
@@ -234,9 +323,29 @@
       icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
     },
     {
+      label: "Centres",
+      icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z",
+      submenu: [
+        { label: "Hallam", href: "https://elitecricketcentre.com.au/hallam/" },
+        {
+          label: "Cranbourne North",
+          href: "https://elitecricketcentre.com.au/cranbourne-north/",
+        },
+      ],
+    },
+    {
       label: "Membership",
-      href: "/membership/public",
       icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+      submenu: [
+        {
+          label: "Member Login",
+          href: "https://booking.elitecricketcentre.com.au/member/login",
+        },
+        {
+          label: "Membership Registration",
+          href: "https://booking.elitecricketcentre.com.au/membership/public",
+        },
+      ],
     },
     {
       label: "Gym",
