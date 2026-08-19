@@ -32,7 +32,8 @@
       <div class="flex items-center space-x-4">
         <!-- facebook -->
         <a
-          href="javascript:;"
+          href="https://web.facebook.com/Elitecricketcentreau"
+          target="_blank"
           class="flex items-center border justify-center transition-all duration-500 border-secondary bg-secondary rounded-full"
         >
           <svg
@@ -50,7 +51,8 @@
         </a>
         <!-- instagram -->
         <a
-          href="javascript:;"
+          href="https://www.instagram.com/elitecricketcentreau_/"
+          target="_blank"
           class="flex items-center border justify-center transition-all duration-500 border-secondary bg-secondary rounded-full"
         >
           <svg
@@ -68,7 +70,8 @@
 
         <!-- youtube -->
         <a
-          href="javascript:;"
+          href="https://www.youtube.com/@EliteCricketCentre"
+          target="_blank"
           class="flex items-center border justify-center transition-all duration-500 border-secondary bg-secondary rounded-full"
         >
           <svg
@@ -88,7 +91,8 @@
 
         <!-- pinterest -->
         <a
-          href="javascript:;"
+          href="https://www.pinterest.com/elitecricketcentre/"
+          target="_blank"
           class="flex items-center border justify-center transition-all duration-500 border-secondary bg-secondary rounded-full"
         >
           <svg
@@ -106,7 +110,8 @@
 
         <!-- tiktok -->
         <a
-          href="javascript:;"
+          href="https://www.tiktok.com/@elitecricketcentre"
+          target="_blank"
           class="flex items-center border justify-center transition-all duration-500 border-secondary bg-secondary rounded-full"
         >
           <svg
