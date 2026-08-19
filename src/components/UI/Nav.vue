@@ -1,6 +1,8 @@
 <template>
   <nav class="bg-primary h-28 border-b border-[#aeaeae] sm:grid hidden">
-    <div class="container mx-auto flex items-center justify-between h-full">
+    <div
+      class="container mx-auto flex items-center justify-between h-full px-4"
+    >
       <div class="flex items-center space-x-3">
         <!-- logo -->
         <a href="https://elitecricketcentre.com.au/">
