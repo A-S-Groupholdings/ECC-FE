@@ -500,22 +500,55 @@
   // ─── Voice Alerts ────────────────────────────────────────────────────────────
   const voiceEnabled = ref(true);
   const alertedSessionKeys = new Set();
-  const ALERT_MINUTES_BEFORE = 15;
+  // Distinct alert checkpoint(s): each one gets its own "ending soon"
+  // announcement as the session crosses it.
+  const ALERT_CHECKPOINTS_MINUTES = [10];
   let alertCheckInterval = null;
 
-  function speak(text) {
-    if (!voiceEnabled.value) return;
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
+  // Speech announcements are queued and played one at a time with a gap
+  // between them, so that when several lanes alert at once (e.g. 3 lanes
+  // ending together) they don't talk over each other / run back-to-back.
+  const ANNOUNCEMENT_GAP_MS = 5000;
+  const speechQueue = [];
+  let isSpeaking = false;
+
+  function speak(text, onEnd) {
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      onEnd?.();
+      return;
+    }
     try {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "en-AU";
       utterance.rate = 0.95;
       utterance.pitch = 1;
       utterance.volume = 1;
+      utterance.onend = () => onEnd?.();
+      utterance.onerror = () => onEnd?.();
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       console.error("Error speaking voice alert:", error);
+      onEnd?.();
     }
+  }
+
+  function processSpeechQueue() {
+    if (isSpeaking) return;
+    const text = speechQueue.shift();
+    if (!text) return;
+    isSpeaking = true;
+    speak(text, () => {
+      setTimeout(() => {
+        isSpeaking = false;
+        processSpeechQueue();
+      }, ANNOUNCEMENT_GAP_MS);
+    });
+  }
+
+  function enqueueSpeech(text) {
+    if (!voiceEnabled.value) return;
+    speechQueue.push(text);
+    processSpeechQueue();
   }
 
   function toggleVoiceAlerts() {
@@ -523,8 +556,10 @@
     if (voiceEnabled.value) {
       // Unlock the speech synthesis engine (some browsers require a
       // user-gesture-triggered utterance before it will speak later).
-      speak("Voice alerts enabled.");
+      enqueueSpeech("Voice alerts enabled.");
     } else if (window.speechSynthesis) {
+      speechQueue.length = 0;
+      isSpeaking = false;
       window.speechSynthesis.cancel();
     }
   }
@@ -563,9 +598,9 @@
   }
 
   // Checks every resource's current/next session and speaks a voice alert
-  // once when a session is within ALERT_MINUTES_BEFORE minutes of ending, or
-  // once when the next session is within ALERT_MINUTES_BEFORE minutes of
-  // starting. Each session is only alerted once (tracked via alertedSessionKeys).
+  // as it crosses each entry in ALERT_CHECKPOINTS_MINUTES (e.g. 15, 10, then
+  // 5 minutes out), so multiple heads-up announcements fire per session.
+  // Each checkpoint is only alerted once (tracked via alertedSessionKeys).
   function checkSessionAlerts() {
     if (!voiceEnabled.value) return;
     const { minutes: nowMinutes, dateStr } = getSydneyNowParts();
@@ -580,37 +615,34 @@
         const endMinutes = parseTimeStringToMinutes(current.endTime);
         if (endMinutes != null) {
           const remaining = endMinutes - nowMinutes;
-          const key = `end_${resource._id}_${dateStr}_${current.startTime}_${current.endTime}`;
-          if (
-            remaining > 0 &&
-            remaining <= ALERT_MINUTES_BEFORE &&
-            !alertedSessionKeys.has(key)
-          ) {
-            alertedSessionKeys.add(key);
-            const messages = [
-              `Attention. ${laneName} has ${remaining} minutes remaining.`,
-              `${laneName}, session ending in ${remaining} minutes.`,
-            ];
-            speak(messages[Math.floor(Math.random() * messages.length)]);
-          }
-        }
-      }
+          ALERT_CHECKPOINTS_MINUTES.forEach((checkpoint) => {
+            const key = `end_${checkpoint}_${resource._id}_${dateStr}_${current.startTime}_${current.endTime}`;
+            if (
+              remaining > 0 &&
+              remaining <= checkpoint &&
+              !alertedSessionKeys.has(key)
+            ) {
+              alertedSessionKeys.add(key);
+              const messages = [
+                `Attention. ${laneName} has ${remaining} minutes remaining.`,
+                `${laneName}, session ending in ${remaining} minutes.`,
+              ];
+              enqueueSpeech(
+                messages[Math.floor(Math.random() * messages.length)],
+              );
+            }
+          });
 
-      // Next session starting soon
-      const next = resource.nextSession;
-      if (next?.startTime) {
-        const startMinutes = parseTimeStringToMinutes(next.startTime);
-        if (startMinutes != null) {
-          const remaining = startMinutes - nowMinutes;
-          const key = `start_${resource._id}_${dateStr}_${next.startTime}_${next.endTime}`;
+          // Session has just ended
+          const endedKey = `ended_${resource._id}_${dateStr}_${current.startTime}_${current.endTime}`;
           if (
-            remaining > 0 &&
-            remaining <= ALERT_MINUTES_BEFORE &&
-            !alertedSessionKeys.has(key)
+            remaining <= 0 &&
+            remaining > -5 &&
+            !alertedSessionKeys.has(endedKey)
           ) {
-            alertedSessionKeys.add(key);
-            speak(
-              `Attention. ${laneName}, next session starting in ${remaining} minutes.`,
+            alertedSessionKeys.add(endedKey);
+            enqueueSpeech(
+              `Your session at ${laneName} has ended. Thank you for playing.`,
             );
           }
         }
@@ -761,6 +793,8 @@
     if (clockInterval) clearInterval(clockInterval);
     if (pollInterval) clearInterval(pollInterval);
     if (alertCheckInterval) clearInterval(alertCheckInterval);
+    speechQueue.length = 0;
+    isSpeaking = false;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     document.removeEventListener("fullscreenchange", onFullscreenChange);
   });
