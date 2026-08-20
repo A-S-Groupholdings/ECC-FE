@@ -1262,7 +1262,7 @@
     if (startMins >= endMins) return [];
 
     const slots = [];
-    for (let t = startMins; t + 60 <= endMins; t += 60) {
+    for (let t = startMins; t + 60 <= endMins; t += 30) {
       const time12 = formatMinutesTo12h(t);
       slots.push({
         time: time12,
