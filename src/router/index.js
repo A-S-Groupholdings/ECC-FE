@@ -37,6 +37,7 @@ import MembershipSuccessView from "../views/Landing/MembershipSuccessView.vue";
 import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
 import MembershipPaymentView from "../views/Dashboard/MembershipPaymentView.vue";
 import AvailableSlotsView from "../views/Dashboard/AvailableSlotsView.vue";
+import TTLockerView from "../views/Landing/TTLockerView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -48,6 +49,13 @@ const router = createRouter({
       meta: {
         title: "Elite Cricket Centre - Booking"}
 
+    },
+    {
+      path: "/tt-locker",
+      name: "tt-locker",
+      component: TTLockerView,
+      meta: {
+        title: "Elite Cricket Centre - TT Locker"}
     },
     {
       path: "/cranbourne",

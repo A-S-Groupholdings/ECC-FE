@@ -990,6 +990,20 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // TT Locker - Unlock Door
+  export const TTLockerUnlock = async (payload) => {
+    try {
+      const response = await apiService.post('/ttlocker/TTLockerunlock', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error unlocking TT locker:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 
 
 
