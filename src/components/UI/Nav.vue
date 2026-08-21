@@ -39,7 +39,7 @@
           @mouseleave="openMenu = null"
         >
           <a
-            href="/membership/public"
+            href="#"
             class="flex items-center gap-1.5 text-white hover:text-secondary transition-colors duration-200"
           >
             Centres
