@@ -98,6 +98,19 @@
       </svg>
     </button>
 
+    <!-- Keep-awake mini animation -->
+    <div
+      class="absolute bottom-4 right-4 z-50 w-12 h-12 rounded-xl overflow-hidden border border-emerald-400/30 bg-emerald-500/10 pointer-events-none"
+      title="Keep display active"
+    >
+      <canvas
+        ref="keepAwakeCanvas"
+        width="48"
+        height="48"
+        class="w-full h-full"
+      ></canvas>
+    </div>
+
     <!-- Header -->
     <header class="px-6 py-5 border-b border-emerald-500/10 relative z-10">
       <div class="flex items-center justify-between">
@@ -484,6 +497,8 @@
   useKeepAwake({ pingIntervalMs: 60 * 1000 });
 
   const mainRef = ref(null);
+  const keepAwakeCanvas = ref(null);
+  let keepAwakeRafId = null;
   const isFullscreen = ref(false);
   const isLoading = ref(false);
   const errorMessage = ref("");
@@ -693,6 +708,37 @@
     isFullscreen.value = !!document.fullscreenElement;
   }
 
+  // Small looping canvas animation in the header to keep the TV display
+  // active. Some TV/kiosk models power off when the screen appears static.
+  function startKeepAwakeAnimation() {
+    const canvas = keepAwakeCanvas.value;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let angle = 0;
+
+    function draw() {
+      angle = (angle + 0.04) % (Math.PI * 2);
+      ctx.clearRect(0, 0, 48, 48);
+      ctx.save();
+      ctx.translate(24, 24);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fillStyle = "#10b981";
+      ctx.fill();
+      ctx.strokeStyle = "#6ee7b7";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-14, 0);
+      ctx.lineTo(14, 0);
+      ctx.stroke();
+      ctx.restore();
+      keepAwakeRafId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
   async function fetchDashboard() {
     isLoading.value = true;
     errorMessage.value = "";
@@ -786,6 +832,7 @@
     // Check alert thresholds more frequently than the data poll so alerts
     // fire close to the exact minute, using the last fetched resources.
     alertCheckInterval = setInterval(checkSessionAlerts, 15000);
+    startKeepAwakeAnimation();
     document.addEventListener("fullscreenchange", onFullscreenChange);
   });
 
@@ -793,6 +840,7 @@
     if (clockInterval) clearInterval(clockInterval);
     if (pollInterval) clearInterval(pollInterval);
     if (alertCheckInterval) clearInterval(alertCheckInterval);
+    if (keepAwakeRafId) cancelAnimationFrame(keepAwakeRafId);
     speechQueue.length = 0;
     isSpeaking = false;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
