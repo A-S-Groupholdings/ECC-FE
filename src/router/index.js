@@ -51,11 +51,12 @@ const router = createRouter({
 
     },
     {
-      path: "/tt-locker",
-      name: "tt-locker",
+      path: "/api/ttlocker/door/:doorUserId/:bookingId/:doorCenterCode",
+      name: "door",
       component: TTLockerView,
+      props: true,
       meta: {
-        title: "Elite Cricket Centre - TT Locker"}
+        title: "Elite Cricket Centre - Door"}
     },
     {
       path: "/cranbourne",
