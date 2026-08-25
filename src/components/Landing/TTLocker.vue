@@ -6,43 +6,56 @@
       class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center"
     >
       <div
-        class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 transition-colors duration-300"
-        :class="unlocked ? 'bg-emerald-100' : 'bg-secondary/15'"
+        class="relative w-32 h-40 mx-auto mb-8 rounded-2xl border-4 border-secondary bg-emerald-50 overflow-hidden shadow-2xl"
       >
-        <svg
-          v-if="!unlocked"
-          class="w-10 h-10 text-secondary"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+        <div
+          class="absolute inset-0 flex items-center justify-center bg-emerald-100"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M8 11V7a4 4 0 118 0v4m-9 0h10a1 1 0 011 1v7a1 1 0 01-1 1H7a1 1 0 01-1-1v-7a1 1 0 011-1z"
-          />
-        </svg>
-        <svg
-          v-else
-          class="w-10 h-10 text-emerald-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+          <svg
+            class="w-16 h-16 text-emerald-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-primary to-[#0d1b3a] shadow-lg flex items-center justify-center transition-transform duration-700 ease-out"
+          :class="unlocked ? 'translate-x-full' : 'translate-x-0'"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M8 11V7a4 4 0 017.446-2.032M7 11h10a1 1 0 011 1v7a1 1 0 01-1 1H7a1 1 0 01-1-1v-7a1 1 0 011-1z"
-          />
-        </svg>
+          <div
+            class="w-3 h-3 rounded-full bg-secondary absolute right-4 top-1/2 -translate-y-1/2 shadow-md"
+          ></div>
+          <div
+            class="absolute bottom-6 w-10 h-10 rounded-full border-2 border-white/20 flex items-center justify-center"
+          >
+            <svg
+              class="w-5 h-5 text-white/60"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <h1 class="text-2xl font-bold text-primary font-times mb-1">TT Locker</h1>
-      <p class="text-sm text-gray-500 mb-8">
+      <!-- <p class="text-sm text-gray-500 mb-8">
         Lock ID: <span class="font-semibold text-gray-700">{{ LOCK_ID }}</span>
-      </p>
+      </p> -->
 
       <button
         @click="handleUnlock"
@@ -81,12 +94,6 @@
           <p class="text-emerald-700 font-semibold text-sm">
             {{ resultMessage }}
           </p>
-          <p
-            v-if="lastResponse"
-            class="text-emerald-600/70 text-xs mt-1"
-          >
-            errcode: {{ lastResponse.errcode }} · {{ lastResponse.errmsg }}
-          </p>
         </div>
       </transition>
 
@@ -105,9 +112,17 @@
 
 <script setup>
   import { ref } from "vue";
+  import { useRoute } from "vue-router";
   import { TTLockerUnlock } from "@/services/apiService.js";
 
-  const LOCK_ID = 34031476;
+  const route = useRoute();
+
+  const userId = route.params.doorUserId || "";
+  const bookingId = route.params.bookingId || "";
+  const centerCode = route.params.doorCenterCode || "";
+  const lockIdFromParams = route.params.lockId || "";
+
+  const LOCK_ID = lockIdFromParams || "34031476";
 
   const isLoading = ref(false);
   const unlocked = ref(false);
@@ -121,7 +136,7 @@
     errorMessage.value = "";
 
     try {
-      const res = await TTLockerUnlock({ lockId: LOCK_ID });
+      const res = await TTLockerUnlock({ userId, bookingId, centerCode });
 
       if (res?.isSuccess) {
         unlocked.value = true;

@@ -993,7 +993,10 @@ export const AdminLogin = async (email, otp) => {
   // TT Locker - Unlock Door
   export const TTLockerUnlock = async (payload) => {
     try {
-      const response = await apiService.post('/ttlocker/TTLockerunlock', payload);
+      const { userId, bookingId, centerCode } = payload;
+      const response = await apiService.get(
+        `/ttlocker/door/${userId}/${bookingId}/${centerCode}`
+      );
       return response.data;
     } catch (error) {
       console.error('Error unlocking TT locker:', error);
