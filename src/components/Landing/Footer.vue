@@ -87,7 +87,12 @@
                   d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                 />
               </svg>
-              03 9067 5696
+              <a
+                href="tel:0390675696"
+                class="hover:text-white transition-colors"
+              >
+                03 9067 5696
+              </a>
             </p>
             <p
               class="text-[#bbb] flex items-center justify-center md:justify-start gap-2"
@@ -105,7 +110,12 @@
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              info@elitecricketcentre.com.au
+              <a
+                href="mailto:info@elitecricketcentre.com.au"
+                class="hover:text-white transition-colors"
+              >
+                info@elitecricketcentre.com.au
+              </a>
             </p>
           </div>
         </div>
@@ -278,7 +288,7 @@
                   d="M10 6a1 1 0 011 1v2h2a1 1 0 110 2h-2v2a1 1 0 11-2 0v-2H7a1 1 0 110-2h2V7a1 1 0 011-1z"
                 />
               </svg>
-              2025
+              2026
               <span class="font-semibold text-white mx-1"
                 >Elite Cricket Centre</span
               >
