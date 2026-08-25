@@ -51,7 +51,7 @@ const router = createRouter({
 
     },
     {
-      path: "/api/ttlocker/door/:doorUserId/:bookingId/:doorCenterCode",
+      path: "/ttlocker/door/:doorUserId/:bookingId/:doorCenterCode",
       name: "door",
       component: TTLockerView,
       props: true,
