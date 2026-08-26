@@ -50,7 +50,7 @@
               <span>Dashboard</span>
             </li>
           </router-link>
-          <router-link
+          <!-- <router-link
             to="/dashboard/doorunlock"
             @click="toggleMenu"
             class="block"
@@ -66,7 +66,7 @@
               <i class="pi pi-lock"></i>
               <span>Door Unlock</span>
             </li>
-          </router-link>
+          </router-link> -->
           <router-link
             to="/dashboard/livesession"
             @click="toggleMenu"

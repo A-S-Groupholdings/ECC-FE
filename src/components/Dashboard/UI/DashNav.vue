@@ -43,7 +43,7 @@
             <span class="md:hidden lg:block">Calender</span>
           </li>
         </router-link>
-        <router-link
+        <!-- <router-link
           to="/dashboard/doorunlock"
           class="block"
         >
@@ -58,7 +58,7 @@
             <i class="pi pi-lock"></i>
             <span class="md:hidden lg:block">Door Unlock</span>
           </li>
-        </router-link>
+        </router-link> -->
         <router-link
           to="/dashboard/livesession"
           class="block"
