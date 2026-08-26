@@ -1007,6 +1007,22 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // Dashboard - Unlock door by centre code
+  export const DashboardDoorUnlock = async (centerCode) => {
+    try {
+      const response = await apiService.get(
+        `/ttlocker/dashboardUnlock?centerCode=${centerCode}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error unlocking door from dashboard:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 
 
 

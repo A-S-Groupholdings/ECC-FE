@@ -51,6 +51,23 @@
             </li>
           </router-link>
           <router-link
+            to="/dashboard/doorunlock"
+            @click="toggleMenu"
+            class="block"
+          >
+            <li
+              :class="[
+                'w-full h-12 rounded-md flex items-center gap-3 pl-4',
+                isActive('/dashboard/doorunlock')
+                  ? 'bg-secondary text-black'
+                  : 'bg-primary hover:bg-secondary/20 text-white',
+              ]"
+            >
+              <i class="pi pi-lock"></i>
+              <span>Door Unlock</span>
+            </li>
+          </router-link>
+          <router-link
             to="/dashboard/livesession"
             @click="toggleMenu"
             class="block"

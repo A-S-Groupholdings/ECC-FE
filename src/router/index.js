@@ -38,6 +38,7 @@ import MembershipCancelView from "../views/Landing/MembershipCancelView.vue";
 import MembershipPaymentView from "../views/Dashboard/MembershipPaymentView.vue";
 import AvailableSlotsView from "../views/Dashboard/AvailableSlotsView.vue";
 import TTLockerView from "../views/Landing/TTLockerView.vue";
+import DoorUnlockView from "../views/Dashboard/DoorUnlock.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -172,6 +173,13 @@ const router = createRouter({
       component: SubscriptionView,
       meta: {
         title: "Elite Cricket Centre - Subscriptions", requiresRole: "admin"}
+    },
+    {
+      path: "/dashboard/doorunlock",
+      name: "doorunlock",
+      component: DoorUnlockView,
+      meta: {
+        title: "Elite Cricket Centre - Door Unlock", requiresRole: "admin"}
     },
     // {
     //   path: "/membership/register",
@@ -334,6 +342,7 @@ const router = createRouter({
       meta: {
         title: "Elite Cricket Centre - Membership Payment"}
     },
+
     
     {
       path: '/:pathMatch(.*)*',
