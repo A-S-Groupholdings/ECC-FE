@@ -203,13 +203,13 @@
                 >Video Analysis</a
               >
             </li>
-            <li>
+            <!-- <li>
               <a
                 href="https://elitecricketcentre.com.au"
                 class="text-[#bbb] hover:text-white"
                 >Coach booking</a
               >
-            </li>
+            </li> -->
             <li>
               <a
                 href="https://booking.elitecricketcentre.com.au/booking/cancel"
