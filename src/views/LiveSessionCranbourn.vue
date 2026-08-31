@@ -491,6 +491,11 @@
   import { ref, computed, onMounted, onUnmounted } from "vue";
   import { GetSessionDashboard } from "@/services/apiService.js";
   import { useKeepAwake } from "@/composables/useKeepAwake.js";
+  import bgMusicAudio from "@/assets/crickerbg.mp3";
+  import lane1Audio from "@/assets/Attention. Lane 1 + Auto Feeder has 10 minutes remaining..mp3";
+  import lane3Audio from "@/assets/Lane 3 + Bowling Machine.mp3";
+  import lane4Audio from "@/assets/Lane 4 + Bowling Machine.mp3";
+  import lane5Audio from "@/assets/Lane 5 + Bowling Machine.mp3";
 
   const CENTER_ID = "CRN";
 
@@ -520,12 +525,111 @@
   const ALERT_CHECKPOINTS_MINUTES = [10];
   let alertCheckInterval = null;
 
-  // Speech announcements are queued and played one at a time with a gap
+  // Speech / Audio announcements are queued and played one at a time with a gap
   // between them, so that when several lanes alert at once (e.g. 3 lanes
   // ending together) they don't talk over each other / run back-to-back.
   const ANNOUNCEMENT_GAP_MS = 5000;
-  const speechQueue = [];
-  let isSpeaking = false;
+  const announcementQueue = [];
+  let isAnnouncing = false;
+  let activeAudio = null;
+
+  // Background Music
+  let bgMusic = null;
+  const NORMAL_BG_VOLUME = 0.25;
+  const DUCKED_BG_VOLUME = 0.05;
+
+  function initBackgroundMusic() {
+    try {
+      if (!bgMusic) {
+        bgMusic = new Audio(bgMusicAudio);
+        bgMusic.loop = true;
+        bgMusic.volume = NORMAL_BG_VOLUME;
+      }
+      const playPromise = bgMusic.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play was blocked by browser policy; start upon first interaction
+          const unlockAudio = () => {
+            if (bgMusic && voiceEnabled.value) {
+              bgMusic.play().catch(() => {});
+            }
+            window.removeEventListener("click", unlockAudio);
+            window.removeEventListener("keydown", unlockAudio);
+            window.removeEventListener("touchstart", unlockAudio);
+          };
+          window.addEventListener("click", unlockAudio, { once: true });
+          window.addEventListener("keydown", unlockAudio, { once: true });
+          window.addEventListener("touchstart", unlockAudio, { once: true });
+        });
+      }
+    } catch (err) {
+      console.error("Failed to start background music:", err);
+    }
+  }
+
+  function pauseBackgroundMusic() {
+    if (bgMusic) {
+      bgMusic.pause();
+    }
+  }
+
+  function duckBackgroundMusic() {
+    if (bgMusic) {
+      bgMusic.volume = DUCKED_BG_VOLUME;
+    }
+  }
+
+  function restoreBackgroundMusic() {
+    if (bgMusic) {
+      bgMusic.volume = NORMAL_BG_VOLUME;
+    }
+  }
+
+  function getLaneAudioSrc(laneName) {
+    if (!laneName) return null;
+    const lower = laneName.toLowerCase();
+    if (lower.includes("lane 1") || lower.includes("auto feeder")) {
+      return lane1Audio;
+    }
+    if (lower.includes("lane 3")) {
+      return lane3Audio;
+    }
+    if (lower.includes("lane 4")) {
+      return lane4Audio;
+    }
+    if (lower.includes("lane 5")) {
+      return lane5Audio;
+    }
+    return null;
+  }
+
+  function playAudio(src, onEnd) {
+    try {
+      activeAudio = new Audio(src);
+      activeAudio.volume = 1;
+      activeAudio.onended = () => {
+        activeAudio = null;
+        onEnd?.();
+      };
+      activeAudio.onerror = (error) => {
+        console.error("Audio playback error:", error);
+        activeAudio = null;
+        onEnd?.();
+      };
+      const playPromise = activeAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.error("Audio play prevented:", err);
+          activeAudio = null;
+          onEnd?.();
+        });
+      }
+    } catch (error) {
+      console.error("Error initializing audio playback:", error);
+      activeAudio = null;
+      onEnd?.();
+    }
+  }
 
   function speak(text, onEnd) {
     if (typeof window === "undefined" || !window.speechSynthesis) {
@@ -547,23 +651,33 @@
     }
   }
 
-  function processSpeechQueue() {
-    if (isSpeaking) return;
-    const text = speechQueue.shift();
-    if (!text) return;
-    isSpeaking = true;
-    speak(text, () => {
+  function processAnnouncementQueue() {
+    if (isAnnouncing) return;
+    const item = announcementQueue.shift();
+    if (!item) return;
+    isAnnouncing = true;
+    duckBackgroundMusic();
+
+    const onDone = () => {
+      restoreBackgroundMusic();
       setTimeout(() => {
-        isSpeaking = false;
-        processSpeechQueue();
+        isAnnouncing = false;
+        processAnnouncementQueue();
       }, ANNOUNCEMENT_GAP_MS);
-    });
+    };
+
+    if (typeof item === "object" && item?.audioSrc) {
+      playAudio(item.audioSrc, onDone);
+    } else {
+      const text = typeof item === "string" ? item : item?.text;
+      speak(text, onDone);
+    }
   }
 
-  function enqueueSpeech(text) {
+  function enqueueAnnouncement(item) {
     if (!voiceEnabled.value) return;
-    speechQueue.push(text);
-    processSpeechQueue();
+    announcementQueue.push(item);
+    processAnnouncementQueue();
   }
 
   function toggleVoiceAlerts() {
@@ -571,11 +685,21 @@
     if (voiceEnabled.value) {
       // Unlock the speech synthesis engine (some browsers require a
       // user-gesture-triggered utterance before it will speak later).
-      enqueueSpeech("Voice alerts enabled.");
-    } else if (window.speechSynthesis) {
-      speechQueue.length = 0;
-      isSpeaking = false;
-      window.speechSynthesis.cancel();
+      enqueueAnnouncement("Voice alerts enabled.");
+      if (bgMusic) {
+        bgMusic.play().catch(() => {});
+      }
+    } else {
+      announcementQueue.length = 0;
+      isAnnouncing = false;
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      pauseBackgroundMusic();
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
     }
   }
 
@@ -638,13 +762,13 @@
               !alertedSessionKeys.has(key)
             ) {
               alertedSessionKeys.add(key);
-              const messages = [
-                `Attention. ${laneName} has ${remaining} minutes remaining.`,
-                `${laneName}, session ending in ${remaining} minutes.`,
-              ];
-              enqueueSpeech(
-                messages[Math.floor(Math.random() * messages.length)],
-              );
+              const audioSrc = getLaneAudioSrc(laneName);
+              if (audioSrc) {
+                enqueueAnnouncement({ audioSrc });
+              } else {
+                const message = `Attention. ${laneName} has ${remaining} minutes remaining.`;
+                enqueueAnnouncement(message);
+              }
             }
           });
 
@@ -656,7 +780,7 @@
             !alertedSessionKeys.has(endedKey)
           ) {
             alertedSessionKeys.add(endedKey);
-            enqueueSpeech(
+            enqueueAnnouncement(
               `Your session at ${laneName} has ended. Thank you for playing.`,
             );
           }
@@ -833,6 +957,7 @@
     // fire close to the exact minute, using the last fetched resources.
     alertCheckInterval = setInterval(checkSessionAlerts, 15000);
     startKeepAwakeAnimation();
+    initBackgroundMusic();
     document.addEventListener("fullscreenchange", onFullscreenChange);
   });
 
@@ -841,8 +966,14 @@
     if (pollInterval) clearInterval(pollInterval);
     if (alertCheckInterval) clearInterval(alertCheckInterval);
     if (keepAwakeRafId) cancelAnimationFrame(keepAwakeRafId);
-    speechQueue.length = 0;
-    isSpeaking = false;
+    announcementQueue.length = 0;
+    isAnnouncing = false;
+    if (activeAudio) {
+      activeAudio.pause();
+      activeAudio = null;
+    }
+    pauseBackgroundMusic();
+    bgMusic = null;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     document.removeEventListener("fullscreenchange", onFullscreenChange);
   });
