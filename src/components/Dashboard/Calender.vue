@@ -1893,6 +1893,38 @@
                   Highlight this note on calendar
                 </span>
               </label>
+
+              <!-- Notify Checkbox -->
+              <label
+                class="mt-3 flex items-center gap-3 cursor-pointer select-none w-fit"
+              >
+                <input
+                  v-model="editForm.notify"
+                  type="checkbox"
+                  class="peer sr-only"
+                />
+                <span
+                  class="relative w-11 h-6 rounded-full bg-gray-200 transition-colors peer-checked:bg-[#1a3a35] after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:shadow after:transition-transform peer-checked:after:translate-x-5"
+                ></span>
+                <span
+                  class="flex items-center gap-1.5 text-sm font-medium text-gray-700"
+                >
+                  <svg
+                    class="w-4 h-4 text-[#1a3a35]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  Notify user
+                </span>
+              </label>
             </div>
           </div>
         </div>
@@ -2767,6 +2799,7 @@
     paymentMethod: "local card",
     paymentBreakdown: [],
     noteHighlight: false,
+    notify: false,
   });
   const editServices = ref([]);
   const editResources = ref([]);
@@ -2928,6 +2961,7 @@
             v.payment?.paymentMethod || v.paymentMethod || "local card",
           paymentBreakdown: buildPaymentBreakdown(v),
           noteHighlight: v.noteHighlight || false,
+          notify: false,
         };
         if (v.userId && typeof v.userId === "object") {
           editSelectedUser.value = v.userId;
@@ -3132,6 +3166,7 @@
         v.payment?.paymentMethod || v.paymentMethod || "local card",
       paymentBreakdown: buildPaymentBreakdown(v),
       noteHighlight: v.noteHighlight || false,
+      notify: false,
     };
     if (v.userId && typeof v.userId === "object") {
       editSelectedUser.value = v.userId;
@@ -3208,6 +3243,7 @@
           "local card",
         paymentBreakdown,
         noteHighlight: editForm.value.noteHighlight || false,
+        notify: Boolean(editForm.value.notify),
       };
       const response = await UpdateBooking(id, payload);
       if (response.isSuccess) {
