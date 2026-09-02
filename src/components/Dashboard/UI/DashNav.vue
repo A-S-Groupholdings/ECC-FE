@@ -269,6 +269,25 @@
                 <span class="md:hidden lg:block">Payments</span>
               </li>
             </router-link>
+
+            <!-- userhistory -->
+
+            <router-link
+              to="/dashboard/membership/userhistory"
+              class="block"
+            >
+              <li
+                :class="[
+                  'w-full h-8 rounded-l-md lg:ml-[70px] md:ml-[30px] flex items-center gap-2 pl-2 cursor-pointer text-sm',
+                  isActive('/dashboard/membership/userhistory')
+                    ? 'bg-secondary/70 text-black'
+                    : 'bg-primary/80 hover:bg-secondary/50 text-white/90',
+                ]"
+              >
+                <i class="pi pi-history text-xs"></i>
+                <span class="md:hidden lg:block">User History</span>
+              </li>
+            </router-link>
           </div>
         </div>
       </ul>

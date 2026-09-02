@@ -39,6 +39,7 @@ import MembershipPaymentView from "../views/Dashboard/MembershipPaymentView.vue"
 import AvailableSlotsView from "../views/Dashboard/AvailableSlotsView.vue";
 import TTLockerView from "../views/Landing/TTLockerView.vue";
 import DoorUnlockView from "../views/Dashboard/DoorUnlock.vue";
+import UserHistoryView from "../views/Dashboard/UserHistoryView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -173,6 +174,13 @@ const router = createRouter({
       component: SubscriptionView,
       meta: {
         title: "Elite Cricket Centre - Subscriptions", requiresRole: "admin"}
+    },
+    {
+      path: "/dashboard/membership/userhistory",
+      name: "userhistory",
+      component: UserHistoryView,
+      meta: {
+        title: "Elite Cricket Centre - User History", requiresRole: "admin"}
     },
     {
       path: "/dashboard/doorunlock",

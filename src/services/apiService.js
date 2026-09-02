@@ -891,6 +891,22 @@ export const AdminLogin = async (email, otp) => {
   };
 
 
+  // GetUserActivity: POST /memberships/user-activity { email }
+  export const GetUserActivity = async (email) => {
+    try {
+      const { data } = await apiService.post('/memberships/user-activity', {
+        email: typeof email === 'string' ? email.trim() : '',
+      });
+      return data;
+    } catch (error) {
+      console.error('Error fetching user activity:', error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
   // GetMembershipPayments (paginated): GET /memberships/membershipPayment?page=&limit=
   export const GetMembershipPayments = async ({ page = 1, limit = 10 } = {}) => {
     try {
