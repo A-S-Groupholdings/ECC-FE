@@ -129,6 +129,39 @@ export const AdminLoginOtp = async (email) => {
     }
   };
 
+export const TTLockerLoginOtp = async (email) => {
+    try {
+      const response = await apiService.post('/auth/user-ttlocker-otp', {
+        email,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error sending TTLocker OTP:', error);
+
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+export const TTLockerVerifyOtp = async (email, otp) => {
+    try {
+      const response = await apiService.post('/auth/verify-otp', {
+        email,
+        otp,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error verifying TTLocker OTP:', error);
+
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
 export const SendOtp = async (payload) => {
     try {
       const response = await apiService.post('/auth/send-otp', payload);
@@ -1016,6 +1049,84 @@ export const AdminLogin = async (email, otp) => {
       return response.data;
     } catch (error) {
       console.error('Error unlocking TT locker:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // TT Locker portal - Unlock lock by centre code: POST /ttlocker/TTLockerunlock { centerCode }
+  export const TTLockerPortalUnlock = async (centerCode) => {
+    try {
+      const response = await apiService.post('/ttlocker/TTLockerunlock', {
+        centerCode,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error unlocking TT locker:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // TT Locker portal - Lock status: GET /ttlocker/TTLockerStatus?centerCode=
+  export const TTLockerStatus = async (centerCode) => {
+    try {
+      const response = await apiService.get('/ttlocker/TTLockerStatus', {
+        params: { centerCode },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching TT locker status:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // TT Locker - Passage mode control: GET /ttlocker/GetTTPassageModeControl?centerCode=
+  export const GetTTPassageModeControl = async (centerCode) => {
+    try {
+      const response = await apiService.get('/ttlocker/GetTTPassageModeControl', {
+        params: { centerCode },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching passage mode:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // TT Locker - Set passage mode: POST /ttlocker/TTPassageModeControl
+  export const SetTTPassageModeControl = async (payload) => {
+    try {
+      const response = await apiService.post('/ttlocker/TTPassageModeControl', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error setting passage mode:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
+
+  // TT Locker - Delete passage mode: POST /ttlocker/DeleteTTPassageModeControl
+  export const DeleteTTPassageModeControl = async (centerCode) => {
+    try {
+      const response = await apiService.post('/ttlocker/DeleteTTPassageModeControl', {
+        centerCode,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting passage mode:', error);
       if (error.response && error.response.data) {
         return error.response.data;
       }

@@ -40,6 +40,10 @@ import AvailableSlotsView from "../views/Dashboard/AvailableSlotsView.vue";
 import TTLockerView from "../views/Landing/TTLockerView.vue";
 import DoorUnlockView from "../views/Dashboard/DoorUnlock.vue";
 import UserHistoryView from "../views/Dashboard/userHistoryView.vue";
+import TTLockerLoginView from "../views/TTLocker/LoginView.vue";
+import TTLockerOTPView from "../views/TTLocker/TTLockerOTP.vue";
+import TTLockerHomeView from "../views/TTLocker/TTLockerHome.vue";
+import TTLockerPassageView from "../views/TTLocker/TTLockerPassageView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -350,6 +354,39 @@ const router = createRouter({
       meta: {
         title: "Elite Cricket Centre - Membership Payment"}
     },
+
+
+    //TTLocker
+    {
+      path: "/ttlocker/login",
+      name: "ttlockerlogin",
+      component: TTLockerLoginView,
+      meta: {
+        title: "TT Locker - Login"}
+    },
+    {
+      path: "/ttlocker/otp",
+      name: "ttlockerotp",
+      component: TTLockerOTPView,
+      meta: {
+        title: "TT Locker - OTP"}
+    },
+    {
+      path: "/ttlocker/home",
+      name: "ttlockerhome",
+      component: TTLockerHomeView,
+      meta: {
+        title: "TT Locker - Home"}
+    },
+    {
+      path: "/ttlocker/passage/:centerCode?",
+      name: "ttlockerpassage",
+      component: TTLockerPassageView,
+      props: true,
+      meta: {
+        title: "TT Locker - Passage"}
+    },
+    
 
     
     {

@@ -39,7 +39,8 @@ export default {
       backgroundImage: {
         "hero-img": "url('/src/assets/Lane-booking2.png')",
         "hero-img-mob": "url('/src/assets/Lane-booking-mobile.png')",
-        "ecc-img": "url('/src/assets/eccbg.webp')"
+        "ecc-img": "url('/src/assets/eccbg.webp')",
+        "ttlocker-img": "url('/src/assets/ttlocker.png')"
 
       },
 
