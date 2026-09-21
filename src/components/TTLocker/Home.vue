@@ -17,29 +17,6 @@
             Monitor and unlock the entrance locks at each centre.
           </p>
         </div>
-        <div class="flex items-center gap-2">
-          <button
-            @click="refreshAll"
-            :disabled="isAnyLoading"
-            class="inline-flex items-center gap-2 bg-white/90 border border-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white transition-colors disabled:opacity-50"
-          >
-            <svg
-              class="w-4 h-4"
-              :class="{ 'animate-spin': isAnyLoading }"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Refresh
-          </button>
-        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -292,27 +269,6 @@
                       : "Unlock"
                 }}
               </button>
-              <button
-                @click="fetchStatus(lock)"
-                :disabled="lock.isLoadingStatus"
-                title="Refresh status"
-                class="w-14 inline-flex items-center justify-center rounded-2xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <svg
-                  class="w-5 h-5"
-                  :class="{ 'animate-spin': lock.isLoadingStatus }"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </button>
             </div>
             <router-link
               :to="`/ttlocker/passage/${lock.code}`"
@@ -347,8 +303,6 @@
     TTLockerStatus,
   } from "@/services/apiService.js";
   import Nav from "../TTLocker/UI/SecondNav.vue";
-
-  const STATUS_POLL_MS = 30000;
 
   const locks = ref([
     {
@@ -434,13 +388,10 @@
     return Promise.all(locks.value.map(fetchStatus));
   }
 
-  let pollTimer = null;
   onMounted(() => {
     refreshAll();
-    pollTimer = setInterval(refreshAll, STATUS_POLL_MS);
   });
   onUnmounted(() => {
-    clearInterval(pollTimer);
     Object.values(messageTimers).forEach(clearTimeout);
   });
 

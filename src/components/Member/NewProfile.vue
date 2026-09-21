@@ -505,12 +505,12 @@
                   >
                     Resume Subscription
                   </button>
-                  <button
+                  <!-- <button
                     @click="openDeleteModal"
                     class="px-6 py-3 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
                   >
                     Delete Account
-                  </button>
+                  </button> -->
                 </div>
                 <div class="flex gap-3">
                   <button
@@ -1108,7 +1108,7 @@
       </template>
 
       <!-- Delete Confirmation Modal -->
-      <div
+      <!-- <div
         v-if="showDeleteModal"
         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
       >
@@ -1163,7 +1163,7 @@
             </button>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Hold Confirmation Modal -->
       <div
@@ -1668,25 +1668,25 @@
     deleteError.value = "";
   }
 
-  async function confirmDelete() {
-    deleteError.value = "";
-    isDeleting.value = true;
-    try {
-      const response = await DeleteUser(user.value._id);
-      if (response.isSuccess) {
-        authStore.setUser(null);
-        authStore.setAccessToken(null);
-        router.push("/");
-      } else {
-        deleteError.value = response.userMessage || "Failed to delete account.";
-      }
-    } catch (error) {
-      deleteError.value = "An error occurred. Please try again.";
-      console.error("Delete error:", error);
-    } finally {
-      isDeleting.value = false;
-    }
-  }
+  // async function confirmDelete() {
+  //   deleteError.value = "";
+  //   isDeleting.value = true;
+  //   try {
+  //     const response = await DeleteUser(user.value._id);
+  //     if (response.isSuccess) {
+  //       authStore.setUser(null);
+  //       authStore.setAccessToken(null);
+  //       router.push("/");
+  //     } else {
+  //       deleteError.value = response.userMessage || "Failed to delete account.";
+  //     }
+  //   } catch (error) {
+  //     deleteError.value = "An error occurred. Please try again.";
+  //     console.error("Delete error:", error);
+  //   } finally {
+  //     isDeleting.value = false;
+  //   }
+  // }
 
   const isHolding = ref(false);
   const isResuming = ref(false);

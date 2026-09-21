@@ -505,12 +505,12 @@
                   >
                     Resume Subscription
                   </button>
-                  <button
+                  <!-- <button
                     @click="openDeleteModal"
                     class="px-6 py-3 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
                   >
                     Delete Account
-                  </button>
+                  </button> -->
                 </div>
                 <div class="flex gap-3">
                   <button
@@ -1658,10 +1658,10 @@
     router.push(`/member/booking?userId=${userId}`);
   }
 
-  function openDeleteModal() {
-    showDeleteModal.value = true;
-    deleteError.value = "";
-  }
+  // function openDeleteModal() {
+  //   showDeleteModal.value = true;
+  //   deleteError.value = "";
+  // }
 
   function closeDeleteModal() {
     showDeleteModal.value = false;
