@@ -416,6 +416,34 @@
                 </li>
               </ul>
             </div>
+            <!-- Membership Cancellation Policy -->
+            <div>
+              <h3 class="text-base font-bold text-[#1a3a35] text-center mb-2">
+                Membership Cancellation Policy
+              </h3>
+              <ul
+                class="list-disc list-inside text-sm text-gray-600 space-y-1.5"
+              >
+                <li>
+                  Weekly memberships are subject to a minimum membership period
+                  of 2 weeks.
+                </li>
+                <li>
+                  Monthly memberships are subject to a minimum membership period
+                  of 1 month.
+                </li>
+                <li>
+                  If you wish to cancel your membership after the applicable
+                  minimum membership period has been completed, you must provide
+                  written notice by email to
+                  <a
+                    href="mailto:info@elitecricketcentre.com.au"
+                    class="font-semibold text-[#1a3a35] hover:underline"
+                    >info@elitecricketcentre.com.au</a
+                  >.
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
