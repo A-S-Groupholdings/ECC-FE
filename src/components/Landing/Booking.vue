@@ -1625,6 +1625,7 @@
         // Step 1: Create booking with pending payment status
         const response = await CreateBooking({
           userId: registeredUserId.value,
+          userType: "guest",
           centerId: booking.value.center,
           categoryId: booking.value.type,
           resourceId: booking.value.lane,
