@@ -402,6 +402,7 @@
                   All bookings must be made through the official Member booking
                   system. (Not Lane Booking System)
                 </li>
+                <li>Members can only make bookings up to 2 days in advance.</li>
                 <li>
                   Lane and equipment use is subject to availability and centre
                   guidelines.
