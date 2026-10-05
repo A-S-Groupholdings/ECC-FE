@@ -357,13 +357,13 @@ const router = createRouter({
 
 
     //TTLocker
-    {
-      path: "/ttlocker/login",
-      name: "ttlockerlogin",
-      component: TTLockerLoginView,
-      meta: {
-        title: "TT Locker - Login"}
-    },
+    // {
+    //   path: "/ttlocker/login",
+    //   name: "ttlockerlogin",
+    //   component: TTLockerLoginView,
+    //   meta: {
+    //     title: "TT Locker - Login"}
+    // },
     {
       path: "/ttlocker/otp",
       name: "ttlockerotp",
