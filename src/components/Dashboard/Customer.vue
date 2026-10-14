@@ -167,6 +167,11 @@
                 <th
                   class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
                 >
+                  Billing Email
+                </th>
+                <th
+                  class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
                   Phone
                 </th>
                 <th
@@ -211,6 +216,10 @@
                 <!-- Email -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ customer.email }}
+                </td>
+                <!-- Billing Email -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ customer.billingEmail || "-" }}
                 </td>
                 <!-- Phone -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -646,16 +655,37 @@
         </div>
 
         <!-- Loading -->
-        <div v-if="isLoadingEdit" class="p-8 text-center text-gray-500 text-sm">
-          <svg class="w-6 h-6 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <div
+          v-if="isLoadingEdit"
+          class="p-8 text-center text-gray-500 text-sm"
+        >
+          <svg
+            class="w-6 h-6 animate-spin inline mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           Loading...
         </div>
 
         <!-- Edit Form -->
-        <div v-else class="p-6 space-y-5">
+        <div
+          v-else
+          class="p-6 space-y-5"
+        >
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
             <label class="text-sm font-semibold text-gray-700 md:text-right">
               Name <span class="text-red-500">*</span> :
@@ -788,6 +818,7 @@
       (c) =>
         c.name?.toLowerCase().includes(query) ||
         c.email?.toLowerCase().includes(query) ||
+        c.billingEmail?.toLowerCase().includes(query) ||
         c.phoneNumber?.includes(query) ||
         c.role?.toLowerCase().includes(query),
     );
@@ -989,9 +1020,7 @@
     try {
       const response = await DeleteUser(customer._id);
       if (response.isSuccess) {
-        customers.value = customers.value.filter(
-          (c) => c._id !== customer._id,
-        );
+        customers.value = customers.value.filter((c) => c._id !== customer._id);
       } else {
         alert(
           response.errorMessage ||

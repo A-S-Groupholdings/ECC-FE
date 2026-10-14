@@ -138,7 +138,10 @@
                   {{ user.subscriptionStatus }}
                 </span>
               </div>
-              <p class="text-white/70 text-sm">{{ user.email }}</p>
+              <p class="text-white/70 text-sm">Email: {{ user.email }}</p>
+              <p class="text-white/70 text-sm">
+                Billing Email: {{ user.billingEmail }}
+              </p>
             </div>
 
             <!-- Stats Row - Grid on mobile, flex on desktop -->
@@ -1194,6 +1197,7 @@
     firstName: "",
     lastName: "",
     email: "",
+    billingEmail: "",
     phone: "",
     subscriptionStatus: "Active",
     memberSince: "",
@@ -1256,6 +1260,7 @@
           firstName: nameParts[0] || "",
           lastName: nameParts.slice(1).join(" ") || "",
           email: data.email || "",
+          billingEmail: data.billingEmail || "",
           phone: data.phoneNumber || "",
           subscriptionStatus:
             data.membershipTracking?.status === "on_hold"

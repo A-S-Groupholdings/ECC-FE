@@ -65,7 +65,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search by name, email or phone"
+              placeholder="Search by name, email, billing email or phone"
               class="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a35] focus:border-transparent"
             />
             <button
@@ -110,6 +110,7 @@
                 <tr class="border-b border-gray-200 bg-gray-50">
                   <th class="th">Name</th>
                   <th class="th">Email</th>
+                  <th class="th">Billing Email</th>
                   <th class="th">Phone</th>
                   <th class="th">Role</th>
                   <th class="th text-center">History</th>
@@ -136,6 +137,9 @@
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ user.email }}
+                  </td>
+                  <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ user.billingEmail || "-" }}
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
                     {{ user.phoneNumber || "-" }}
@@ -266,7 +270,28 @@
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                         ></path>
                       </svg>
-                      <span class="truncate">{{ activity.user?.email }}</span>
+                      <span class="truncate"
+                        >Email: {{ activity.user?.email }}</span
+                      >
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                      <svg
+                        class="w-4 h-4 text-gray-400 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        ></path>
+                      </svg>
+                      <span class="truncate"
+                        >Billing Email:
+                        {{ activity.user?.billingEmail || "-" }}</span
+                      >
                     </div>
                     <div class="flex items-center gap-2 text-gray-600">
                       <svg
@@ -799,6 +824,7 @@
       (u) =>
         u.name?.toLowerCase().includes(q) ||
         u.email?.toLowerCase().includes(q) ||
+        u.billingEmail?.toLowerCase().includes(q) ||
         u.phoneNumber?.includes(q),
     );
   });
