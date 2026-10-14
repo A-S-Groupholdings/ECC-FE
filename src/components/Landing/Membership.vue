@@ -165,16 +165,38 @@
           v-for="m in memberships"
           :key="m._id"
           @click="selectMembership(m._id)"
-          class="relative bg-white rounded-2xl border-2 p-6 sm:p-8 cursor-pointer transition-all duration-200 hover:shadow-xl flex flex-col"
+          class="relative bg-white rounded-2xl border-2 p-6 sm:p-8 transition-all duration-200 flex flex-col"
           :class="
-            selectedId === m._id
-              ? 'border-[#1a3a35] shadow-lg ring-2 ring-[#1a3a35]/10'
-              : 'border-transparent shadow-md hover:border-[#1a3a35]/30'
+            isOwned(m)
+              ? 'border-emerald-500 shadow-md cursor-not-allowed'
+              : selectedId === m._id
+                ? 'border-[#1a3a35] shadow-lg ring-2 ring-[#1a3a35]/10 cursor-pointer hover:shadow-xl'
+                : 'border-transparent shadow-md hover:border-[#1a3a35]/30 cursor-pointer hover:shadow-xl'
           "
         >
+          <!-- Already Purchased Badge -->
+          <div
+            v-if="isOwned(m)"
+            class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-4 py-1 rounded-full flex items-center gap-1.5"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Current Plan
+          </div>
           <!-- Selected Badge -->
           <div
-            v-if="selectedId === m._id"
+            v-else-if="selectedId === m._id"
             class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1a3a35] text-white text-xs font-semibold px-4 py-1 rounded-full"
           >
             Selected
@@ -206,14 +228,23 @@
           <!-- Select Button -->
           <button
             @click.stop="selectMembership(m._id)"
-            class="w-full py-3 rounded-xl font-semibold text-sm transition-colors mt-auto"
+            :disabled="isOwned(m)"
+            class="w-full py-3 rounded-xl font-semibold text-sm transition-colors mt-auto disabled:cursor-not-allowed"
             :class="
-              selectedId === m._id
-                ? 'bg-[#1a3a35] text-white'
-                : 'bg-gray-100 text-[#1a3a35] hover:bg-[#1a3a35] hover:text-white'
+              isOwned(m)
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : selectedId === m._id
+                  ? 'bg-[#1a3a35] text-white'
+                  : 'bg-gray-100 text-[#1a3a35] hover:bg-[#1a3a35] hover:text-white'
             "
           >
-            {{ selectedId === m._id ? "Selected" : "Select" }}
+            {{
+              isOwned(m)
+                ? "Already Purchased"
+                : selectedId === m._id
+                  ? "Selected"
+                  : "Select"
+            }}
           </button>
         </div>
       </div>
@@ -655,7 +686,22 @@
     }
   }
 
+  // The logged-in user's current membership, if any. The stored user object
+  // carries the plan both as a nested `membership` and a flat `membershipID`.
+  const ownedMembership = computed(() => currentUser.value?.membership || null);
+
+  function isOwned(m) {
+    const owned = ownedMembership.value;
+    if (!owned) return false;
+    return (
+      (owned._id && owned._id === m._id) ||
+      (owned.membershipID && owned.membershipID === m.membershipID)
+    );
+  }
+
   function selectMembership(id) {
+    const m = memberships.value.find((x) => x._id === id);
+    if (m && isOwned(m)) return;
     selectedId.value = id;
   }
 
@@ -665,6 +711,10 @@
     if (!user || !user.id) {
       alert("Please log in to purchase a membership.");
       router.push("/member/login");
+      return;
+    }
+    if (selectedMembership.value && isOwned(selectedMembership.value)) {
+      alert("You already have this membership.");
       return;
     }
     router.push(
