@@ -1510,6 +1510,7 @@
     () => [booking.value.center, booking.value.service, booking.value.lane],
     () => {
       slotCache.clear();
+      bookingError.value = "";
     },
   );
 
@@ -1524,6 +1525,7 @@
   watch(
     () => booking.value.date,
     () => {
+      bookingError.value = "";
       if (currentStep.value === 1 && booking.value.lane) {
         booking.value.selectedTime = null;
         centerSwitchNotice.value = "";
@@ -1725,23 +1727,27 @@
   function increaseDuration() {
     if (durationMultiplier.value < maxDurationMultiplier.value) {
       durationMultiplier.value += 1;
+      bookingError.value = "";
     }
   }
 
   function decreaseDuration() {
     if (durationMultiplier.value > minDurationMultiplier.value) {
       durationMultiplier.value -= 1;
+      bookingError.value = "";
     }
   }
 
   function nextStep() {
     if (currentStep.value < steps.length - 1) {
+      bookingError.value = "";
       currentStep.value++;
     }
   }
 
   function prevStep() {
     if (currentStep.value > 0) {
+      bookingError.value = "";
       currentStep.value--;
     }
   }
@@ -1789,6 +1795,7 @@
   }
 
   function selectTimeSlot(slot) {
+    bookingError.value = "";
     booking.value.selectedTime = slot.time;
   }
 
