@@ -1150,6 +1150,19 @@ export const AdminLogin = async (email, otp) => {
     }
   };
 
+  // Submit a customer review/feedback
+  export const SubmitReview = async (payload) => {
+    try {
+      const response = await apiService.post(`/reviews`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
+  };
 
 
 

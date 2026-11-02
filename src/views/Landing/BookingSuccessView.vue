@@ -118,6 +118,61 @@
           </div>
         </div>
 
+        <!-- Experience feedback -->
+        <div class="mb-8">
+          <p class="text-sm font-semibold text-gray-700 mb-3">
+            How was your experience?
+          </p>
+          <div class="flex gap-3">
+            <!-- Thumbs up → Google review -->
+            <button
+              @click="leaveGoogleReview"
+              class="flex-1 flex flex-col items-center gap-2 py-4 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-colors group"
+            >
+              <svg
+                class="w-8 h-8 text-gray-400 group-hover:text-green-600 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                />
+              </svg>
+              <span
+                class="text-xs font-semibold text-gray-500 group-hover:text-green-700"
+                >Loved it</span
+              >
+            </button>
+            <!-- Thumbs down → internal review page -->
+            <button
+              @click="leaveFeedback"
+              class="flex-1 flex flex-col items-center gap-2 py-4 rounded-lg border-2 border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition-colors group"
+            >
+              <svg
+                class="w-8 h-8 text-gray-400 group-hover:text-orange-500 transition-colors rotate-180"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                />
+              </svg>
+              <span
+                class="text-xs font-semibold text-gray-500 group-hover:text-orange-600"
+                >Could be better</span
+              >
+            </button>
+          </div>
+        </div>
+
         <button
           @click="goHome"
           class="bg-[#1a3a35] text-white px-8 py-3 rounded font-semibold hover:bg-[#2a4a45] transition-colors w-full"
@@ -201,5 +256,23 @@
 
   function goHome() {
     router.push("/");
+  }
+
+  const GOOGLE_REVIEW_URLS = {
+    "cranbourne north": "https://g.page/r/CVOo3tMPYIyUEAE/review",
+    hallam: "https://g.page/r/CfQa4hf5Zr_eEAE/review",
+  };
+
+  function getGoogleReviewUrl() {
+    const key = (centerName.value || "").trim().toLowerCase();
+    return GOOGLE_REVIEW_URLS[key] || GOOGLE_REVIEW_URLS["cranbourne north"];
+  }
+
+  function leaveGoogleReview() {
+    window.open(getGoogleReviewUrl(), "_blank", "noopener");
+  }
+
+  function leaveFeedback() {
+    router.push("/review");
   }
 </script>

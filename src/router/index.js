@@ -44,6 +44,7 @@ import TTLockerLoginView from "../views/TTLocker/LoginView.vue";
 import TTLockerOTPView from "../views/TTLocker/TTLockerOTP.vue";
 import TTLockerHomeView from "../views/TTLocker/TTLockerHome.vue";
 import TTLockerPassageView from "../views/TTLocker/TTLockerPassageView.vue";
+import ReviewFormView from "../views/Landing/ReviewFormView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -357,13 +358,13 @@ const router = createRouter({
 
 
     //TTLocker
-    // {
-    //   path: "/ttlocker/login",
-    //   name: "ttlockerlogin",
-    //   component: TTLockerLoginView,
-    //   meta: {
-    //     title: "TT Locker - Login"}
-    // },
+    {
+      path: "/ttlocker/login",
+      name: "ttlockerlogin",
+      component: TTLockerLoginView,
+      meta: {
+        title: "TT Locker - Login"}
+    },
     {
       path: "/ttlocker/otp",
       name: "ttlockerotp",
@@ -385,6 +386,13 @@ const router = createRouter({
       props: true,
       meta: {
         title: "TT Locker - Passage"}
+    },
+    {
+      path: "/review",
+      name: "review",
+      component: ReviewFormView,
+      meta: {
+        title: "Elite Cricket Centre - Review"}
     },
     
 
